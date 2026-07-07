@@ -12,13 +12,14 @@ Metadata (store, read when invoked, never preemptively): `CATALOG.md` (what exis
 | verb | do |
 |---|---|
 | list / status | `skillctl.sh status` + fixed skills from session context, grouped by category; capability hunts also check MODULES.md and Upstream candidates. First manager use in a new project & `LOCK.md` last-checked is stale/absent → offer `check-updates` |
-| load <name…> / <profile> | run the load-time conflict check FIRST (`references/add-and-handoff.md` §3: already-active? sequential predecessor's files present → offer handoff §4? exclusive peer's files present → warn?), then `skillctl.sh load …`; profiles from `skills-store/profiles.md`; live immediately |
+| load <name…> | run the load-time conflict check FIRST (`references/add-and-handoff.md` §3: already-active? sequential predecessor's files present → offer handoff §4? exclusive peer's files present → warn?), then `skillctl.sh load …`; live immediately |
 | unload <name…> / --all | `skillctl.sh unload …` — script refuses pinned/ride-along |
 | add <source> | interactive install — §add below |
 | extract <parent>/<module> | carve a module into a standalone store skill — §extract below |
 | remove <name> | delete from store + its catalog row + its MODULES rows |
 | sync | pull starter-repo URL from CATALOG header; unset → say so and stop. Also runs `check-updates` |
 | check-updates | `skillctl.sh check-updates` — compare pinned refs (LOCK.md) to upstream HEAD; DETECTION ONLY, never applies. Auto-run at add/sync/new-project; Stop-hook nudges when stale (>7d) |
+| check-conflicts | `skillctl.sh check-conflicts` — globs CONFLICTS.md's machine-parseable exclusive groups against live project footprints; reports which unused peer to suppress from GATE suggestions. Read-only, DETECTION ONLY — auto-run at every Mode-entry GATE (below) |
 | update <skill> | review-gated apply — `references/updates.md`: diff description/footprint/local-mods/modules; RE-APPLY our local-mods; **reconcile the project's existing dependency files against the updated skill's new structure** (`structcheck.sh`, migrate on drift); never auto-apply |
 
 ## Mode-entry skill GATE — on every session-mode lock
@@ -38,6 +39,13 @@ confirmed or redacted the list below — in EVERY mode, not just design.
     CATALOG.md category, PLUS Upstream candidates `add` could pull in, PLUS dormant
     store skills not yet loaded. Note always-on pinned/ride-along skills as
     "already active" for transparency — they are not part of the choice.
+- **Run `skillctl.sh check-conflicts` before finalizing either list.** For any
+  reported `suppress: X — exclusive with already-used: Y`, drop `X` from BOTH the
+  top picks and the "everything else" list — this project already committed to `Y`
+  via an exclusive pair, so suggesting `X` unprompted would just be wrong, not merely
+  unhelpful. Don't hide it silently forever, though: if the user names `X` explicitly
+  anyway, proceed to the normal load-time warn (`add-and-handoff.md` §3c) rather than
+  refusing outright — suppression is a suggestion filter, not a hard block.
 - **Wait for the user's free-text reply** confirming or redacting the selection.
   Do not proceed to load/install anything until they respond.
 - **Skip only when the user already named specific skills inline, or explicitly
@@ -60,7 +68,7 @@ Menu skills are muted (`disable-model-invocation: true` in our copies), so they 
 1. Fetch into the store (`git clone --depth 1` / curl); read frontmatter description ONLY.
 2. Classify pack / deep / standalone (`references/add-and-handoff.md` §1) and confirm with the user — a PACK registers members individually, never as a unit.
 3. Recommend a policy from `references/catalog-format.md`; AskUserQuestion to confirm policy (recommended first) — and category when not obvious. Hand-dropped dirs flagged by drift start here too.
-4. Check `CONFLICTS.md` + footprints (§2): `duplicate`/`exclusive` with something installed, or its dep files already in the repo → warn before writing the row; genuinely new overlap → propose a rule, append once the user rules; record the new skill's footprint in §2.
+4. Check `CONFLICTS.md` + footprints (§2): `duplicate`/`exclusive` with something installed, or its dep files already in the repo → warn before writing the row; genuinely new overlap → propose a rule, append once the user rules; record the new skill's footprint in §2. If the new rule is `exclusive` and BOTH members now have real CATALOG.md names, also add a row to CONFLICTS.md's "Exclusive groups" machine-parseable table (`check-conflicts` can't suppress it otherwise).
 5. Write ONE Installed row (load-when = trigger, ≤10 words); policy=menu → set `disable-model-invocation: true` in our copy.
 6. Deep/pack → index notable modules/members in MODULES.md (a module MAY sit in a different category than its parent).
 7. Third-party source → `skillctl.sh pin <source>` for exact sha/date (deterministic, not filesystem mtime — survives re-cloning); record a `LOCK.md` row (source, pinned-ref=short sha, upstream-date, install date, local-mods e.g. "set disable-model-invocation").

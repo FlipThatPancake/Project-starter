@@ -1,6 +1,6 @@
 # SKILL CATALOG — library metadata. A skill's STATE (active/dormant) is derived from its folder location; never write state here.
 starter-repo: (not yet created — put its git URL here; `sync` then = git pull into this store)
-policies: pinned=never unloaded · ride-along=always loaded, auto-fires, never asks · menu=never auto-fires, activated only via picker · manual=load by name or profile
+policies: pinned=never unloaded · ride-along=always loaded, auto-fires, never asks · menu=never auto-fires, activated only via picker · manual=load by name
 
 ## Installed
 | skill | kind | category | policy | load-when |

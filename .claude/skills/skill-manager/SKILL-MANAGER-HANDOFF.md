@@ -112,7 +112,6 @@ loaded.
 ├── LOCK.md                              third-party provenance: pinned commit, its
 │                                        upstream date, our install date, our local mods
 ├── MODE-SHORTLISTS.md                   per-mode starter picks for the entry GATE
-├── profiles.md                          named bulk loadouts (session-level presets)
 ├── WIKI.md                              deep research on 14 third-party skills — read
 │                                        ONLY for analysis/onboarding, never routinely
 └── skill-storage/                       ← DORMANT skill dirs — NOT scanned, zero cost
@@ -155,7 +154,7 @@ Every row in `CATALOG.md`'s Installed table also carries a **policy**, which gov
 | `pinned` | permanently active, cannot be unloaded (`skillctl.sh unload` refuses) | repo infrastructure every session needs: `skill-manager`, `project-memory`, `checkpoint` |
 | `ride-along` | permanently active, auto-fires on matching tasks, **never asks** | guardrails the user wants with zero friction: none currently assigned — `anti-slop-preflight` held this policy until 2026-07-07, when the user changed it to `manual` (it doesn't apply to every session; see `MODE-SHORTLISTS.md`) |
 | `menu` | active only when loaded, but even then **muted** (`disable-model-invocation: true` set in our own copy of its frontmatter) — can only be activated through the picker, never auto-fires | broad/overlapping skills where auto-triggering would cause mis-fires or unwanted style pushes — e.g. impeccable, taste-skill, frontend-design, ui-ux-pro-max, all in one `design-judgment` overlap group |
-| `manual` | dormant by default; loaded by explicit name or via a `profiles.md` bulk preset | everything else — motion libraries, 3D tooling, research helpers |
+| `manual` | dormant by default; loaded by explicit name | everything else — motion libraries, 3D tooling, research helpers |
 
 The decision table for assigning policy to a *new* skill lives in
 `references/catalog-format.md` — read it before ever running `add`.
@@ -173,7 +172,7 @@ also checks `MODULES.md` and the Upstream candidates table in `CATALOG.md`. On f
 manager use in a new project, or when `LOCK.md`'s `last-checked` is stale/absent,
 offer to run `check-updates`.
 
-### `load <name>` / `load <profile>`
+### `load <name>`
 **Never** a direct `mv`. First runs the **load-time conflict check**
 (`add-and-handoff.md` §3):
 - Already active? → say so, skip.
@@ -185,8 +184,7 @@ offer to run `check-updates`.
 - Is this a `duplicate` of something already installed? → refuse, name the kept copy.
 
 Only after that check passes does `skillctl.sh load <name>` actually move the
-directory from store to active. `load <profile>` reads a named bulk loadout from
-`profiles.md` and loads each member the same way.
+directory from store to active.
 
 ### `unload <name>` / `unload --all`
 `skillctl.sh unload` — the script itself (not just the model's judgment) refuses to
