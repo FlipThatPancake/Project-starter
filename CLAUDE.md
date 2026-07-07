@@ -8,7 +8,8 @@
 | Mode is explicit | Never rename a branch you were handed (breaks harness tracking); only self-created branches get a `<mode-slug>/` prefix. Always: append a row to `.claude/memory/SESSION-LOG.md`, and prefix every commit message `[mode:<n>-<slug>]` |
 | Memory first | Read `.claude/memory/INDEX.md` + your route's map before ANY code read/grep (project-memory skill) |
 | Scope lock | Multi-route (≥2 routes): lock onto ONE route per session; re-scope only when told ("switch to /x") |
-| Skills | Lean loadout: active = pinned + ride-along only; library sits in `.claude/skills-store/` (zero context). Installing into the store is fine in any mode; loading into active (`.claude/skills/**`) or editing mechanics needs mode 1. Never hand-move skill dirs |
+| Meta read scope | `.claude/**`, `scripts/**`, `tests/**`, `CLAUDE.md`, `README.md` are Mode 1's domain to read freely (incl. `SKILL-MANAGER-HANDOFF.md`/`WIKI.md`). Every other mode reads from there ONLY what a running skill-manager verb needs (e.g. `CATALOG.md`/`MODE-SHORTLISTS.md` for the gate) — never to browse. Documented discipline, not hook-enforced |
+| Skills | Lean loadout: active = pinned + ride-along only; skill payload sits in `.claude/skills-store/skill-storage/` (zero context), metadata `.md`s at the store root. Installing into the store is fine in any mode; loading into active (`.claude/skills/**`) or editing mechanics needs mode 1. Never hand-move skill dirs |
 | Anchor navigation | Grep `@sec:` / `@css:` / `@js:` anchors from the map, then Read with offset/limit — never whole-file Reads |
 | Built-file hazard | dist/*.html are self-contained with inlined base64 — unscoped Read/grep pays the image tax; work in src/ |
 | Never read dist/ | Generated output; sources only |

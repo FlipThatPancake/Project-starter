@@ -8,6 +8,18 @@ reads only what's relevant and never wanders:
 - **skills** — the loadout offered on entry (via skill-manager)
 - **guardrails** — mode-specific rules
 
+**Meta/infrastructure read scope (applies to every mode):** the repo's meta surface —
+all of `.claude/**` (including narrative docs like `SKILL-MANAGER-HANDOFF.md` and
+`skills-store/WIKI.md`), `scripts/**`, `tests/**`, `CLAUDE.md`, `README.md` — is
+**Mode 1's domain**, freely readable there since understanding/changing that surface
+IS mode 1's job. **Every other mode (2–7) reads from that surface ONLY the specific
+file a running skill-manager verb operationally needs** (e.g. `CATALOG.md` /
+`MODE-SHORTLISTS.md` for the entry GATE, a `references/*.md` file while running `add`)
+— never to browse or understand the system for its own sake; that curiosity belongs in
+mode 1. This is **documented discipline, not mechanically enforced** —
+`scope-guard-hook.sh` only gates `Edit`/`Write`, never `Read`/`Grep` — so it relies on
+self-policing per this rule, same as the rest of each mode's read-set.
+
 ## Selection protocol (run this first, every session)
 
 1. **Determine repo state** — read the `state:` line in `.claude/memory/INDEX.md`:
