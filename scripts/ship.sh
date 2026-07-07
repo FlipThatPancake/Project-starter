@@ -54,6 +54,18 @@ fi
 
 git add -A
 git diff --cached --quiet && { echo "ship: nothing to commit"; exit 0; }
+
+# Universal conflict-marker guard: scoped validation above only checks route
+# index.html files, so anything outside that pattern (test fixtures, .md,
+# scripts, etc.) could otherwise commit a leftover conflict marker unnoticed —
+# a real risk once auto-ship (ship-now "always on") commits unattended every
+# turn. Cheap (grep over the staged diff), applies regardless of file type.
+if git diff --cached | grep -qE '^\+(<{7}|={7}|>{7})( |$)'; then
+  echo "ship: refusing to commit — conflict marker(s) found in staged changes:" >&2
+  git diff --cached | grep -nE '^\+(<{7}|={7}|>{7})( |$)' >&2
+  exit 2
+fi
+
 git commit -m "$MSG"
 
 [ "$SYNC" = 1 ] && git pull --rebase origin "$(git branch --show-current)"
