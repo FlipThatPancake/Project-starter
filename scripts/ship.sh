@@ -1,17 +1,25 @@
 #!/usr/bin/env bash
 # ship.sh — validate → build changed routes → commit → push (with retry).
-# Usage: scripts/ship.sh "commit message" [--no-validate] [--no-build] [--no-push] [--all] [--deep] [--sync] [--force-push]
+# Usage: scripts/ship.sh "commit message" [--no-validate] [--no-build] [--no-push] [--all] [--deep] [--sync] [--force-push] [--to-main]
 # Validation is SCOPED to changed routes by default (cheap on a big portal);
 # --deep (or --all) forces a full-portal audit.
+# --to-main: explicit opt-in ONLY. After the branch push succeeds, merges this
+# branch into origin/main via a disposable local temp branch (--no-ff, so the
+# merge is visible in history) and pushes that. Never force-pushes; on conflict
+# or a race (main moved since fetch), the temp branch is left for inspection
+# and nothing is force-applied. Does NOT run without a successful branch push
+# first (so --to-main + --no-push is rejected) — combine with --force-push if
+# CLAUDE_AUTO_PUSH_TO_MAIN=false.
 set -euo pipefail
 cd "$(git rev-parse --show-toplevel)"
 
 MSG="${1:-}"; shift || true
 [ -z "$MSG" ] && { echo "ship: commit message required" >&2; exit 2; }
-NOVAL=0 NOBUILD=0 NOPUSH=0 ALL=0 DEEP=0 SYNC=0 FORCEPUSH=0
+NOVAL=0 NOBUILD=0 NOPUSH=0 ALL=0 DEEP=0 SYNC=0 FORCEPUSH=0 TOMAIN=0
 for a in "$@"; do case "$a" in
   --no-validate) NOVAL=1;; --no-build) NOBUILD=1;; --no-push) NOPUSH=1;;
   --all) ALL=1;; --deep) DEEP=1;; --sync) SYNC=1;; --force-push) FORCEPUSH=1;;
+  --to-main) TOMAIN=1;;
   *) echo "ship: unknown flag $a" >&2; exit 2;;
 esac; done
 
@@ -96,10 +104,45 @@ if [ "$NOPUSH" = 0 ]; then
   fi
 
   BR="$(git branch --show-current)"
+  PUSHED=0
   for delay in 0 2 4 8 16; do
     sleep "$delay"
-    git push -u origin "$BR" && exit 0
+    if git push -u origin "$BR"; then PUSHED=1; break; fi
     echo "ship: push failed, retrying in $((delay*2))s..." >&2
   done
-  echo "ship: push failed after retries" >&2; exit 1
+  [ "$PUSHED" = 1 ] || { echo "ship: push failed after retries" >&2; exit 1; }
+fi
+
+if [ "$TOMAIN" = 1 ]; then
+  if [ "$NOPUSH" = 1 ]; then
+    echo "ship: --to-main requires the branch push to succeed first — remove --no-push" >&2
+    exit 2
+  fi
+  BR="$(git branch --show-current)"
+  if [ "$BR" = "main" ]; then
+    echo "ship: already on main — --to-main merges a feature branch INTO main, nothing to do" >&2
+  else
+    echo "ship: --to-main — merging '$BR' into main on origin" >&2
+    git fetch origin main
+    TMP="_ship_to_main_$$"
+    git branch -f "$TMP" origin/main
+    git checkout -q "$TMP"
+    if git merge --no-ff "$BR" -m "Merge branch '$BR' into main (ship.sh --to-main)"; then
+      if git push origin "$TMP:main"; then
+        echo "ship: main updated with '$BR'" >&2
+        git checkout -q "$BR"
+        git branch -D "$TMP" >/dev/null 2>&1 || true
+      else
+        echo "ship: push to main failed (main may have moved since fetch) — merge kept on local branch '$TMP' for inspection; fetch and retry" >&2
+        git checkout -q "$BR"
+        exit 1
+      fi
+    else
+      git merge --abort 2>/dev/null || true
+      git checkout -q "$BR"
+      git branch -D "$TMP" >/dev/null 2>&1 || true
+      echo "ship: merge conflict merging '$BR' into main — resolve manually: git fetch origin main && git checkout -b fix-merge origin/main && git merge $BR" >&2
+      exit 1
+    fi
+  fi
 fi
