@@ -1,2 +1,51 @@
-# Project-starter
-A boilerplate repo for starting any future web app project. 
+# Claude Code project starter — token-efficient blueprint
+
+A clean-slate starter repo for token-efficient Claude Code sessions: persistent
+memory (survives ephemeral web containers), anchor-based navigation, a lean
+skill-management system, and zero-dependency build/validate/ship scripts.
+
+Distilled from a production project where un-instrumented sessions cost
+~400K tokens each; instrumented orientation costs ~3K.
+
+## What's here
+
+| path | purpose |
+|---|---|
+| `CLAUDE.md` | session token-discipline rules |
+| `.claude/skills/project-memory/` | auto-skill: memory-first navigation protocol |
+| `.claude/skills/checkpoint/` | `/checkpoint`: safe memory rewrites |
+| `.claude/skills/skill-manager/` | install/remove/update skills; lean active loadout vs. dormant `skills-store/` |
+| `.claude/skills/anti-slop-preflight/` | pre-ship checklist for visual/design changes |
+| `.claude/memory/` | `INDEX.md` registry + per-route maps + shared registries (committed = persistent) |
+| `.claude/skills-store/` | dormant skill library (zero context cost until loaded) |
+| `.claude/settings.json` | Stop hook → `scripts/checkpoint-nudge.sh` (deterministic, zero-token recommender) |
+| `scripts/` | `validate.mjs` · `build.mjs` · `ship.sh` · `checkpoint-nudge.sh` · `scope-guard-hook.sh` |
+| `tests/` | fixtures + `test-tooling.mjs` covering the scripts above |
+| `src/routes/_skeleton/` | copy this when adding a new route (portal profile) |
+| `src/shared/tokens.css` | shared design tokens routes opt into via `<!-- @inline:../../shared/tokens.css -->` |
+
+## Starting a new project from this repo
+
+This repo *is* the starter kit — for a new project, create a new GitHub repo
+from this one (or clone it and re-point `origin`), then:
+
+1. Set `profile:` in `.claude/memory/INDEX.md` — `portal` (multi-route domain:
+   every session locks onto ONE route, with an auto route-picker question when
+   the first prompt is ambiguous) or `standalone` (single site/app: whole
+   project is the scope, no lock ceremony).
+2. Add routes under `.claude/memory/INDEX.md` as they're created (`cp -r
+   src/routes/_skeleton src/routes/<route>`); give each a `routes/<route>.md`
+   map once it earns one.
+3. Fill `src/shared/tokens.css` if routes will share a design system;
+   otherwise leave empty.
+4. Commit: `scripts/ship.sh "chore: bootstrap project"`.
+
+## Daily flow
+
+| when | do |
+|---|---|
+| session start | Claude reads `.claude/memory/INDEX.md` + the route map and locks scope (project-memory skill, automatic) |
+| change route mid-session | say "switch to /route" or "unlock scope" — scope is never re-inferred silently |
+| ship a chunk | `scripts/ship.sh "msg"` (validates + builds changed routes + commits + pushes) |
+| Stop-hook nudge appears | run `/checkpoint` |
+| need a new capability | ask for it — skill-manager loads it from `.claude/skills-store/` or installs it |
