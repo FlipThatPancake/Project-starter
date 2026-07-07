@@ -11,7 +11,8 @@
 | Built-file hazard | dist/*.html are self-contained with inlined base64 — unscoped Read/grep pays the image tax; work in src/ |
 | Never read dist/ | Generated output; sources only |
 | Scripts, not boilerplate | `node scripts/validate.mjs --all` · `node scripts/build.mjs <route>` · `scripts/ship.sh "msg"` — never inline `node -e` validators |
-| Batch commits | One `ship.sh` per work chunk, not per edit; push to main unless told otherwise |
+| Batch commits | One `ship.sh` per work chunk, not per edit; pushes the current branch only — `main` is touched ONLY via the `ship-now` `pr` target's GitHub-side merge, never directly |
+| Auto-ship | "ship-now branch always on" enables a zero-token Stop-hook that auto-pushes the branch (never main) after any turn with changes; session-scoped, off by default; "always off" disables |
 | Checkpoint | Run /checkpoint when nudged by the Stop hook, or after finding a non-obvious root cause / making a future-constraining decision |
 | Session hygiene | Batch related fixes into one prompt's work; suggest a fresh session when a new work chunk starts |
 | Model hint | Mechanical edits/renames → cheap model is fine; debugging/design/checkpoint precision → larger model |

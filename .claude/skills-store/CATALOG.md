@@ -9,7 +9,7 @@ policies: pinned=never unloaded · ride-along=always loaded, auto-fires, never a
 | project-memory | skill | core | pinned | always — repo scope + navigation |
 | checkpoint | skill | core | pinned | always — memory writes |
 | anti-slop-preflight | skill | design-guardrails | ride-along | before finalizing ANY visual/CSS/design change |
-| ship-now | skill | core | manual | "ship it" / "ship to main" — push branch, or PR+GitHub-merge to main, session end |
+| ship-now | skill | core | manual | "ship it"/"ship to main"/"branch always on" — push, PR-merge, or toggle auto-ship |
 
 ## Overlap groups — picker offers modules (see MODULES.md); multi-select = Combined (smart merge per skill-manager Combine protocol)
 - design-judgment: impeccable · taste-skill · frontend-design · ui-ux-pro-max — all claim general frontend design. Precedence when co-loaded: project design tokens (design-m3) > anti-slop-preflight > best task fit.

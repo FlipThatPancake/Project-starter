@@ -1,6 +1,6 @@
 ---
 name: ship-now
-description: Use when the user says "ship it", "push now", "save my work", "ship to main", or "PR to main", or wants to commit+push at session end even with CLAUDE_AUTO_PUSH_TO_MAIN=false. Two targets — branch (default) or pr (whenever main is meant) — using GitHub's own PR merge as the ONLY normal path to main. A local direct merge exists solely as a confirmed fallback if the GitHub merge is blocked.
+description: Use when the user says "ship it", "push now", "save my work", "ship to main", "PR to main", "ship-now branch always on/off", or wants to commit+push at session end even with CLAUDE_AUTO_PUSH_TO_MAIN=false. Two targets — branch (default) or pr (whenever main is meant) — using GitHub's own PR merge as the ONLY normal path to main. A local direct merge exists solely as a confirmed fallback if the GitHub merge is blocked. "always on/off" toggles a zero-token Stop-hook auto-ship to branch for the rest of the session.
 ---
 
 # ship-now — commit + push, to a clearly-chosen target
@@ -18,6 +18,29 @@ branch-protection, and GitHub itself performs the merge once those gates pass
 merge it. Bypassing that (a local `git merge` pushed straight to `main`) skips
 every gate GitHub would otherwise enforce — that's why it's a fallback, not a
 routine option.
+
+## Toggle: auto-ship to branch ("always on" / "always off") — check this FIRST
+If the args contain "always on" (or "auto on", "always"): this is NOT a normal
+ship — it's a persistent mode switch. Handle it and stop, don't fall through to
+target resolution below:
+1. `H=$(pwd | sha256sum | cut -d' ' -f1 | cut -c1-8); echo on > /tmp/claude-autoship-$H`
+2. Run one immediate **branch** ship now (§Steps — branch) to clear anything
+   already pending.
+3. Report: auto-ship is ON for the rest of this session — every turn's Stop
+   hook (`scripts/auto-ship-hook.sh`) will silently push to the branch if
+   anything changed; `main` is never touched by this. Turn off with
+   "ship-now branch always off".
+
+If the args contain "always off" (or "auto off"):
+1. `H=$(pwd | sha256sum | cut -d' ' -f1 | cut -c1-8); rm -f /tmp/claude-autoship-$H`
+2. Report: auto-ship is OFF. (Does not itself ship anything pending — say so;
+   run a normal "ship it" if there's uncommitted work you want saved.)
+
+Mechanics: the flag is a session-scoped `/tmp` file (dies with the container,
+same as the mode/scope locks) — it does NOT persist to a future session. The
+Stop hook is pure shell (deterministic timestamp commit message, silent on
+success, only prints on failure) — zero added model tokens per turn. It always
+targets **branch**, never `pr`/main, regardless of this toggle.
 
 ## The two targets
 | target | commits go to | main touched? | how |

@@ -66,6 +66,11 @@
             "type": "command",
             "command": "bash scripts/checkpoint-nudge.sh",
             "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "bash scripts/auto-ship-hook.sh",
+            "timeout": 30
           }
         ]
       }
