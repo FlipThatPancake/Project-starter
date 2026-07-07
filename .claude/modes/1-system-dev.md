@@ -1,7 +1,11 @@
 # Mode 1 — system / skill development
 
 Work ON the starter itself: scripts, hooks, the memory system, the skill-manager
-system, tests. This is the only mode allowed to edit `.claude/skills/**`.
+system, tests. This is the only mode allowed to edit `.claude/skills/**` (the
+ACTIVE loadout) or the skill-manager mechanics (`skillctl.sh`, its own SKILL.md,
+the hooks, `.claude/modes/**`). Cataloging/installing a skill into
+`.claude/skills-store/` (dormant) is a normal skill-manager operation and does
+NOT require this mode — see skill-manager SKILL.md → Hard rules.
 
 - **allowlist:** `.claude/` · `scripts/` · `tests/` · `CLAUDE.md` · `README.md`
   ```

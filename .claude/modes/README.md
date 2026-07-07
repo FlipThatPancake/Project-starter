@@ -14,8 +14,19 @@ reads only what's relevant and never wanders:
    - `starter` → fresh/unbootstrapped (the mother `Project-starter` repo is always `starter`). Steer toward **mode 2 (new project)**.
    - `in-progress` → a real project (set the first time mode 2 runs). Offer modes 3–6.
 2. **Pick the mode:**
-   - **Infer ONLY when the first prompt is an explicit, unambiguous instruction** (e.g. "switch to /pricing" → mode 4; "let's build the design tokens" → mode 6; "fix the skill-manager picker" → mode 1).
-   - **In EVERY other case — including an empty, vague, or multi-intent prompt — ASK.** Never assume the mode. Use `AskUserQuestion` with the 7 modes as options; keep asking scoped follow-ups until scope is unambiguous.
+   - **Restate the session's purpose in one line first.** If the first prompt is
+     explicit and unambiguous, state your understanding + the inferred mode and
+     proceed (e.g. "switch to /pricing" → mode 4; "let's build the design tokens"
+     → mode 6; "fix the skill-manager picker" → mode 1).
+   - **In EVERY other case — including an empty, vague, or multi-intent prompt —
+     restate your understanding and WAIT for the user's confirmation before
+     locking a mode.** Never assume. Use `AskUserQuestion` with the 7 modes as
+     options; keep asking scoped follow-ups until scope is unambiguous.
+   - **Scope note:** installing/cataloging a skill into `.claude/skills-store/`
+     (dormant) is available in any mode. Only *loading* a skill into
+     `.claude/skills/**` (active) or editing the mechanics (hooks, `skillctl.sh`,
+     mode files, skill-manager's own SKILL.md) requires mode 1 — see
+     skill-manager SKILL.md → Hard rules.
 3. **Lock the mode** — write its allowlist so the scope-guard enforces it:
    ```
    H=$(pwd | sha256sum | cut -d' ' -f1 | cut -c1-8)
@@ -23,9 +34,12 @@ reads only what's relevant and never wanders:
    ```
    (`.claude/memory/` is always allowed implicitly; no need to list it.)
    State one line: `Mode: <n>-<name>`.
-4. **Offer skills** — on entry, skill-manager presents *(top)* the best candidates
-   for this prompt, then *(below)* the full store by category, multi-select. Load
-   the chosen set. (See skill-manager SKILL.md → "Mode-entry skill offer".)
+4. **Gate on skills** — on entry, skill-manager prints the full catalogue as a
+   markdown list: *(top)* the best candidates for this session's purpose with a
+   short why/how, then *(below)* the full store by category. **Wait for the
+   user's free-text confirm or redaction before installing/loading anything** —
+   skip only if the user already named skills or said "none". Applies in every
+   mode. (See skill-manager SKILL.md → "Mode-entry skill GATE".)
 5. **Make the mode explicit** (§Branch & log below) — this is the persistent
    record of what each session/branch was scoping on.
 6. **Read the mode file** (`.claude/modes/<n>-*.md`) and follow it.

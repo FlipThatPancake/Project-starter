@@ -21,16 +21,25 @@ Metadata (store, read when invoked, never preemptively): `CATALOG.md` (what exis
 | check-updates | `skillctl.sh check-updates` — compare pinned refs (LOCK.md) to upstream HEAD; DETECTION ONLY, never applies. Auto-run at add/sync/new-project; Stop-hook nudges when stale (>7d) |
 | update <skill> | review-gated apply — `references/updates.md`: diff description/footprint/local-mods/modules; RE-APPLY our local-mods; **reconcile the project's existing dependency files against the updated skill's new structure** (`structcheck.sh`, migrate on drift); never auto-apply |
 
-## Mode-entry skill offer — on every session-mode lock
-When a session mode is locked (`.claude/modes/README.md` step 4), present the store
-so the user can shape the loadout for this session — in EVERY mode, not just design:
-- **Top: best candidates** — the 2–4 installed/Upstream skills most relevant to the
-  first prompt/questioning (name the reason in ≤6 words each). Recommended first.
-- **Below: full store by category** — `skillctl.sh status` grouped by CATALOG.md
-  category (+ Upstream candidates that `add` could pull in), so nothing is hidden.
-- One `AskUserQuestion`, multiSelect on, last option "None — pinned + guardrails only".
+## Mode-entry skill GATE — on every session-mode lock
+When a session mode is locked (`.claude/modes/README.md` step 4), this is a GATE, not
+an offer: do not install, load, or otherwise act on any skill until the user has
+confirmed or redacted the list below — in EVERY mode, not just design.
+- Print the **full catalogue as a markdown list** in chat (not a constrained picker —
+  the catalogue is too large to fit ~4 options):
+  - **Top: suggested picks** — the 2–4 installed/Upstream skills most relevant to
+    the (confirmed) session purpose, each with a short why/how (≤1 line).
+  - **Below: everything else by category** — `skillctl.sh status` grouped by
+    CATALOG.md category, PLUS Upstream candidates `add` could pull in, PLUS dormant
+    store skills not yet loaded. Note always-on pinned/ride-along skills as
+    "already active" for transparency — they are not part of the choice.
+- **Wait for the user's free-text reply** confirming or redacting the selection.
+  Do not proceed to load/install anything until they respond.
+- **Skip only when the user already named specific skills inline, or explicitly
+  said "no skills" / "none"** in the prompt that triggered mode lock — then honor
+  that directly instead of printing the list. Otherwise the gate is absolute:
+  always show the full list, every mode, every session.
 - Apply the same CONFLICTS.md checks as the menu picker before loading the chosen set.
-This is an offer, not a gate: if the user already named skills or said "no skills", skip it.
 
 ## Menu picker — per TASK, never sticky
 Menu skills are muted (`disable-model-invocation: true` in our copies), so they can never fire uninvited — this picker is their only activation path. Trigger: the task calls for design judgment (or a menu skill's domain) AND menu skills/modules are installed.
@@ -59,3 +68,8 @@ When a module earns independent life (precedent: anti-slop-preflight ← taste-s
 - Fixed skills: report truthfully as "active — not controllable here"; never pretend to unload one.
 - Packs (gsap, tapestry, accesslint): register/load MEMBERS individually.
 - The manager never edits pinned rows and never unloads itself.
+- **Mode scope:** `add`/`extract`/`remove` write only to `.claude/skills-store/` (dormant
+  catalog) + its own metadata (CATALOG.md/MODULES.md/LOCK.md) — available in ANY mode.
+  Only `load`/`unload` (which move a dir into/out of `.claude/skills/**`, the active
+  loadout) and edits to the mechanics themselves (this file, `skillctl.sh`, the hooks,
+  `.claude/modes/**`) are restricted to Mode 1 (system-dev).
