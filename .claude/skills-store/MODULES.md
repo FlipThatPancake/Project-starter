@@ -14,4 +14,4 @@ status: referenced = use via parent (load parent, read only that module's file) 
 | audit · critique · harden | impeccable | design-judgment | referenced | review-stage modules; also fit quality-review tasks |
 | animate | impeccable | motion | referenced | cross-category: motion guidance inside a design pack |
 | scrolltrigger · react | gsap-skills | motion | referenced | already individually loadable members |
-| article-extractor · learn-this | tapestry | research | referenced | members, load individually |
+| session-log · learn-this · article-extractor · ship-learn-next | tapestry | research | extracted | now standalone memory-system skills (phase 1 expansion) |

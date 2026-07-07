@@ -10,6 +10,10 @@ policies: pinned=never unloaded · ride-along=always loaded, auto-fires, never a
 | checkpoint | skill | core | pinned | always — memory writes |
 | anti-slop-preflight | skill | design-guardrails | ride-along | before finalizing ANY visual/CSS/design change |
 | ship-now | skill | core | manual | "ship it" / "ship to main" — push branch, or PR+GitHub-merge to main, session end |
+| session-log | skill | research | manual | /session-log — capture & document session outputs to agent-log |
+| learn-this | skill | research | manual | /learn-this <URL> — extract content from URLs → action plan |
+| article-extractor | skill | research | manual | /article-extractor — extract clean text from web articles |
+| ship-learn-next | skill | research | manual | /ship-learn-next — turn learning content into 5-rep action plan |
 
 ## Overlap groups — picker offers modules (see MODULES.md); multi-select = Combined (smart merge per skill-manager Combine protocol)
 - design-judgment: impeccable · taste-skill · frontend-design · ui-ux-pro-max — all claim general frontend design. Precedence when co-loaded: project design tokens (design-m3) > anti-slop-preflight > best task fit.
