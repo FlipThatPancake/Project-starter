@@ -78,7 +78,7 @@ function checkHtml(file) {
 }
 
 // ── Memory lint (stack-agnostic) ─────────────────────────────────────────────
-const CAPS = { 'INDEX.md': 60, route: 100, shared: 80 };
+const CAPS = { 'INDEX.md': 60, route: 100, shared: 80, sessionLog: 40 };
 // semantic caps from checkpoint/references/map-format.md — line caps alone
 // don't stop a cheap model from stuffing 20 decisions into a route map
 const SEM = { globalGotchas: 8, decisions: 10, routeGotchas: 10 };
@@ -180,6 +180,11 @@ function checkMemory(memDir = '.claude/memory', deepRoutes = null) {
   if (existsSync(sharedDir)) for (const f of readdirSync(sharedDir))
     if (f.endsWith('.md') && lineCount(join(sharedDir, f)) > CAPS.shared)
       fail(join(sharedDir, f), 0, 'cap', `>${CAPS.shared} non-empty lines`);
+
+  // session log cap (optional file)
+  const sessionLog = join(memDir, 'SESSION-LOG.md');
+  if (existsSync(sessionLog) && lineCount(sessionLog) > CAPS.sessionLog)
+    fail(sessionLog, 0, 'cap', `>${CAPS.sessionLog} non-empty lines`);
 }
 
 // ── Skill loadout lint (active dir ↔ store ↔ catalog coherence) ──────────────

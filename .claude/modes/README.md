@@ -26,7 +26,34 @@ reads only what's relevant and never wanders:
 4. **Offer skills** — on entry, skill-manager presents *(top)* the best candidates
    for this prompt, then *(below)* the full store by category, multi-select. Load
    the chosen set. (See skill-manager SKILL.md → "Mode-entry skill offer".)
-5. **Read the mode file** (`.claude/modes/<n>-*.md`) and follow it.
+5. **Make the mode explicit** (§Branch & log below) — this is the persistent
+   record of what each session/branch was scoping on.
+6. **Read the mode file** (`.claude/modes/<n>-*.md`) and follow it.
+
+## Branch & log — making the mode explicit outside the conversation
+
+Two mechanisms, because branch naming is only sometimes in Claude's control:
+
+**A. Branch name (only when Claude creates the branch itself).** Most sessions
+(Claude Code on the web) are handed an already-created, harness-tracked branch
+BEFORE the mode is known — the branch name is fixed before step 2 above runs, so
+it cannot embed the mode, and renaming a pushed harness-tracked branch mid-session
+risks breaking that tracking. **Never rename a branch you were handed.** Only when
+Claude is the one creating a new branch from scratch (e.g. `git checkout -b`,
+no pre-assigned branch) does it name it `<mode-slug>/<short-desc>`, e.g.
+`system-dev/skill-loadout-fix`, `new-route/pricing-page`. Mode slugs match the
+mode filenames minus the number: `system-dev · new-project · new-route ·
+continue-route · backend-routing · design-system · other`.
+
+**B. `.claude/memory/SESSION-LOG.md` (always, every session)** — the reliable,
+harness-independent record. On mode lock (step 3), append one row:
+`| <date> | <branch> | <mode> | <one-line scope> |`. This is what answers
+"what was session X actually scoping on" after the fact, regardless of what
+the branch happened to be named.
+
+**C. Commit message prefix (always, every `ship.sh`/commit this session).**
+Prefix the first line with `[mode:<n>-<slug>]`, e.g. `[mode:1-system-dev] add
+session-mode selection system`. Cheap, permanent, greppable in `git log`.
 
 ## The 7 modes
 | # | file | one-liner |

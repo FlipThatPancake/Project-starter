@@ -3,6 +3,7 @@
 | Rule | Do |
 |---|---|
 | Mode first | FIRST action every session: pick a session mode (`.claude/modes/README.md`). Infer ONLY on an explicit, unambiguous prompt; otherwise ASK — never assume. Lock it, offer the skill store, read the mode file |
+| Mode is explicit | Never rename a branch you were handed (breaks harness tracking); only self-created branches get a `<mode-slug>/` prefix. Always: append a row to `.claude/memory/SESSION-LOG.md`, and prefix every commit message `[mode:<n>-<slug>]` |
 | Memory first | Read `.claude/memory/INDEX.md` + your route's map before ANY code read/grep (project-memory skill) |
 | Scope lock | Multi-route (≥2 routes): lock onto ONE route per session; re-scope only when told ("switch to /x") |
 | Skills | Lean loadout: active = pinned + ride-along only; library sits in `.claude/skills-store/` (zero context). Need a capability, or installing/removing a skill → skill-manager skill. Never hand-move skill dirs |

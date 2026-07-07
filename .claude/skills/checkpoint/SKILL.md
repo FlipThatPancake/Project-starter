@@ -18,7 +18,8 @@ description: Use when the user says /checkpoint, "save progress", or "update mem
 | new gotcha (non-obvious root cause found this session) | append to route or global gotchas |
 | decision that constrains future work | prepend to Recent decisions |
 | completed/planned work changed | rewrite Priorities block |
-| over cap (INDEX 60 / route 100 / shared 80 lines) | evict oldest DECISIONS first; if a decision is still load-bearing, promote to gotcha first. NEVER evict gotchas |
+| over cap (INDEX 60 / route 100 / shared 80 / SESSION-LOG 40 lines) | evict oldest DECISIONS first; if a decision is still load-bearing, promote to gotcha first. NEVER evict gotchas. SESSION-LOG evicts its oldest row(s) |
+| session ending / mode locked this session | ensure one row exists in `SESSION-LOG.md` for this session (date, branch, mode, one-line scope) — append if missing, never rewrite past rows |
 
 ## Hard prohibitions (especially when running on a small/cheap model)
 - Never delete or reword a gotcha you didn't verify this session.

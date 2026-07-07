@@ -7,6 +7,7 @@
 | `routes/<route>.md` | 100 | header line, pointer line, Sections table, Hot elements, Priorities, Recent decisions (cap 10), route gotchas (max 10, inside Sections gotcha column or a Gotchas block) |
 | `shared/<id>.md` | 80 | tokens/patterns tables; NEVER concrete values duplicated from code — names + pointers only |
 | `ref/<topic>.md` | none | deep/rare material, loaded on demand only |
+| `SESSION-LOG.md` | 40 | one row per session: date, branch, mode, one-line scope (see `.claude/modes/README.md` §Branch & log); newest first, evict oldest |
 
 ## INDEX state line (required, line 2)
 `state: starter` (fresh/unbootstrapped) or `state: in-progress` (real project);
