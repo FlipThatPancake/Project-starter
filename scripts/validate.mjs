@@ -105,8 +105,8 @@ function checkMemory(memDir = '.claude/memory', deepRoutes = null) {
 
   if (lineCount(indexPath) > CAPS['INDEX.md'])
     fail(indexPath, 0, 'cap', `>${CAPS['INDEX.md']} non-empty lines`);
-  if (!/^profile: (portal|standalone)$/m.test(index))
-    fail(indexPath, 0, 'shape', 'missing "profile: portal|standalone" line');
+  if (!/^state: (starter|in-progress)$/m.test(index))
+    fail(indexPath, 0, 'shape', 'missing "state: starter|in-progress" line');
   for (const h of ['## Routes', '## Shared registries', '## Global gotchas'])
     if (!index.includes(h)) fail(indexPath, 0, 'shape', `missing heading "${h}"`);
 

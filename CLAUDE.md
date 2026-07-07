@@ -2,8 +2,9 @@
 
 | Rule | Do |
 |---|---|
+| Mode first | FIRST action every session: pick a session mode (`.claude/modes/README.md`). Infer ONLY on an explicit, unambiguous prompt; otherwise ASK — never assume. Lock it, offer the skill store, read the mode file |
 | Memory first | Read `.claude/memory/INDEX.md` + your route's map before ANY code read/grep (project-memory skill) |
-| Scope lock | Portal profile: lock onto ONE route per session; re-scope only when told ("switch to /x") |
+| Scope lock | Multi-route (≥2 routes): lock onto ONE route per session; re-scope only when told ("switch to /x") |
 | Skills | Lean loadout: active = pinned + ride-along only; library sits in `.claude/skills-store/` (zero context). Need a capability, or installing/removing a skill → skill-manager skill. Never hand-move skill dirs |
 | Anchor navigation | Grep `@sec:` / `@css:` / `@js:` anchors from the map, then Read with offset/limit — never whole-file Reads |
 | Built-file hazard | dist/*.html are self-contained with inlined base64 — unscoped Read/grep pays the image tax; work in src/ |

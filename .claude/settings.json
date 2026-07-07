@@ -37,6 +37,17 @@
     "CLAUDE_AUTO_PUSH_TO_MAIN": "true"
   },
   "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash scripts/session-start-hook.sh",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
     "PreToolUse": [
       {
         "hooks": [

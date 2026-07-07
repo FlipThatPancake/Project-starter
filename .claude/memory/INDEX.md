@@ -1,7 +1,9 @@
 # MEMORY INDEX — read first; then ONLY your route's map + the shared files its pointer rows name
-profile: standalone
-<!-- ^ set at bootstrap: `portal` = multi-route domain, sessions lock to one route;
-     `standalone` = single site/app. validate.mjs --memory fails if missing. -->
+state: starter
+<!-- ^ `starter` = fresh/unbootstrapped (the mother Project-starter repo stays this);
+     `in-progress` = a real project — mode 2 (new-project) flips it on first bootstrap.
+     The session-start hook branches on this. validate.mjs --memory fails if missing.
+     Scope behavior is driven by route COUNT, not this line (see project-memory §0). -->
 
 ## Routes
 | route | path | status | map | design | data-deps |

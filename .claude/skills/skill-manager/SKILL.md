@@ -21,6 +21,17 @@ Metadata (store, read when invoked, never preemptively): `CATALOG.md` (what exis
 | check-updates | `skillctl.sh check-updates` — compare pinned refs (LOCK.md) to upstream HEAD; DETECTION ONLY, never applies. Auto-run at add/sync/new-project; Stop-hook nudges when stale (>7d) |
 | update <skill> | review-gated apply — `references/updates.md`: diff description/footprint/local-mods/modules; RE-APPLY our local-mods; **reconcile the project's existing dependency files against the updated skill's new structure** (`structcheck.sh`, migrate on drift); never auto-apply |
 
+## Mode-entry skill offer — on every session-mode lock
+When a session mode is locked (`.claude/modes/README.md` step 4), present the store
+so the user can shape the loadout for this session — in EVERY mode, not just design:
+- **Top: best candidates** — the 2–4 installed/Upstream skills most relevant to the
+  first prompt/questioning (name the reason in ≤6 words each). Recommended first.
+- **Below: full store by category** — `skillctl.sh status` grouped by CATALOG.md
+  category (+ Upstream candidates that `add` could pull in), so nothing is hidden.
+- One `AskUserQuestion`, multiSelect on, last option "None — pinned + guardrails only".
+- Apply the same CONFLICTS.md checks as the menu picker before loading the chosen set.
+This is an offer, not a gate: if the user already named skills or said "no skills", skip it.
+
 ## Menu picker — per TASK, never sticky
 Menu skills are muted (`disable-model-invocation: true` in our copies), so they can never fire uninvited — this picker is their only activation path. Trigger: the task calls for design judgment (or a menu skill's domain) AND menu skills/modules are installed.
 - Ask on EVERY new task/prompt. Follow-up iterations of the SAME task reuse the last choice; a new task asks fresh. No session persistence.

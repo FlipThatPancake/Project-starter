@@ -5,7 +5,7 @@ description: Use at the start of every session in this repo — first to establi
 
 # Project memory — session scope + read protocol
 
-## 0. Route COUNT decides scope behavior (profile line is only an intent hint)
+## 0. Route COUNT decides scope behavior; `state:` only gates bootstrap
 Structure is ALWAYS route-based (`src/routes/<name>/`); a single-file project is
 just a one-route project. What varies is whether the scope-lock question fires:
 | situation | behavior |
@@ -13,11 +13,11 @@ just a one-route project. What varies is whether the scope-lock question fires:
 | INDEX lists ≥2 routes | multi-route: narrow EVERY session to one route (§1) |
 | INDEX lists ≤1 route | trivially scoped: the one route IS the whole project; skip §1 |
 
-The `profile:` line records INTENT, not structure: `standalone` = expected to
-stay one route (don't bother asking the scope question); `portal` = multi-route.
-Route COUNT is what actually drives locking — so a `standalone` that grows a 2nd
-route starts locking automatically, no flag to flip and no restructure. Missing
-line = treat as `standalone`.
+Route COUNT is the ONLY driver of locking — no portal/standalone flag. A one-route
+project that grows a 2nd route starts locking automatically; nothing to flip.
+The `state:` line (`starter`/`in-progress`) is unrelated to scope — it only tells
+the session-start hook whether to steer toward new-project bootstrap (see
+`.claude/modes/README.md`). Missing `state:` = treat as `starter`.
 
 ## 1. Session scope lock (when INDEX lists ≥2 routes)
 - First user prompt names a route/project unambiguously → lock silently; state one line: `Scope: /<route>`.
