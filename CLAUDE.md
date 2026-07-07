@@ -16,3 +16,4 @@
 | Checkpoint | Run /checkpoint when nudged by the Stop hook, or after finding a non-obvious root cause / making a future-constraining decision |
 | Session hygiene | Batch related fixes into one prompt's work; suggest a fresh session when a new work chunk starts |
 | Model hint | Mechanical edits/renames → cheap model is fine; debugging/design/checkpoint precision → larger model |
+| Merge conflicts | In-progress conflict on a local/feature branch → load `resolve-merge-conflicts` skill by name; resolve to completion, don't abort — except a conflict landing on `main`/shared branches, where you still abort and ask |

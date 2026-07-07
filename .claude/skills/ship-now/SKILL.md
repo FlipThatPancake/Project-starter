@@ -89,7 +89,13 @@ see §Fallback — it requires the user's explicit yes each time, never assumed.
    conflict) vs. leaving the PR open for manual resolution/review.
 3. Only run `--to-main` if the user picks that option. Never assume "PR failed"
    implies "force it" — that decision is the user's alone, every time.
-4. Report the outcome (merged / still blocked / conflict needing manual resolution).
+4. If `--to-main` hits a real conflict, ship.sh aborts clean and leaves the
+   temp branch for inspection. If the user wants it resolved rather than
+   redone manually, load the `resolve-merge-conflicts` skill on that
+   disposable branch — but its own scope rule still applies: resolve to
+   completion, then ask before pushing anywhere near `main`, don't auto-finish
+   onto a shared branch.
+5. Report the outcome (merged / still blocked / conflict needing manual resolution).
 
 ## Guardrails
 - Never edits `.claude/settings.json` — `--force-push` is a one-shot override.

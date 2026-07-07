@@ -153,7 +153,7 @@ if [ "$TOMAIN" = 1 ]; then
       git merge --abort 2>/dev/null || true
       git checkout -q "$BR"
       git branch -D "$TMP" >/dev/null 2>&1 || true
-      echo "ship: merge conflict merging '$BR' into main — resolve manually: git fetch origin main && git checkout -b fix-merge origin/main && git merge $BR" >&2
+      echo "ship: merge conflict merging '$BR' into main — resolve manually: git fetch origin main && git checkout -b fix-merge origin/main && git merge $BR (use the resolve-merge-conflicts skill on that disposable branch, then ask before pushing the result anywhere near main)" >&2
       exit 1
     fi
   fi
