@@ -10,8 +10,8 @@ only with user confirmation, never silently.
 |---|---|---|
 | 1-system-dev | (none beyond skill-manager, pinned) | system/skill work is self-contained; no store skill adds value here |
 | 2-new-project | designer-skills OR ui-ux-pro-max (exclusive — CONFLICTS.md, picker chooses one), awesome-design-md (reference, copy-in), grilling (already active — flag for running a grilling session before locking structure/stack) | bootstrapping structure/stack/design-system decisions |
-| 3-new-route | anti-slop-preflight, impeccable, taste-skill, accesslint-scan | building a page/route touches visual quality + a11y |
-| 4-continue-route | anti-slop-preflight, accesslint-scan, session-log | resuming visual work; session-log captures progress |
+| 3-new-route | anti-slop-preflight, impeccable, taste-skill | building a page/route touches visual quality (accesslint-scan dropped 2026-07-07 — it's a plugin+MCP bundle, not installable via our skill-store flow; see CATALOG.md note) |
+| 4-continue-route | anti-slop-preflight, session-log | resuming visual work; session-log captures progress |
 | 5-backend-routing | (none — no design judgement needed) | routing/page-structure work is non-visual |
 | 6-design-system | anti-slop-preflight, impeccable, taste-skill, designer-skills (design-tokens module) | shared design system is the point of this mode |
 | 7-other | (task-dependent — no preset) | scope undefined until the user clarifies; ask broadly instead of guessing |
