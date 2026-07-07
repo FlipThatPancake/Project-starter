@@ -12,7 +12,7 @@ cd "$(git rev-parse --show-toplevel 2>/dev/null)" || exit 0
 CAT=".claude/skills-store/CATALOG.md"
 if [ -d .claude/skills ]; then
   DRIFT=""
-  for d in .claude/skills/*/ .claude/skills-store/*/; do
+  for d in .claude/skills/*/ .claude/skills-store/skill-storage/*/; do
     [ -d "$d" ] || continue
     n=$(basename "$d")
     if [ ! -f "$CAT" ] || ! grep -q "| $n |" "$CAT"; then DRIFT="${DRIFT:+$DRIFT, }$n"; fi

@@ -10,7 +10,7 @@ choose here is simply reflected by how many routes exist.
   echo '*' > /tmp/claude-mode-$H
   ```
 - **read-set:** `README.md` (bootstrap steps) + `.claude/memory/INDEX.md` + `src/routes/_skeleton/`.
-- **skills:** offer the store on entry; design/build skills as the chosen stack needs.
+- **skills:** gate on the store (see `.claude/skills-store/MODE-SHORTLISTS.md` row for this mode); design/build skills as the chosen stack needs.
 
 ## Steps
 1. **Ask the structure & stack** (don't assume). At minimum: multi-route web app

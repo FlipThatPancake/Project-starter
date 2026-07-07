@@ -2,7 +2,7 @@
 updated-by: skill-manager · written when: user makes a ruling · `add` detects an overlap · picker hits an unrecorded conflict (record the resolution so it's known next time)
 read-at: picker/load time (filter + order options) · add time (warn on duplicate/exclusive)
 
-## Rule types (only these five; install-policy → CATALOG, session-habits → profiles)
+## Rule types (only these five; install-policy → CATALOG)
 - **precedence** — both may be active; LEFT wins the contested call
 - **exclusive** — never co-load; pick one (usually a per-project fact, decided once)
 - **sequential** — A → B: run A first, B builds on A's output files (see Handoffs). Order matters, not exclusion; re-loading A restarts A's flow
@@ -19,6 +19,19 @@ read-at: picker/load time (filter + order options) · add time (warn on duplicat
 | duplicate | gsap-scrolltrigger: greensock vs freshtechbro | register/install greensock's copy only; never add freshtechbro's | user ruling + WIKI §6/§7 |
 | exclusive | webgpu-threejs-tsl ⊕ freshtechbro threejs-webgl / react-three-fiber | never co-load TWO contradicting renderers (WebGPU vs classic WebGL). Loading ONE 3D skill mid-session is FINE — the block is only against a second, conflicting renderer | user ruling + WIKI §8 |
 | exclusive | designer-skills ⊕ ui-ux-pro-max | both new-project starters, incompatible token + named-style systems — pick ONE per project. Kept exclusive until user tests them (2026-07-04) | user ruling |
+
+## Exclusive groups — machine-parseable (exact CATALOG.md names, comma-separated; read by
+`skillctl.sh check-conflicts` to suppress an unused member from mode-entry suggestions
+when its excluded peer already has footprint files in the project — see
+`add-and-handoff.md` §2a for footprint globs). A group appears here ONLY once every
+member's name matches a real CATALOG.md row — until then it stays prose-only above.
+The `webgpu-threejs-tsl ⊕ freshtechbro threejs-webgl / react-three-fiber` row (line 20)
+is NOT here yet: those are pack-member names, not yet registered as their own CATALOG
+rows (per `add-and-handoff.md` §1, freshtechbro packs register per-member on `add`) —
+add its row here once real names exist at vendor-time.
+| members (comma-separated) |
+|---|
+| designer-skills, ui-ux-pro-max |
 
 ## Handoffs (file seeding for `sequential` pairs — LOSSY translation + user review, never a blind copy)
 | from → to | source files | target files | transfer |

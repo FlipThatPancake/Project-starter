@@ -29,8 +29,11 @@ This system turns that one lever into a deliberate, managed library:
 
 - **`.claude/skills/`** = the checkout desk. Whatever sits here is **active** — in
   context, able to auto-trigger (unless muted). Keep this set small.
-- **`.claude/skills-store/`** = the shelf. Skills here are **dormant** — zero context
-  cost, invisible to the model, until deliberately loaded.
+- **`.claude/skills-store/skill-storage/`** = the shelf. Skills here are **dormant** —
+  zero context cost, invisible to the model, until deliberately loaded. (The store's
+  ROOT holds only metadata `.md` files — CATALOG.md, MODULES.md, etc. — never skill
+  dirs; that split is deliberate, as of 2026-07-07, so the metadata is easy to find
+  without wading through payload directories.)
 - A third category, **fixed** skills (harness bundled skills like `dataviz`/`pptx`,
   claude.ai account skills, installed plugins), live outside this repo entirely. This
   system cannot load/unload/mute them — it can only report on them truthfully.
@@ -97,22 +100,29 @@ loaded.
 │       ├── skillctl.sh                  status | load | unload | check-updates | pin
 │       └── structcheck.sh               greps a project file for expected structural
 │                                         markers; the mechanical core of reconciliation
-├── anti-slop-preflight/                 ← ride-along, permanent, direction-agnostic
-│   └── SKILL.md                         design guardrail (see §7)
 ├── project-memory/                      ← pinned (separate system — see §9)
 └── checkpoint/                          ← pinned (separate system — see §9)
 
-.claude/skills-store/                    ← DORMANT — NOT scanned, zero context cost
+.claude/skills-store/                    ← store ROOT — metadata .md files ONLY, never
+│                                        skill dirs (split enforced 2026-07-07)
 ├── CATALOG.md                           what exists + policy (Installed + Upstream candidates)
 ├── MODULES.md                           sub-modules of deep skills/packs
 ├── CONFLICTS.md                         rulings: precedence/exclusive/sequential/
 │                                        compatible/duplicate + Handoffs table
 ├── LOCK.md                              third-party provenance: pinned commit, its
 │                                        upstream date, our install date, our local mods
-├── profiles.md                          named bulk loadouts (session-level presets)
-└── WIKI.md                              deep research on 14 third-party skills — read
-                                         ONLY for analysis/onboarding, never routinely
+├── MODE-SHORTLISTS.md                   per-mode starter picks for the entry GATE
+├── WIKI.md                              deep research on 14 third-party skills — read
+│                                        ONLY for analysis/onboarding, never routinely
+└── skill-storage/                       ← DORMANT skill dirs — NOT scanned, zero cost
+    ├── anti-slop-preflight/             manual since 2026-07-07 (was ride-along —
+    │                                    see MODE-SHORTLISTS.md); design guardrail (§7)
+    ├── session-log/ · learn-this/ · article-extractor/ · ship-learn-next/
+    │                                    tapestry members, installed 2026-07-07
+    └── (more as `add` installs them)
 ```
+(Note: this tree is illustrative, not exhaustively synced to every `add` — CATALOG.md
+is the live source of truth for what's actually installed where.)
 
 Everything in `references/` and everything in `.claude/skills-store/` costs **zero
 tokens** until a verb explicitly reads it. `skill-manager/SKILL.md` itself is the only
@@ -124,7 +134,7 @@ pointers to the reference files, not the full procedure inline.
 | state | where | context cost | who can change it |
 |---|---|---|---|
 | **active** | `.claude/skills/<name>/` | name+description resident; body loads on invocation | `skillctl.sh load/unload` (never hand-move) |
-| **dormant** | `.claude/skills-store/<name>/` | zero — invisible to the harness | same |
+| **dormant** | `.claude/skills-store/skill-storage/<name>/` | zero — invisible to the harness | same |
 | **fixed** | harness bundled / claude.ai account / installed plugin | resident, outside this repo's control | claude.ai settings / `disableBundledSkills` only |
 
 `skillctl.sh status` reports the first two categories mechanically (by listing
@@ -142,9 +152,9 @@ Every row in `CATALOG.md`'s Installed table also carries a **policy**, which gov
 | policy | behavior | who gets it |
 |---|---|---|
 | `pinned` | permanently active, cannot be unloaded (`skillctl.sh unload` refuses) | repo infrastructure every session needs: `skill-manager`, `project-memory`, `checkpoint` |
-| `ride-along` | permanently active, auto-fires on matching tasks, **never asks** | guardrails the user wants with zero friction: currently `anti-slop-preflight` |
+| `ride-along` | permanently active, auto-fires on matching tasks, **never asks** | guardrails the user wants with zero friction: none currently assigned — `anti-slop-preflight` held this policy until 2026-07-07, when the user changed it to `manual` (it doesn't apply to every session; see `MODE-SHORTLISTS.md`) |
 | `menu` | active only when loaded, but even then **muted** (`disable-model-invocation: true` set in our own copy of its frontmatter) — can only be activated through the picker, never auto-fires | broad/overlapping skills where auto-triggering would cause mis-fires or unwanted style pushes — e.g. impeccable, taste-skill, frontend-design, ui-ux-pro-max, all in one `design-judgment` overlap group |
-| `manual` | dormant by default; loaded by explicit name or via a `profiles.md` bulk preset | everything else — motion libraries, 3D tooling, research helpers |
+| `manual` | dormant by default; loaded by explicit name | everything else — motion libraries, 3D tooling, research helpers |
 
 The decision table for assigning policy to a *new* skill lives in
 `references/catalog-format.md` — read it before ever running `add`.
@@ -162,7 +172,7 @@ also checks `MODULES.md` and the Upstream candidates table in `CATALOG.md`. On f
 manager use in a new project, or when `LOCK.md`'s `last-checked` is stale/absent,
 offer to run `check-updates`.
 
-### `load <name>` / `load <profile>`
+### `load <name>`
 **Never** a direct `mv`. First runs the **load-time conflict check**
 (`add-and-handoff.md` §3):
 - Already active? → say so, skip.
@@ -174,8 +184,7 @@ offer to run `check-updates`.
 - Is this a `duplicate` of something already installed? → refuse, name the kept copy.
 
 Only after that check passes does `skillctl.sh load <name>` actually move the
-directory from store to active. `load <profile>` reads a named bulk loadout from
-`profiles.md` and loads each member the same way.
+directory from store to active.
 
 ### `unload <name>` / `unload --all`
 `skillctl.sh unload` — the script itself (not just the model's judgment) refuses to
@@ -417,7 +426,7 @@ since some involve judgment calls only the user has made so far for *this* proje
    candidates table in `CATALOG.md` first (14 skills already researched, in
    `WIKI.md`, with known conflicts already mapped) before searching from scratch.
 4. Never hand-move a directory between `.claude/skills/` and
-   `.claude/skills-store/`. Always go through `skillctl.sh`.
+   `.claude/skills-store/skill-storage/`. Always go through `skillctl.sh`.
 5. Never skip `node scripts/validate.mjs --skills` after any catalog/module/conflict/
    lock edit. It is cheap and it catches real drift (tested adversarially multiple
    times during this system's construction: duplicate rows, orphaned modules,

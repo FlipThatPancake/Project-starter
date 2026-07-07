@@ -52,6 +52,6 @@ Deliberately direction-agnostic: this enforces consistency with WHATEVER system/
 - If spacing/color is off in many places, fix the system, not the one screen.
 - System ambiguous? ASK — don't guess a new direction into a minor edit.
 
-## Project style lock — the committed style for THIS project (always present via ride-along; record decisions here)
-When you commit a style decision, add/update a line here so even a mechanical tweak adheres. Full detail lives in the project's shared design file under `.claude/memory/shared/` (source of truth, registered in INDEX.md's Shared registries) — this is the always-loaded summary; on any conflict that file wins. Mirror new decisions into both.
+## Project style lock — the committed style for THIS project (record decisions here whenever this skill is loaded)
+When you commit a style decision, add/update a line here so even a mechanical tweak adheres, next time this skill loads. Full detail lives in the project's shared design file under `.claude/memory/shared/` (source of truth, registered in INDEX.md's Shared registries) — this is the per-load summary; on any conflict that file wins. Mirror new decisions into both. (Policy is `manual` as of 2026-07-07 — see MODE-SHORTLISTS.md for which modes suggest loading it; it no longer auto-fires every session.)
 - (none yet — starter repo; record this project's first committed style decisions here)
