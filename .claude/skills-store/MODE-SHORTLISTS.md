@@ -9,7 +9,7 @@ only with user confirmation, never silently.
 | mode | shortlist | why |
 |---|---|---|
 | 1-system-dev | (none beyond skill-manager, pinned) | system/skill work is self-contained; no store skill adds value here |
-| 2-new-project | designer-skills OR ui-ux-pro-max (exclusive — CONFLICTS.md, picker chooses one), awesome-design-md (reference, copy-in) | bootstrapping structure/stack/design-system decisions |
+| 2-new-project | designer-skills OR ui-ux-pro-max (exclusive — CONFLICTS.md, picker chooses one), awesome-design-md (reference, copy-in), grilling (already active — flag for running a grilling session before locking structure/stack) | bootstrapping structure/stack/design-system decisions |
 | 3-new-route | anti-slop-preflight, impeccable, taste-skill, accesslint-scan | building a page/route touches visual quality + a11y |
 | 4-continue-route | anti-slop-preflight, accesslint-scan, session-log | resuming visual work; session-log captures progress |
 | 5-backend-routing | (none — no design judgement needed) | routing/page-structure work is non-visual |

@@ -14,9 +14,21 @@ policies: pinned=never unloaded · ride-along=always loaded, auto-fires, never a
 | learn-this | skill | research | manual | /learn-this <URL> — extract content from URLs → action plan |
 | article-extractor | skill | research | manual | /article-extractor — extract clean text from web articles |
 | ship-learn-next | skill | research | manual | /ship-learn-next — turn learning content into 5-rep action plan |
+| handoff | skill | session-mgmt | manual | active every session/mode (not ride-along, per user ruling 2026-07-07); /handoff — compact conversation into a handoff doc for the next agent; saves into `.claude/memory/handoffs/`, not OS temp (adapted from source) |
+| grill-me | skill | productivity | manual | active every session/mode; thin dispatcher → runs `grilling` |
+| grilling | skill | productivity | ride-along | active every session/mode; self-fires on "grill" phrasing or judgment call that a plan needs stress-testing — MUST announce when firing ("Running a grilling session…") per user ruling 2026-07-07; suggested in MODE-SHORTLISTS.md row 2 (fresh-project) |
+| grill-with-docs | skill | productivity | manual | active every session/mode; thin dispatcher → runs `grilling` + `domain-modeling` together |
+| domain-modeling | skill | productivity | ride-along | active every session/mode (new terminology can surface anytime — see note below); maintains `CONTEXT.md`/`CONTEXT-MAP.md`/ADRs; MUST announce when writing (not when passively reading) |
+| fable-mode | skill | process | manual | active every session/mode; `disable-model-invocation: true` added on top of source — NOT a ride-along (user ruling 2026-07-07: too heavy to self-trigger on phrasing); invoke by name for tasks needing staged/verified execution |
 
 ## Overlap groups — picker offers modules (see MODULES.md); multi-select = Combined (smart merge per skill-manager Combine protocol)
 - design-judgment: impeccable · taste-skill · frontend-design · ui-ux-pro-max — all claim general frontend design. Precedence when co-loaded: project design tokens (design-m3) > anti-slop-preflight > best task fit.
+
+## Notes (added 2026-07-07, new-skills-storage session)
+- `domain-modeling` vs `project-memory`: no conflict, different layers. `project-memory` = file-location/structure map (where things live), `domain-modeling`'s `CONTEXT.md` = business-glossary/ADRs (what terms mean, why hard decisions were made), deliberately excluding implementation details. Both can be active every session without duplicating each other's content.
+- `grill-with-docs` depends on `domain-modeling` being active (it invokes it directly) — both are active every session, so the dependency is always satisfiable.
+- `designer-skills` (Upstream candidates, below) names an internal step "grill-me" in its own 8-flow — unrelated to the installed `mattpocock/skills` grill-me/grilling/grill-with-docs cluster above; naming coincidence only, no functional overlap since designer-skills is not installed.
+- Evaluated and **declined** (2026-07-07): `last30days-skill` (heavy Python/API-key/keychain deps, no claude.ai web path), `firecrawl`-as-skill (redundant — this project already has Firecrawl as an MCP server), `ponytail` (hook-driven plugin, narrowly software-dev-specific framing), `skill-creator` (mostly duplicates what skill-manager already does for us), `claude-mnemonic` (Go daemon + SQLite/vector-DB + own MCP server — not portable; the *pattern* of a repo-stored mistake/lesson log is worth revisiting as our own lightweight skill later, not by importing this repo), `cc-probeline` (confirmed CLI-only by its own README — reads local `~/.claude/projects/*.jsonl` and hooks the terminal status line, explicitly not web-portable).
 
 ## Upstream candidates (researched 2026-07-04; not installed — `add` pulls one into the store)
 | name | category | source | note |
