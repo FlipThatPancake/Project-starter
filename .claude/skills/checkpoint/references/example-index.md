@@ -2,7 +2,7 @@
 
 ```markdown
 # MEMORY INDEX — read first; then ONLY your route's map + the shared files its pointer rows name
-profile: portal
+state: in-progress
 
 ## Routes
 | route | path | status | map | design | data-deps |
@@ -25,7 +25,7 @@ profile: portal
 ```
 
 Notes on the shape (do not copy into real files):
-- `profile:` on line 2 — `portal` (sessions lock to one route) or `standalone` (whole project); set once at bootstrap.
+- `state:` on line 2 — `starter` (fresh/unbootstrapped) or `in-progress` (real project); flipped once by new-project mode. Scope-lock is driven by route COUNT, not this line.
 - One row per route, no prose. A route without complexity stays a stub row (`map: —`).
 - A hub/home route's list of other routes belongs in `shared/data-portal-manifest.md`, not in code peeks.
 - `used-by` in shared registries is maintained BOTH ways: route map points at shared file, shared registry lists users.

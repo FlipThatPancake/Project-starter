@@ -50,6 +50,15 @@ git commit -m "$MSG"
 [ "$SYNC" = 1 ] && git pull --rebase origin "$(git branch --show-current)"
 
 if [ "$NOPUSH" = 0 ]; then
+  # Honor CLAUDE_AUTO_PUSH_TO_MAIN (from .claude/settings.json env). Set to false
+  # at the start of a session to push only the current branch, never to main.
+  # Defaults to true (legacy behavior).
+  AUTO_PUSH="${CLAUDE_AUTO_PUSH_TO_MAIN:-true}"
+  if [ "$AUTO_PUSH" != "true" ]; then
+    echo "ship: CLAUDE_AUTO_PUSH_TO_MAIN=false; skipping push (set to true to enable)" >&2
+    exit 0
+  fi
+
   # Cross-route gate: if a scope-lock exists, check that no edits fall outside
   # the locked route's allowlist (src/routes/<locked>/** and .claude/memory/**).
   # Override with @allow-cross-route in the commit message.

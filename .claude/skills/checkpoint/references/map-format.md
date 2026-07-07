@@ -3,17 +3,17 @@
 ## Files & caps
 | file | cap (lines) | contains |
 |---|---|---|
-| `INDEX.md` | 60 | `profile:` line, route table, shared registries, global gotchas (max 8) |
+| `INDEX.md` | 60 | `state:` line, route table, shared registries, global gotchas (max 8) |
 | `routes/<route>.md` | 100 | header line, pointer line, Sections table, Hot elements, Priorities, Recent decisions (cap 10), route gotchas (max 10, inside Sections gotcha column or a Gotchas block) |
 | `shared/<id>.md` | 80 | tokens/patterns tables; NEVER concrete values duplicated from code — names + pointers only |
 | `ref/<topic>.md` | none | deep/rare material, loaded on demand only |
 
-## INDEX profile line (required, line 2, set at bootstrap)
-`profile: standalone` (expected to stay one route) or `profile: portal` (multi-route).
-It records INTENT only — structure is ALWAYS route-based (`src/routes/<name>/`, even a
-single-file artifact is one route) and scope-lock is driven by ROUTE COUNT (≥2 routes →
-lock one per session), so growth from one route to many needs no migration. Checkpoint
-never changes the line; update it by hand only if you want the label to match reality.
+## INDEX state line (required, line 2)
+`state: starter` (fresh/unbootstrapped) or `state: in-progress` (real project);
+flipped once by new-project mode on first bootstrap. Unrelated to scope — structure
+is ALWAYS route-based (`src/routes/<name>/`, even a single-file artifact is one
+route) and scope-lock is driven by ROUTE COUNT (≥2 routes → lock one per session).
+Checkpoint never changes this line.
 
 ## Portal-manifest convention
 When a hub/home route lists other routes (titles, statuses, links), those facts are shared
