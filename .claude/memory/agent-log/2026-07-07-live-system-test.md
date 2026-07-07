@@ -131,6 +131,15 @@ protocol lines before any user-visible work — heavier than README's "~3K orien
 - **ship.sh `--no-push`:** full pipeline ran (scoped validate → rebuild → commit), nothing
   left the machine, `--to-main`/`--force-push` untouched.
 
+**F9 — `ship.sh`'s `git add -A` has no embedded-repo guard (found post-report, live).**
+Running `ship.sh` from the orchestrator session while the test subagent's worktree
+(`.claude/worktrees/agent-*`) was still on disk caused `git add -A` to silently stage it as
+an embedded-repo gitlink (`160000` mode) — a broken reference on push (clones won't contain
+it). Caught and fixed same-session (`1ef44ad`): untracked the gitlink, added
+`.claude/worktrees/` to a new root `.gitignore`. Fix: `.gitignore` now prevents recurrence;
+`ship.sh` could additionally warn/abort on any staged `160000` entries before committing,
+since a silent gitlink is a worse failure mode than a blocked commit.
+
 ## Recommended action order
 
 1. **Merge the system to `main`** (F0) — everything else assumes this.
@@ -141,3 +150,5 @@ protocol lines before any user-visible work — heavier than README's "~3K orien
 5. skill-manager: batch-add fast path + pack-member fast path (F5/F7); CATALOG `size` column
    (F8a); MODE-SHORTLISTS row 2 additions (F6).
 6. Env docs: npm-registry-not-unpkg note; src-vendored-blob read discipline (F8).
+7. `ship.sh`: add a pre-commit guard against staged `160000` (gitlink) entries (F9); `.gitignore`
+   already covers `.claude/worktrees/` as of this session.
