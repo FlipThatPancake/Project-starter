@@ -9,7 +9,7 @@ together. Inherently cross-route.
   printf '%s\n' src/ scripts/ > /tmp/claude-mode-$H
   ```
 - **read-set:** `.claude/memory/INDEX.md` + every affected route's map (this is the one mode that legitimately reads across routes) + any `shared/` registry the change touches.
-- **skills:** offer the store on entry; usually pinned-only (no design judgement needed).
+- **skills:** gate on the store (see `.claude/skills-store/MODE-SHORTLISTS.md` row for this mode — usually pinned-only, no design judgement needed).
 - **guardrails:**
   - Cross-route by design — but say so: use `@allow-cross-route` in the prompt and the final commit message (the ship-time gate checks for it).
   - Don't do route-content work here; that's modes 3/4. This mode is plumbing.

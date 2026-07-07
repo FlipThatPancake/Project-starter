@@ -6,7 +6,7 @@ description: Use when the user wants to see, load, unload, install, extract, or 
 # Skill manager — loadout protocol
 
 States: **active** = dir in `.claude/skills/` (in context, can trigger) · **dormant** = dir in `.claude/skills-store/` (zero tokens) · **fixed** = harness/claude.ai/plugin skills (in session context, NOT controllable here — list live, never catalog).
-Metadata (store, read when invoked, never preemptively): `CATALOG.md` (what exists + policy) · `MODULES.md` (sub-modules) · `CONFLICTS.md` (rulings the picker/add enforce) · `LOCK.md` (third-party pinned versions) · `WIKI.md` (deep evidence, only for analysis/onboarding). State is derived from folder location; never written.
+Metadata (store, read when invoked, never preemptively): `CATALOG.md` (what exists + policy) · `MODULES.md` (sub-modules) · `CONFLICTS.md` (rulings the picker/add enforce) · `LOCK.md` (third-party pinned versions) · `MODE-SHORTLISTS.md` (per-mode starter picks for the entry GATE) · `WIKI.md` (deep evidence, only for analysis/onboarding). State is derived from folder location; never written.
 
 ## Verbs (mechanics run in bash — `scripts/skillctl.sh` — never hand-move dirs)
 | verb | do |
@@ -27,8 +27,13 @@ an offer: do not install, load, or otherwise act on any skill until the user has
 confirmed or redacted the list below — in EVERY mode, not just design.
 - Print the **full catalogue as a markdown list** in chat (not a constrained picker —
   the catalogue is too large to fit ~4 options):
-  - **Top: suggested picks** — the 2–4 installed/Upstream skills most relevant to
-    the (confirmed) session purpose, each with a short why/how (≤1 line).
+  - **Top: suggested picks** — build this from **`MODE-SHORTLISTS.md`'s row for the
+    locked mode FIRST** (its curated starter guess for this mode), then broaden: scan
+    the rest of CATALOG.md (Installed + Upstream) for anything else that matches the
+    confirmed session purpose by keyword/category, even if absent from the shortlist.
+    Merge both into 2–4 picks, each with a short why/how (≤1 line). If the shortlist
+    and the actual task disagree (e.g. mode 5 but the task is visibly visual work),
+    say so and follow the task, not the shortlist.
   - **Below: everything else by category** — `skillctl.sh status` grouped by
     CATALOG.md category, PLUS Upstream candidates `add` could pull in, PLUS dormant
     store skills not yet loaded. Note always-on pinned/ride-along skills as
@@ -60,9 +65,27 @@ Menu skills are muted (`disable-model-invocation: true` in our copies), so they 
 6. Deep/pack → index notable modules/members in MODULES.md (a module MAY sit in a different category than its parent).
 7. Third-party source → `skillctl.sh pin <source>` for exact sha/date (deterministic, not filesystem mtime — survives re-cloning); record a `LOCK.md` row (source, pinned-ref=short sha, upstream-date, install date, local-mods e.g. "set disable-model-invocation").
 8. `node scripts/validate.mjs --skills` must pass before the turn ends.
+9. Run the **New-skill mode-fit check** (below) before ending the turn.
+
+## New-skill mode-fit check — runs after every `add` (and `extract`)
+A newly-installed skill should be considered for `MODE-SHORTLISTS.md`, not just left
+undiscoverable in the full catalogue. After step 8 above:
+1. Read the new skill's category + description against each of the 7 mode one-liners
+   (`.claude/modes/README.md` → "The 7 modes").
+2. For every mode where it plausibly fits (category match, or description clearly
+   serves that mode's kind of task), note it as a candidate addition to that mode's
+   shortlist row — apply the same CONFLICTS.md exclusivity/precedence checks a normal
+   shortlist entry would need.
+3. Propose the fit(s) to the user in one line per mode ("fits mode 3/6 shortlist
+   because X — add it?") and **wait for confirmation** — never add silently, since
+   shortlist curation is a judgment call, not a mechanical derivation.
+4. On confirmation, update the shortlist row(s) in `MODE-SHORTLISTS.md` only (never
+   auto-load the skill itself — that still goes through the normal GATE/picker).
+5. If it fits no mode particularly well, say so and leave `MODE-SHORTLISTS.md`
+   untouched — not every installed skill needs to be in a shortlist.
 
 ## extract <parent>/<module>
-When a module earns independent life (precedent: anti-slop-preflight ← taste-skill §14): distill it into its own store dir with frontmatter, add an Installed row (provenance in the note), flip its MODULES.md status to `extracted`, leave the parent untouched. Prefer extract over loading a whole deep skill for one module you use often.
+When a module earns independent life (precedent: anti-slop-preflight ← taste-skill §14): distill it into its own store dir with frontmatter, add an Installed row (provenance in the note), flip its MODULES.md status to `extracted`, leave the parent untouched. Prefer extract over loading a whole deep skill for one module you use often. Then run the **New-skill mode-fit check** above — an extracted module is a newly-installed store skill too.
 
 ## Hard rules
 - Fixed skills: report truthfully as "active — not controllable here"; never pretend to unload one.

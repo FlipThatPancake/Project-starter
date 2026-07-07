@@ -97,8 +97,6 @@ loaded.
 │       ├── skillctl.sh                  status | load | unload | check-updates | pin
 │       └── structcheck.sh               greps a project file for expected structural
 │                                         markers; the mechanical core of reconciliation
-├── anti-slop-preflight/                 ← ride-along, permanent, direction-agnostic
-│   └── SKILL.md                         design guardrail (see §7)
 ├── project-memory/                      ← pinned (separate system — see §9)
 └── checkpoint/                          ← pinned (separate system — see §9)
 
@@ -109,10 +107,15 @@ loaded.
 │                                        compatible/duplicate + Handoffs table
 ├── LOCK.md                              third-party provenance: pinned commit, its
 │                                        upstream date, our install date, our local mods
+├── MODE-SHORTLISTS.md                   per-mode starter picks for the entry GATE
 ├── profiles.md                          named bulk loadouts (session-level presets)
+├── anti-slop-preflight/                 ← manual since 2026-07-07 (was ride-along —
+│                                        see MODE-SHORTLISTS.md); design guardrail (§7)
 └── WIKI.md                              deep research on 14 third-party skills — read
                                          ONLY for analysis/onboarding, never routinely
 ```
+(Note: this tree is illustrative, not exhaustively synced to every `add` — CATALOG.md
+is the live source of truth for what's actually installed where.)
 
 Everything in `references/` and everything in `.claude/skills-store/` costs **zero
 tokens** until a verb explicitly reads it. `skill-manager/SKILL.md` itself is the only
@@ -142,7 +145,7 @@ Every row in `CATALOG.md`'s Installed table also carries a **policy**, which gov
 | policy | behavior | who gets it |
 |---|---|---|
 | `pinned` | permanently active, cannot be unloaded (`skillctl.sh unload` refuses) | repo infrastructure every session needs: `skill-manager`, `project-memory`, `checkpoint` |
-| `ride-along` | permanently active, auto-fires on matching tasks, **never asks** | guardrails the user wants with zero friction: currently `anti-slop-preflight` |
+| `ride-along` | permanently active, auto-fires on matching tasks, **never asks** | guardrails the user wants with zero friction: none currently assigned — `anti-slop-preflight` held this policy until 2026-07-07, when the user changed it to `manual` (it doesn't apply to every session; see `MODE-SHORTLISTS.md`) |
 | `menu` | active only when loaded, but even then **muted** (`disable-model-invocation: true` set in our own copy of its frontmatter) — can only be activated through the picker, never auto-fires | broad/overlapping skills where auto-triggering would cause mis-fires or unwanted style pushes — e.g. impeccable, taste-skill, frontend-design, ui-ux-pro-max, all in one `design-judgment` overlap group |
 | `manual` | dormant by default; loaded by explicit name or via a `profiles.md` bulk preset | everything else — motion libraries, 3D tooling, research helpers |
 

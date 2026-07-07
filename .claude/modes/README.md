@@ -35,14 +35,22 @@ reads only what's relevant and never wanders:
    (`.claude/memory/` is always allowed implicitly; no need to list it.)
    State one line: `Mode: <n>-<name>`.
 4. **Gate on skills** — on entry, skill-manager prints the full catalogue as a
-   markdown list: *(top)* the best candidates for this session's purpose with a
-   short why/how, then *(below)* the full store by category. **Wait for the
-   user's free-text confirm or redaction before installing/loading anything** —
-   skip only if the user already named skills or said "none". Applies in every
-   mode. (See skill-manager SKILL.md → "Mode-entry skill GATE".)
+   markdown list: *(top)* the best candidates — starting from
+   `.claude/skills-store/MODE-SHORTLISTS.md`'s row for this mode, then broadened to
+   anything else matching the confirmed task — each with a short why/how, then
+   *(below)* the full store by category. **Wait for the user's free-text confirm or
+   redaction before installing/loading anything** — skip only if the user already
+   named skills or said "none". Applies in every mode. (See skill-manager SKILL.md →
+   "Mode-entry skill GATE".)
 5. **Make the mode explicit** (§Branch & log below) — this is the persistent
    record of what each session/branch was scoping on.
 6. **Read the mode file** (`.claude/modes/<n>-*.md`) and follow it.
+
+**Sequencing — address, don't act:** You may and should acknowledge the substance of
+the user's literal request as soon as you understand it (e.g. "that already exists —
+here's its state" / "that'll mean touching X"). But hold off **executing** any change
+toward it until BOTH step 3 (mode locked) and step 4 (skill gate resolved) are done.
+Acknowledging is not acting — don't let it slide into starting the task early.
 
 ## Branch & log — making the mode explicit outside the conversation
 

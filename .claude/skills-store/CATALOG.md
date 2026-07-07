@@ -8,7 +8,7 @@ policies: pinned=never unloaded · ride-along=always loaded, auto-fires, never a
 | skill-manager | skill | core | pinned | always — runs this system |
 | project-memory | skill | core | pinned | always — repo scope + navigation |
 | checkpoint | skill | core | pinned | always — memory writes |
-| anti-slop-preflight | skill | design-guardrails | ride-along | before finalizing ANY visual/CSS/design change |
+| anti-slop-preflight | skill | design-guardrails | manual | before finalizing ANY visual/CSS/design change — suggested via MODE-SHORTLISTS.md for modes 3/4/6, not auto-loaded (changed from ride-along 2026-07-07 — user ruling: don't load when a session has no visual work) |
 | ship-now | skill | core | manual | "ship it" / "ship to main" — push branch, or PR+GitHub-merge to main, session end |
 | session-log | skill | research | manual | /session-log — capture & document session outputs to agent-log |
 | learn-this | skill | research | manual | /learn-this <URL> — extract content from URLs → action plan |

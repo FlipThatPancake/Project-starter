@@ -3,7 +3,8 @@
 | Rule | Do |
 |---|---|
 | Mode first | FIRST action every session: restate the session's purpose in one line. Explicit, unambiguous prompt → state understanding + inferred mode and proceed; otherwise WAIT for confirmation — never assume. Lock the mode, read the mode file |
-| Skill gate | Every mode, after purpose is confirmed: print the FULL skill catalog as a markdown list (top: suggested picks + why/how; below: everything else by category). WAIT for the user's free-text confirm/redaction before installing or loading anything — skip only if the user already named skills or said "none" |
+| Address, don't act | You may acknowledge the substance of the user's request as soon as understood (e.g. "that already exists — here's its state"). Do NOT execute changes toward it until BOTH the mode is locked AND the skill gate (below) is resolved |
+| Skill gate | Every mode, after purpose is confirmed: print the FULL skill catalog as a markdown list — top picks seeded from `.claude/skills-store/MODE-SHORTLISTS.md`'s row for this mode, then broadened to anything else matching the task; below: everything else by category. WAIT for the user's free-text confirm/redaction before installing or loading anything — skip only if the user already named skills or said "none" |
 | Mode is explicit | Never rename a branch you were handed (breaks harness tracking); only self-created branches get a `<mode-slug>/` prefix. Always: append a row to `.claude/memory/SESSION-LOG.md`, and prefix every commit message `[mode:<n>-<slug>]` |
 | Memory first | Read `.claude/memory/INDEX.md` + your route's map before ANY code read/grep (project-memory skill) |
 | Scope lock | Multi-route (≥2 routes): lock onto ONE route per session; re-scope only when told ("switch to /x") |

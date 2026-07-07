@@ -38,7 +38,8 @@ $STATE_LINE
 Pick a session mode per .claude/modes/README.md:
   1 system-dev · 2 new-project · 3 new-route · 4 continue-route · 5 backend-routing · 6 design-system · 7 other
 Rule: restate the session's purpose in one line. If the first prompt is explicit and unambiguous, state your understanding + inferred mode and proceed; otherwise WAIT for the user's confirmation before locking a mode (AskUserQuestion) — never assume. Then lock it (write /tmp/claude-mode-<hash>) and read .claude/modes/<n>-*.md.
-Skill GATE (every mode, after purpose is confirmed): print the FULL catalog as a markdown list — top: 2-4 suggested picks with why/how, below: everything else by category (incl. Upstream candidates + dormant store skills) — and WAIT for the user's free-text confirm/redaction before installing or loading anything. Skip only if the user already named skills or said "none". (skill-manager SKILL.md → "Mode-entry skill GATE".)
+Skill GATE (every mode, after purpose is confirmed): print the FULL catalog as a markdown list — top: 2-4 suggested picks seeded from .claude/skills-store/MODE-SHORTLISTS.md's row for this mode, then broadened to anything else matching the task, with why/how; below: everything else by category (incl. Upstream candidates + dormant store skills) — and WAIT for the user's free-text confirm/redaction before installing or loading anything. Skip only if the user already named skills or said "none". (skill-manager SKILL.md → "Mode-entry skill GATE".)
+Address, don't act: you may acknowledge the substance of the user's literal request as soon as understood, but do NOT execute changes toward it until BOTH the mode is locked AND the skill gate above is resolved.
 
 Remote branches by recency (for the new-project 'which branch to copy from' question):
 $BRANCHES
