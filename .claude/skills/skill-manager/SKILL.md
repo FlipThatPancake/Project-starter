@@ -26,19 +26,25 @@ Metadata (store, read when invoked, never preemptively): `CATALOG.md` (what exis
 When a session mode is locked (`.claude/modes/README.md` step 4), this is a GATE, not
 an offer: do not install, load, or otherwise act on any skill until the user has
 confirmed or redacted the list below — in EVERY mode, not just design.
-- Print the **full catalogue as a markdown list** in chat (not a constrained picker —
-  the catalogue is too large to fit ~4 options):
-  - **Top: suggested picks** — build this from **`MODE-SHORTLISTS.md`'s row for the
-    locked mode FIRST** (its curated starter guess for this mode), then broaden: scan
-    the rest of CATALOG.md (Installed + Upstream) for anything else that matches the
-    confirmed session purpose by keyword/category, even if absent from the shortlist.
-    Merge both into 2–4 picks, each with a short why/how (≤1 line). If the shortlist
-    and the actual task disagree (e.g. mode 5 but the task is visibly visual work),
-    say so and follow the task, not the shortlist.
-  - **Below: everything else by category** — `skillctl.sh status` grouped by
-    CATALOG.md category, PLUS Upstream candidates `add` could pull in, PLUS dormant
-    store skills not yet loaded. Note always-on pinned/ride-along skills as
-    "already active" for transparency — they are not part of the choice.
+- Print the **full catalogue as markdown tables** in chat (not a constrained picker —
+  the catalogue is too large to fit ~4 options). Tables, not bullet lists — this is
+  the first thing the user reads in the session and must scan cleanly in the
+  claude.ai chat UI:
+  - **Top: suggested picks** — one table, columns `skill | state | why/how`. Build
+    it from **`MODE-SHORTLISTS.md`'s row for the locked mode FIRST** (its curated
+    starter guess for this mode), then broaden: scan the rest of CATALOG.md
+    (Installed + Upstream) for anything else that matches the confirmed session
+    purpose by keyword/category, even if absent from the shortlist. Merge both into
+    2–4 rows, each with a short why/how (≤1 line) in the last column. If the
+    shortlist and the actual task disagree (e.g. mode 5 but the task is visibly
+    visual work), say so above the table and follow the task, not the shortlist.
+  - **Below: everything else, one table per category** — `skillctl.sh status`
+    grouped by CATALOG.md category, PLUS Upstream candidates `add` could pull in,
+    PLUS dormant store skills not yet loaded. Columns: `skill | state | policy |
+    load-when`. `state` is one of active / dormant / fixed (never omit — this is
+    the detail that's easy to get wrong and the user just corrected). Always-on
+    pinned/ride-along skills get `state = active` in their row for transparency —
+    they are still listed, just not part of the choice.
 - **Run `skillctl.sh check-conflicts` before finalizing either list.** For any
   reported `suppress: X — exclusive with already-used: Y`, drop `X` from BOTH the
   top picks and the "everything else" list — this project already committed to `Y`

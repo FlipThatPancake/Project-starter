@@ -46,14 +46,16 @@ self-policing per this rule, same as the rest of each mode's read-set.
    ```
    (`.claude/memory/` is always allowed implicitly; no need to list it.)
    State one line: `Mode: <n>-<name>`.
-4. **Gate on skills** — on entry, skill-manager prints the full catalogue as a
-   markdown list: *(top)* the best candidates — starting from
-   `.claude/skills-store/MODE-SHORTLISTS.md`'s row for this mode, then broadened to
-   anything else matching the confirmed task — each with a short why/how, then
-   *(below)* the full store by category. **Wait for the user's free-text confirm or
-   redaction before installing/loading anything** — skip only if the user already
-   named skills or said "none". Applies in every mode. (See skill-manager SKILL.md →
-   "Mode-entry skill GATE".)
+4. **Gate on skills** — on entry, skill-manager prints the full catalogue as
+   markdown tables (not prose/bullets — this is the first thing the user reads
+   in the session, keep it scannable): *(top)* a table of the best candidates —
+   starting from `.claude/skills-store/MODE-SHORTLISTS.md`'s row for this mode,
+   then broadened to anything else matching the confirmed task — columns
+   `skill | state | why/how`, then *(below)* one table per category for the
+   full store, columns `skill | state | policy | load-when`. **Wait for the
+   user's free-text confirm or redaction before installing/loading anything**
+   — skip only if the user already named skills or said "none". Applies in
+   every mode. (See skill-manager SKILL.md → "Mode-entry skill GATE".)
 5. **Make the mode explicit** (§Branch & log below) — this is the persistent
    record of what each session/branch was scoping on.
 6. **Read the mode file** (`.claude/modes/<n>-*.md`) and follow it.
