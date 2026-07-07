@@ -189,7 +189,7 @@ function checkMemory(memDir = '.claude/memory', deepRoutes = null) {
 
 // ── Skill loadout lint (active dir ↔ store ↔ catalog coherence) ──────────────
 function checkSkills() {
-  const active = '.claude/skills', store = '.claude/skills-store', cat = join(store, 'CATALOG.md');
+  const active = '.claude/skills', store = '.claude/skills-store', shelf = join(store, 'skill-storage'), cat = join(store, 'CATALOG.md');
   if (!existsSync(cat)) { fail(cat, 0, 'missing', 'skill catalog not found — run the skill-manager skill'); return; }
   const text = readFileSync(cat, 'utf8');
   if (lineCount(cat) > 120) fail(cat, 0, 'cap', '>120 non-empty lines');
@@ -207,16 +207,16 @@ function checkSkills() {
   const dirsOf = p => existsSync(p) ? readdirSync(p).filter(d => statSync(join(p, d)).isDirectory()) : [];
   for (const d of dirsOf(active))
     if (!names.includes(d)) fail(cat, 0, 'unregistered', `.claude/skills/${d} active but not in catalog — run the skill-manager skill`);
-  for (const d of dirsOf(store))
-    if (!names.includes(d)) fail(cat, 0, 'unregistered', `skills-store/${d} present but not in catalog — run the skill-manager skill`);
+  for (const d of dirsOf(shelf))
+    if (!names.includes(d)) fail(cat, 0, 'unregistered', `skills-store/skill-storage/${d} present but not in catalog — run the skill-manager skill`);
 
   // row ↔ disk coherence (loadable kinds only)
   for (const r of rows.filter(r => r.kind === 'skill' || r.kind === 'pack-member')) {
-    const here = existsSync(join(active, r.name)), there = existsSync(join(store, r.name));
+    const here = existsSync(join(active, r.name)), there = existsSync(join(shelf, r.name));
     if ((r.policy === 'pinned' || r.policy === 'ride-along') && !here)
       fail(cat, 0, 'not-loaded', `${r.name} is ${r.policy} but missing from .claude/skills/`);
     if (!here && !there) fail(cat, 0, 'gone', `${r.name} in catalog but on neither shelf`);
-    if (here && there) fail(cat, 0, 'twice', `${r.name} present in BOTH skills/ and skills-store/`);
+    if (here && there) fail(cat, 0, 'twice', `${r.name} present in BOTH skills/ and skills-store/skill-storage/`);
   }
 
   // core pinned baseline

@@ -29,8 +29,11 @@ This system turns that one lever into a deliberate, managed library:
 
 - **`.claude/skills/`** = the checkout desk. Whatever sits here is **active** — in
   context, able to auto-trigger (unless muted). Keep this set small.
-- **`.claude/skills-store/`** = the shelf. Skills here are **dormant** — zero context
-  cost, invisible to the model, until deliberately loaded.
+- **`.claude/skills-store/skill-storage/`** = the shelf. Skills here are **dormant** —
+  zero context cost, invisible to the model, until deliberately loaded. (The store's
+  ROOT holds only metadata `.md` files — CATALOG.md, MODULES.md, etc. — never skill
+  dirs; that split is deliberate, as of 2026-07-07, so the metadata is easy to find
+  without wading through payload directories.)
 - A third category, **fixed** skills (harness bundled skills like `dataviz`/`pptx`,
   claude.ai account skills, installed plugins), live outside this repo entirely. This
   system cannot load/unload/mute them — it can only report on them truthfully.
@@ -100,7 +103,8 @@ loaded.
 ├── project-memory/                      ← pinned (separate system — see §9)
 └── checkpoint/                          ← pinned (separate system — see §9)
 
-.claude/skills-store/                    ← DORMANT — NOT scanned, zero context cost
+.claude/skills-store/                    ← store ROOT — metadata .md files ONLY, never
+│                                        skill dirs (split enforced 2026-07-07)
 ├── CATALOG.md                           what exists + policy (Installed + Upstream candidates)
 ├── MODULES.md                           sub-modules of deep skills/packs
 ├── CONFLICTS.md                         rulings: precedence/exclusive/sequential/
@@ -109,10 +113,14 @@ loaded.
 │                                        upstream date, our install date, our local mods
 ├── MODE-SHORTLISTS.md                   per-mode starter picks for the entry GATE
 ├── profiles.md                          named bulk loadouts (session-level presets)
-├── anti-slop-preflight/                 ← manual since 2026-07-07 (was ride-along —
-│                                        see MODE-SHORTLISTS.md); design guardrail (§7)
-└── WIKI.md                              deep research on 14 third-party skills — read
-                                         ONLY for analysis/onboarding, never routinely
+├── WIKI.md                              deep research on 14 third-party skills — read
+│                                        ONLY for analysis/onboarding, never routinely
+└── skill-storage/                       ← DORMANT skill dirs — NOT scanned, zero cost
+    ├── anti-slop-preflight/             manual since 2026-07-07 (was ride-along —
+    │                                    see MODE-SHORTLISTS.md); design guardrail (§7)
+    ├── session-log/ · learn-this/ · article-extractor/ · ship-learn-next/
+    │                                    tapestry members, installed 2026-07-07
+    └── (more as `add` installs them)
 ```
 (Note: this tree is illustrative, not exhaustively synced to every `add` — CATALOG.md
 is the live source of truth for what's actually installed where.)
@@ -127,7 +135,7 @@ pointers to the reference files, not the full procedure inline.
 | state | where | context cost | who can change it |
 |---|---|---|---|
 | **active** | `.claude/skills/<name>/` | name+description resident; body loads on invocation | `skillctl.sh load/unload` (never hand-move) |
-| **dormant** | `.claude/skills-store/<name>/` | zero — invisible to the harness | same |
+| **dormant** | `.claude/skills-store/skill-storage/<name>/` | zero — invisible to the harness | same |
 | **fixed** | harness bundled / claude.ai account / installed plugin | resident, outside this repo's control | claude.ai settings / `disableBundledSkills` only |
 
 `skillctl.sh status` reports the first two categories mechanically (by listing
@@ -420,7 +428,7 @@ since some involve judgment calls only the user has made so far for *this* proje
    candidates table in `CATALOG.md` first (14 skills already researched, in
    `WIKI.md`, with known conflicts already mapped) before searching from scratch.
 4. Never hand-move a directory between `.claude/skills/` and
-   `.claude/skills-store/`. Always go through `skillctl.sh`.
+   `.claude/skills-store/skill-storage/`. Always go through `skillctl.sh`.
 5. Never skip `node scripts/validate.mjs --skills` after any catalog/module/conflict/
    lock edit. It is cheap and it catches real drift (tested adversarially multiple
    times during this system's construction: duplicate rows, orphaned modules,

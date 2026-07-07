@@ -3,8 +3,9 @@
 # Usage: skillctl.sh status | load <name>... | unload <name>... | unload --all
 set -euo pipefail
 cd "$(git rev-parse --show-toplevel)"
-ACTIVE=.claude/skills; STORE=.claude/skills-store; CAT="$STORE/CATALOG.md"
+ACTIVE=.claude/skills; STORE=.claude/skills-store; SHELF="$STORE/skill-storage"; CAT="$STORE/CATALOG.md"
 [ -f "$CAT" ] || { echo "skillctl: $CAT missing — catalog required"; exit 2; }
+mkdir -p "$SHELF"
 
 policy_of() { awk -F'|' -v s=" $1 " '$2==s {gsub(/ /,"",$5); print $5; exit}' "$CAT"; }
 
@@ -16,9 +17,9 @@ case "$cmd" in
       n=$(basename "$d"); p=$(policy_of "$n")
       printf '  %-24s %s\n' "$n" "${p:-!! NOT IN CATALOG — drift}"
     done
-    echo "== dormant ($STORE):"
+    echo "== dormant ($SHELF):"
     found=0
-    for d in "$STORE"/*/; do
+    for d in "$SHELF"/*/; do
       [ -d "$d" ] || continue; found=1; n=$(basename "$d")
       printf '  %-24s %s\n' "$n" "$(policy_of "$n")"
     done
@@ -27,9 +28,9 @@ case "$cmd" in
   load)
     [ $# -ge 1 ] || { echo "skillctl: load needs skill names"; exit 2; }
     for n in "$@"; do
-      [ -d "$STORE/$n" ] || { echo "skillctl: '$n' not in store"; exit 1; }
+      [ -d "$SHELF/$n" ] || { echo "skillctl: '$n' not in store"; exit 1; }
       [ -e "$ACTIVE/$n" ] && { echo "skillctl: '$n' already active"; exit 1; }
-      mv "$STORE/$n" "$ACTIVE/$n" && echo "loaded: $n (live immediately)"
+      mv "$SHELF/$n" "$ACTIVE/$n" && echo "loaded: $n (live immediately)"
     done
     ;;
   unload)
@@ -40,7 +41,7 @@ case "$cmd" in
       p=$(policy_of "$n")
       case "$p" in
         pinned|ride-along) echo "refused: $n is $p — stays loaded";;
-        *) mv "$ACTIVE/$n" "$STORE/$n" && echo "unloaded: $n";;
+        *) mv "$ACTIVE/$n" "$SHELF/$n" && echo "unloaded: $n";;
       esac
     done
     ;;

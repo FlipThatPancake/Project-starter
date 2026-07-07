@@ -1,11 +1,11 @@
 ---
 name: skill-manager
-description: Use when the user wants to see, load, unload, install, extract, or remove skills ("what skills are available", "load gsap", "add this skill", "start a design session"), when a session needs a capability beyond the pinned set, when the Stop hook or validate --skills reports loadout drift, or on a design-judgment task when menu-policy skills are installed (run the picker). Manages .claude/skills/ (active) vs .claude/skills-store/ (dormant, zero context cost).
+description: Use when the user wants to see, load, unload, install, extract, or remove skills ("what skills are available", "load gsap", "add this skill", "start a design session"), when a session needs a capability beyond the pinned set, when the Stop hook or validate --skills reports loadout drift, or on a design-judgment task when menu-policy skills are installed (run the picker). Manages .claude/skills/ (active) vs .claude/skills-store/skill-storage/ (dormant, zero context cost) — the store's root holds only metadata .md files.
 ---
 
 # Skill manager — loadout protocol
 
-States: **active** = dir in `.claude/skills/` (in context, can trigger) · **dormant** = dir in `.claude/skills-store/` (zero tokens) · **fixed** = harness/claude.ai/plugin skills (in session context, NOT controllable here — list live, never catalog).
+States: **active** = dir in `.claude/skills/` (in context, can trigger) · **dormant** = dir in `.claude/skills-store/skill-storage/` (zero tokens — metadata `.md` files live at the store's ROOT, never mixed with skill dirs) · **fixed** = harness/claude.ai/plugin skills (in session context, NOT controllable here — list live, never catalog).
 Metadata (store, read when invoked, never preemptively): `CATALOG.md` (what exists + policy) · `MODULES.md` (sub-modules) · `CONFLICTS.md` (rulings the picker/add enforce) · `LOCK.md` (third-party pinned versions) · `MODE-SHORTLISTS.md` (per-mode starter picks for the entry GATE) · `WIKI.md` (deep evidence, only for analysis/onboarding). State is derived from folder location; never written.
 
 ## Verbs (mechanics run in bash — `scripts/skillctl.sh` — never hand-move dirs)
@@ -91,8 +91,9 @@ When a module earns independent life (precedent: anti-slop-preflight ← taste-s
 - Fixed skills: report truthfully as "active — not controllable here"; never pretend to unload one.
 - Packs (gsap, tapestry, accesslint): register/load MEMBERS individually.
 - The manager never edits pinned rows and never unloads itself.
-- **Mode scope:** `add`/`extract`/`remove` write only to `.claude/skills-store/` (dormant
-  catalog) + its own metadata (CATALOG.md/MODULES.md/LOCK.md) — available in ANY mode.
-  Only `load`/`unload` (which move a dir into/out of `.claude/skills/**`, the active
-  loadout) and edits to the mechanics themselves (this file, `skillctl.sh`, the hooks,
-  `.claude/modes/**`) are restricted to Mode 1 (system-dev).
+- **Mode scope:** `add`/`extract`/`remove` write only to `.claude/skills-store/skill-storage/`
+  (dormant catalog) + the store's own root metadata (CATALOG.md/MODULES.md/LOCK.md/
+  MODE-SHORTLISTS.md) — available in ANY mode. Only `load`/`unload` (which move a dir
+  into/out of `.claude/skills/**`, the active loadout) and edits to the mechanics
+  themselves (this file, `skillctl.sh`, the hooks, `.claude/modes/**`) are restricted
+  to Mode 1 (system-dev).
