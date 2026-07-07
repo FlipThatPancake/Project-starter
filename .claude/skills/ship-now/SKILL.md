@@ -1,48 +1,67 @@
 ---
 name: ship-now
-description: Use when the user says "ship it", "push now", "ship to main", or "merge to main", or wants to end the session by committing+pushing even though CLAUDE_AUTO_PUSH_TO_MAIN is set to false. Pushes the current branch as a one-time override; ALSO merges into main, but only when the user explicitly asks for main/merge, not on a bare "ship it".
+description: Use when the user says "ship it", "push now", "save my work", "ship to main", "merge to main", "PR to main", or wants to commit+push at session end even with CLAUDE_AUTO_PUSH_TO_MAIN=false. Resolves to one of three targets — branch / pr / merge — inferring from wording, asking only when a main-integration method is ambiguous.
 ---
 
-# ship-now — one-time push override (+ optional explicit merge to main)
+# ship-now — commit + push, to a clearly-chosen target
 
-`ship.sh` pushes whatever branch you're on by default — it does NOT touch
-`main` unless told to. `CLAUDE_AUTO_PUSH_TO_MAIN` is a legacy name for
-"push at all", not "push to main"; don't let the name imply otherwise.
+## Mental model (do NOT get this wrong)
+Work happens in this container's LOCAL git repo — ephemeral, dies with the
+session. GitHub (`origin`) is the durable copy. `git push` is the ONLY thing
+that makes work survive. Two things people wrongly call "push to main":
+- The container's local `main` branch = a stale bookmark we never work on.
+  **Never update it — it changes nothing anyone can see. Not a valid target.**
+- `origin/main` on GitHub = the real shared branch. THIS is what "to main" means.
 
-## Deciding which mode the user means
-- "ship it" / "push now" / "save my work" → **branch push only**. Do NOT merge to main unless asked.
-- "ship to main" / "merge to main" / "get this onto main" → **branch push + merge to main** (`--to-main`).
-- Ambiguous ("ship this session") → ask which one before running anything that touches `main`; merging into a shared branch is not something to guess at.
+## The three targets
+Every invocation resolves to exactly ONE:
 
-## Steps
-1. Commit message: use what the user gave; if none, write one summarizing this
-   session's changes (imperative, ≤72 chars), prefixed with the session's mode
-   tag per `CLAUDE.md`'s "Mode is explicit" rule, e.g. `[mode:1-system-dev] ...`.
-2. Run:
-   ```
-   scripts/ship.sh "<msg>" --force-push [--to-main]
-   ```
-   - `--force-push` (a real `ship.sh` flag) ignores `CLAUDE_AUTO_PUSH_TO_MAIN=false`
-     for this call only — the toggle is untouched for later calls.
-   - `--to-main`, when the user asked for main/merge: after the branch push
-     succeeds, merges the branch into `origin/main` via a disposable local temp
-     branch (`--no-ff`, real merge commit) and pushes that — never force-pushes
-     main. On a genuine conflict or a race (main moved since fetch), it aborts
-     cleanly, leaves `main` untouched, and reports how to resolve manually —
-     it will NOT auto-resolve or force through a conflict.
-3. If `.claude/memory/SESSION-LOG.md` has no row for this session yet, append
-   one first (per checkpoint's update rules) so the push carries the log entry.
-4. Report the resulting commit hash, branch pushed to, and (if `--to-main` ran)
-   whether the merge into `main` succeeded or was rejected.
+| target | commits go to | main touched? | how |
+|---|---|---|---|
+| **branch** | `origin/<current-branch>` | no | `scripts/ship.sh "<msg>" --force-push` |
+| **pr** | `origin/<current-branch>` + a PR into `main` | no (you merge on GitHub) | ship.sh push, then create/update PR via github MCP |
+| **merge** | `origin/<current-branch>`, then merged into `origin/main` now | yes, immediately, no review | `scripts/ship.sh "<msg>" --force-push --to-main` |
+
+## Resolving which target (in order)
+1. **Explicit token** in the args — `branch`, `pr`, or `merge` — wins outright.
+2. **Clear natural language:**
+   - branch → "ship it", "push now", "save", "back up my work", "push the branch"
+   - pr → "open a PR", "PR it", "PR to main", "raise a pull request", "review before main"
+   - merge → "merge to main directly", "straight to main", "to-main", "merge now no PR"
+3. **Main mentioned but method unclear** — bare "push to main", "ship to main",
+   "get this on main", "release it" → **ASK** (`AskUserQuestion`): PR vs direct
+   merge. Recommend PR first (reviewable; and it's the ONLY path that works once
+   branch protection is on — a direct merge to a protected main is rejected).
+4. **No destination named at all** ("ship it", "ship now", "save") → **target =
+   branch**, no prompt. Afterward state plainly: pushed to the branch, nothing on
+   main, and that "ship to main" is how to escalate. (User-chosen default.)
+
+## Steps (all targets)
+1. Commit message: user's if given; else summarize this session (imperative,
+   ≤72 chars) prefixed with the mode tag per CLAUDE.md, e.g. `[mode:1-system-dev] …`.
+2. If `.claude/memory/SESSION-LOG.md` lacks this session's row, append it first
+   (per checkpoint rules) so the push carries it.
+3. Run the target's command from the table.
+   - `--force-push` overrides `CLAUDE_AUTO_PUSH_TO_MAIN=false` for THIS call only
+     (never edits settings.json).
+   - For **pr**: after the branch push, check for an existing open PR
+     (`mcp__github__list_pull_requests`, head=current branch); create one
+     (`mcp__github__create_pull_request`, base=main) if none, else report the
+     existing PR URL (a new push already updates it).
+4. Report: commit hash, branch pushed to, and — for pr/merge — the PR URL or
+   whether the merge into `main` succeeded / was rejected.
 
 ## Guardrails
-- Never edits `.claude/settings.json` — this is a one-shot override, not a
-  permanent flip. Changing the toggle itself is a settings edit, not this skill.
-- Still respects the cross-route scope-guard gate — a cross-route commit still
-  needs `@allow-cross-route` in the message; this skill doesn't bypass that.
-- If nothing is staged/changed, `ship.sh` no-ops cleanly ("nothing to commit") —
-  report that plainly rather than forcing an empty commit.
-- `--to-main` merges CURRENT `origin/main` content in as-is, conflicts and all
-  history — it does not know if unrelated commits landed there since you last
-  looked (e.g. direct web-UI uploads/deletes). If that matters, check
-  `git log origin/main` first and say so before merging.
+- Never edits `.claude/settings.json` — one-shot override, not a permanent flip.
+- **merge** uses `ship.sh --to-main`: merges via a disposable temp branch
+  (`--no-ff`, real merge commit), never force-pushes main; on conflict or a race
+  it aborts, leaves main untouched, and reports how to resolve. It also pulls in
+  whatever is CURRENTLY on `origin/main` as-is (including any unrelated direct
+  pushes/deletes) — if that could matter, check `git log origin/main` first and
+  say so before merging.
+- If branch protection is on, prefer/steer to **pr**; warn that **merge** will
+  likely be rejected by GitHub.
+- Cross-route commits still need `@allow-cross-route` in the message — not bypassed.
+- Nothing staged/changed → ship.sh no-ops ("nothing to commit"); report that
+  plainly, don't force an empty commit. (A pr/merge with no new commits can still
+  open/refresh the PR or merge already-pushed commits — do that part.)
