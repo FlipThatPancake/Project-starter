@@ -7,6 +7,18 @@ mode-1 (system-dev) session** to implement. Nothing here was implemented in the 
 
 ---
 
+## IMPLEMENTATION STATUS — all items shipped (mode 1, 2026-07)
+
+Implemented across commits `b5a920d` (B6/F9/F4/lock-rename) · `f422397` (B3/B4 metadata
++ validator) · `33a5385` (B1/B2/B5/F1/F5/F7 lazy opt-in gate + thin mechanics) · `5b6b0cd`
+(F3/F2/F8 + doctrine banners). Verified end-to-end: full `validate --all` clean; skill
+load→copy→gitignored→unload lifecycle; hook emits opt-in index; gitlink guard + pre-commit
+scope gate live. F0 struck (false alarm — origin/main already had the system). F6 declined
+by user (row 2 unchanged). Part C resolved by unifying the scope model in modes/README.
+Not touched (out of scope / historical): WIKI.md and the project-memory handoff retain
+incidental old-name mentions; upstream skills (impeccable etc.) are still not installed, so
+their per-skill exclusive-with frontmatter lands only when they're actually added.
+
 ## Part A — Confirmed defect fixes (corrected F-list)
 
 **F0 — STRUCK (false alarm).** Earlier claim "main lacks the .claude system" was wrong — it came
