@@ -1,8 +1,7 @@
 ---
 name: handoff
 description: Compact the current conversation into a handoff document for another agent to pick up.
-policy: manual
-category: session-mgmt
+group: session-mgmt
 argument-hint: "What will the next session be used for?"
 disable-model-invocation: true
 ---

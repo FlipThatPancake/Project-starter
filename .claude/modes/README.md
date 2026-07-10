@@ -13,12 +13,12 @@ reads only what's relevant and never wanders:
   lists the path prefixes Edit/Write may touch; `.claude/**` is always writable
   (memory maps, logs, skill activation, cataloguing). A lone `*` allows all
   (mode 2). Editing the *mechanics* themselves — `.claude/modes/**`, the hooks,
-  `skill-manager`'s own SKILL.md/skillctl — is Mode 1's job; other modes simply
-  don't touch them, but that's guardrail discipline, not a separate lock.
+  `scripts/skillctl.sh`, `skill-curator`'s own SKILL.md — is Mode 1's job; other
+  modes simply don't touch them, but that's guardrail discipline, not a separate lock.
 - **Read** is NOT gated (the hook guards only Edit/Write). Token discipline comes
   from **lazy reading**, not walls: read only what the current step needs. At
   session start read ONLY the mode file + `.claude/memory/INDEX.md`. Do not read
-  `skills-store/*`, `skill-manager`'s SKILL.md, or narrative docs unless you are
+  `skills-store/*`, `skill-curator`'s SKILL.md, or narrative docs unless you are
   actually acting on skills — the skill index is injected free by the
   session-start hook, so you never read a catalog to know what exists.
 
@@ -31,15 +31,16 @@ reads only what's relevant and never wanders:
    - **Restate the session's purpose in one line first.** If the first prompt is
      explicit and unambiguous, state your understanding + the inferred mode and
      proceed (e.g. "switch to /pricing" → mode 4; "let's build the design tokens"
-     → mode 6; "fix the skill-manager picker" → mode 1).
+     → mode 6; "fix the skillctl.sh load bug" → mode 1).
    - **In EVERY other case — including an empty, vague, or multi-intent prompt —
      restate your understanding and WAIT for the user's confirmation before
      locking a mode.** Never assume. Use `AskUserQuestion` with the 7 modes as
      options; keep asking scoped follow-ups until scope is unambiguous.
-   - **Scope note:** loading/unloading a skill and cataloguing a new one are
-     available in ANY mode (`/skills load <name>`; the store is the shared library,
-     activation is local and gitignored). Only editing the *mechanics* — hooks,
-     `skillctl.sh`, mode files, skill-manager's own SKILL.md — is Mode 1's job.
+   - **Scope note:** loading/unloading a skill and curating (install/update/
+     extract/delete) a new one are available in ANY mode (`/skills load <name>`;
+     the store is the shared library, activation is local and gitignored). Only
+     editing the *mechanics* — hooks, `scripts/skillctl.sh`, mode files,
+     skill-curator's own SKILL.md — is Mode 1's job.
 3. **Lock the mode** — write its allowlist so the scope-guard enforces it:
    ```
    H=$(pwd | sha256sum | cut -d' ' -f1 | cut -c1-8)
@@ -53,9 +54,9 @@ reads only what's relevant and never wanders:
    only when the task actually needs it, or the user asks, or you want a
    suggestion — `.claude/skills-store/MODE-SHORTLISTS.md` lists per-mode picks
    if you choose to consult it. To load: `/skills load <name>` (thin mechanics —
-   copies from the store; reading skill-manager's full SKILL.md is needed ONLY
-   to install a brand-new skill from the web). Do not print the whole catalogue
-   or block the session waiting for a skill decision.
+   copies from the store; reading skill-curator's SKILL.md is needed ONLY to
+   install/update/extract/delete a skill). Do not print the whole catalogue or
+   block the session waiting for a skill decision.
 5. **Make the mode explicit** (§Branch & log below) — this is the persistent
    record of what each session/branch was scoping on.
 6. **Read the mode file** (`.claude/modes/<n>-*.md`) and follow it.

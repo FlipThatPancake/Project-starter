@@ -1,6 +1,6 @@
-# SKILL CONFLICTS & RESOLUTIONS — operational rulings the picker + add-flow ENFORCE. Descriptive evidence lives in WIKI.md; this file holds DECISIONS only, kept terse.
-updated-by: skill-manager · written when: user makes a ruling · `add` detects an overlap · picker hits an unrecorded conflict (record the resolution so it's known next time)
-read-at: picker/load time (filter + order options) · add time (warn on duplicate/exclusive)
+# SKILL CONFLICTS & RESOLUTIONS — operational rulings the install-flow ENFORCES. Descriptive evidence lives in WIKI.md; this file holds DECISIONS only, kept terse.
+updated-by: skill-curator · written when: user makes a ruling · `install` detects an overlap
+read-at: load time (`skillctl.sh check-conflicts`) · install time (warn on duplicate/exclusive)
 
 ## Rule types (only these five; install-policy → CATALOG)
 - **precedence** — both may be active; LEFT wins the contested call

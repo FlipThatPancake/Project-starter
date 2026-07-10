@@ -1,8 +1,7 @@
 ---
 name: article-extractor
 description: Extract clean article content from URLs (blog posts, articles, tutorials) and save as readable text. Use when user wants to download, extract, or save an article/blog post from a URL without ads, navigation, or clutter.
-policy: manual
-category: research
+group: research
 allowed-tools: Bash,Write
 ---
 

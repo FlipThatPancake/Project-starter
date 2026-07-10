@@ -30,14 +30,35 @@ BRANCHES=$(git for-each-ref --sort=-committerdate refs/remotes \
   --format='  %(refname:short) — %(committerdate:relative)' 2>/dev/null | head -8)
 [ -z "$BRANCHES" ] && BRANCHES="  (no remote branches found)"
 
-# 3. Skill index — regenerate the thin browse surface (v2 §B4/B5) and embed it so
-#    Claude never needs to READ CATALOG/CONFLICTS/skill-manager at session start.
-#    Skills are OPT-IN: this list is for awareness; load only on request.
-SKILL_INDEX="  (skill index unavailable)"
-if command -v node >/dev/null 2>&1; then
-  node scripts/gen-skill-index.mjs >/dev/null 2>&1 || true
-  [ -f .claude/skills-store/INDEX.md ] && SKILL_INDEX=$(grep '^|' .claude/skills-store/INDEX.md 2>/dev/null)
-fi
+# 3. Skill index — enumerate .claude/skills/ (active) + the store (dormant) directly
+#    in bash (v3: no generated INDEX.md, no policy field) so Claude never needs to
+#    READ skill-curator's doctrine at session start. Skills are OPT-IN: this list is
+#    for awareness; load only on request.
+SKILL_INDEX=""
+for d in .claude/skills/*/; do
+  [ -d "$d" ] || continue
+  n=$(basename "$d"); f="${d}SKILL.md"
+  [ -f "$f" ] || continue
+  g=$(sed -n 's/^group:[[:space:]]*//p' "$f" | head -1)
+  sz=$(grep -cv '^[[:space:]]*$' "$f" 2>/dev/null || echo 0)
+  SKILL_INDEX="${SKILL_INDEX}| $n | active | ${g:-—} | $sz |
+"
+done
+for d in .claude/skills-store/skill-storage/*/; do
+  [ -d "$d" ] || continue
+  n=$(basename "$d")
+  [ -e ".claude/skills/$n" ] && continue    # active copy shadows the store master
+  f="${d}SKILL.md"
+  [ -f "$f" ] || continue
+  g=$(sed -n 's/^group:[[:space:]]*//p' "$f" | head -1)
+  sz=$(grep -cv '^[[:space:]]*$' "$f" 2>/dev/null || echo 0)
+  SKILL_INDEX="${SKILL_INDEX}| $n | dormant | ${g:-—} | $sz |
+"
+done
+[ -z "$SKILL_INDEX" ] && SKILL_INDEX="  (no skills found)"
+SKILL_INDEX="| skill | state | group | size |
+|---|---|---|---|
+${SKILL_INDEX}"
 
 CONTEXT=$(cat <<EOF
 SESSION MODE SELECTION (from session-start-hook) — do this before reading any code.
@@ -46,8 +67,8 @@ $STATE_LINE
 
 Pick a session mode per .claude/modes/README.md:
   1 system-dev · 2 new-project · 3 new-route · 4 continue-route · 5 backend-routing · 6 design-system · 7 other
-Rule: restate the session's purpose in one line. If the first prompt is explicit and unambiguous, state your understanding + inferred mode and proceed; otherwise WAIT for the user's confirmation before locking a mode (AskUserQuestion) — never assume. Then lock it (write /tmp/claude-mode-<hash>) and read ONLY .claude/modes/<n>-*.md + .claude/memory/INDEX.md (lazy start — do NOT read CATALOG/CONFLICTS/skill-manager unless you actually act on skills).
-Skills are OPT-IN (no mandatory gate). The current loadout is below — load a dormant skill only when the task needs it or the user asks, via \`/skills load <name>\` (thin mechanics; reading skill-manager's full SKILL.md is only for installing a NEW skill from the web). MODE-SHORTLISTS.md suggests per-mode picks if you want them.
+Rule: restate the session's purpose in one line. If the first prompt is explicit and unambiguous, state your understanding + inferred mode and proceed; otherwise WAIT for the user's confirmation before locking a mode (AskUserQuestion) — never assume. Then lock it (write /tmp/claude-mode-<hash>) and read ONLY .claude/modes/<n>-*.md + .claude/memory/INDEX.md (lazy start — do NOT read skill-curator or its references unless you actually act on skills).
+Skills are OPT-IN (no mandatory gate). The current loadout is below — load a dormant skill only when the task needs it or the user asks, via \`/skills load <name>\` (thin mechanics; reading skill-curator's SKILL.md is only for installing/updating/extracting/deleting a skill). MODE-SHORTLISTS.md suggests per-mode picks if you want them.
 Address, don't act: acknowledge the substance of the user's request as soon as understood, but do NOT execute changes until the mode is locked.
 
 Skill index (active = in context now · dormant = zero tokens until loaded; size = SKILL.md lines):

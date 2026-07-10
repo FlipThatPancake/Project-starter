@@ -10,10 +10,10 @@ The task doesn't fit modes 1–6. Do NOT improvise a scope — get it from the u
   ```
   Only use `*` (allow-all) if the user explicitly says the task is repo-wide.
 - **read-set:** whatever the user points to — nothing pre-decided.
-- **skills:** gate on the store once the task is understood (full catalogue,
-  wait for confirm — see skill-manager SKILL.md → "Mode-entry skill GATE").
-  Installing into `.claude/skills-store/` is fine in this mode; loading into
-  `.claude/skills/**` or editing mechanics is not — that needs mode 1.
+- **skills:** opt-in, same as every mode — load/unload (`/skills load <name>`)
+  and install/update/extract/delete (`skill-curator` skill) are BOTH fine in
+  this mode. Only editing mechanics (`scripts/skillctl.sh`, hooks, mode files)
+  needs mode 1.
 - **guardrails:**
   - Ask enough scoped questions to pin down goal, files, and skills before touching anything.
   - If the task turns out to match a real mode mid-conversation, switch to it.

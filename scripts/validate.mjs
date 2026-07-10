@@ -11,7 +11,7 @@
 import { readFileSync, existsSync, readdirSync, statSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import vm from 'node:vm';
-import { scanSkills, renderIndex, INDEX_PATH, POLICIES, PINNED_BASELINE, ACTIVE_DIR, STORE_DIR } from './lib/skill-meta.mjs';
+import { scanSkills, alwaysOnFromGitignore, ACTIVE_DIR, STORE_DIR } from './lib/skill-meta.mjs';
 
 const failures = [];
 const fail = (file, line, rule, detail) => failures.push(`${file}:${line}: ${rule}: ${detail}`);
@@ -196,49 +196,48 @@ function checkMemory(memDir = '.claude/memory', deepRoutes = null) {
     fail(sessionLog, 0, 'cap', `>${CAPS.sessionLog} non-empty lines`);
 }
 
-// ── Skill loadout lint (distributed model — v2 §B3/B4) ───────────────────────
-// Metadata lives in each skill's SKILL.md frontmatter; state = folder location;
-// INDEX.md is generated. No central CATALOG/CONFLICTS table to parse.
+// ── Skill loadout lint (v3 model) ─────────────────────────────────────────────
+// Metadata lives in each skill's SKILL.md frontmatter (name, description,
+// optional group, optional exclusive-with); state = folder location.
+// "Always-on" is defined solely by the .gitignore whitelist — no policy field,
+// no generated index file.
 function checkSkills() {
   const skills = scanSkills();
 
-  // 1. frontmatter completeness (policy + category on every skill)
+  // 1. frontmatter completeness (name + description on every skill)
   for (const s of skills) {
     const p = join(s.state === 'active' ? ACTIVE_DIR : STORE_DIR, s.dir, 'SKILL.md');
     if (s.error) { fail(p, 0, 'frontmatter', s.error); continue; }
-    if (!POLICIES.includes(s.policy)) fail(p, 0, 'policy', `invalid/missing policy "${s.policy}" (one of ${POLICIES.join('|')})`);
-    if (!s.category) fail(p, 0, 'category', 'missing category in frontmatter');
+    if (!s.description) fail(p, 0, 'description', 'missing description in frontmatter');
   }
 
   // (No dup-across-shelves check: activation copies store→active by design, so a
   //  loaded skill legitimately sits on both shelves; scanSkills shadows it to one.)
 
-  // 3. pinned baseline must be active + pinned
-  for (const b of PINNED_BASELINE) {
-    const s = skills.find(x => x.name === b);
-    if (!s) fail('skills', 0, 'core', `"${b}" missing from both shelves`);
-    else if (s.state !== 'active') fail('skills', 0, 'core', `"${b}" must be active (found ${s.state})`);
-    else if (s.policy !== 'pinned') fail('skills', 0, 'core', `"${b}" must have policy pinned (found ${s.policy})`);
+  // 2. every .gitignore-whitelisted always-on skill must actually be active
+  const alwaysOn = alwaysOnFromGitignore();
+  for (const name of alwaysOn) {
+    const s = skills.find(x => x.name === name);
+    if (!s) fail('skills', 0, 'always-on', `"${name}" is whitelisted in .gitignore but missing from .claude/skills/`);
+    else if (s.state !== 'active') fail('skills', 0, 'always-on', `"${name}" is whitelisted in .gitignore but found ${s.state} — dormant means it never fires`);
   }
 
-  // 4. every pinned/ride-along skill must be active (dormant = never fires)
-  for (const s of skills)
-    if ((s.policy === 'pinned' || s.policy === 'ride-along') && s.state !== 'active')
-      fail('skills', 0, 'not-loaded', `${s.name} is ${s.policy} but dormant — must be active`);
+  // 3. a dormant skill should not ALSO be whitelisted as always-on (contradiction
+  //    already covered by #2; this catches a store master left behind for a
+  //    promoted skill, which is harmless but worth flagging as a smell)
+  for (const s of skills) {
+    if (s.state === 'dormant' && alwaysOn.includes(s.name))
+      warn('skills', 'always-on-has-store-master', `"${s.name}" is always-on but still has a store master — fine, but redundant`);
+  }
 
-  // 5. exclusive-with symmetry (only checkable among installed skills)
+  // 4. exclusive-with symmetry (only checkable among installed skills)
   for (const s of skills) for (const peer of s.exclusive) {
     const p = skills.find(x => x.name === peer);
     if (p && !p.exclusive.includes(s.name))
       fail('skills', 0, 'exclusive-asym', `${s.name} lists exclusive-with ${peer}, but ${peer} does not reciprocate`);
   }
 
-  // 6. INDEX.md exists and is in sync with the frontmatter (regenerate + compare)
-  if (!existsSync(INDEX_PATH)) fail(INDEX_PATH, 0, 'missing', 'run: node scripts/gen-skill-index.mjs');
-  else if (renderIndex(skills).trim() !== readFileSync(INDEX_PATH, 'utf8').trim())
-    fail(INDEX_PATH, 0, 'stale', 'out of sync with skill frontmatter — run: node scripts/gen-skill-index.mjs');
-
-  // 7. LOCK.md (optional third-party pins): cap only
+  // 5. LOCK.md (optional third-party pins): cap only
   const lock = '.claude/skills-store/LOCK.md';
   if (existsSync(lock) && lineCount(lock) > 60) fail(lock, 0, 'cap', '>60 non-empty lines');
 }

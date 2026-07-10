@@ -1,32 +1,33 @@
 #!/usr/bin/env bash
 # skillctl.sh — deterministic skill loadout ops; the model decides WHAT, this does the moving.
-# Usage: skillctl.sh status | load <name>... | unload <name>... | unload --all
+# Usage: skillctl.sh status | load <name>... | unload <name>... | unload --all | remove <name>...
 #
-# Model (design proposal v2 §B2/B3/B6): metadata lives in each skill's SKILL.md
-# frontmatter; there is NO central CATALOG. `load` COPIES store→active (the store keeps
-# the master, so the gitignored active copy can never lose it); `unload` removes the
-# active copy (master stays in the store). Always-on system skills live committed in
-# .claude/skills/ with no store master and cannot be unloaded here.
+# Model (v3): metadata lives in each skill's SKILL.md frontmatter (name, description,
+# optional group, optional exclusive-with) — no policy field, no central index file.
+# "Always-on" is defined solely by the .gitignore whitelist: a skill committed in
+# .claude/skills/ with no store master is always-on and cannot be unloaded here.
+# `load` COPIES store→active (the store keeps the master, so the gitignored active
+# copy can never lose it); `unload` removes the active copy (master stays in the
+# store); `remove` deletes the store master entirely (bare directory delete — for
+# full teardown including cross-references, use the skill-curator skill's `delete`).
 set -euo pipefail
 cd "$(git rev-parse --show-toplevel)"
 ACTIVE=.claude/skills; STORE=.claude/skills-store; SHELF="$STORE/skill-storage"
 mkdir -p "$SHELF"
 
-reindex() { node scripts/gen-skill-index.mjs >/dev/null 2>&1 || true; }
-
-# policy_of <skill> — read `policy:` from the skill's own frontmatter (active copy
+# group_of <skill> — read `group:` from the skill's own frontmatter (active copy
 # preferred, else store master). Empty if the skill or field is absent.
-policy_of() {
+group_of() {
   local f
   for f in "$ACTIVE/$1/SKILL.md" "$SHELF/$1/SKILL.md"; do
-    [ -f "$f" ] && { sed -n 's/^policy:[[:space:]]*//p' "$f" | head -1; return; }
+    [ -f "$f" ] && { sed -n 's/^group:[[:space:]]*//p' "$f" | head -1; return; }
   done
 }
 
 # footprint_of <skill> — comma-separated glob list from add-and-handoff.md §2a's
 # footprint table, raw (still backtick-quoted); empty if the skill has no dedicated row.
 footprint_of() {
-  local ref=".claude/skills/skill-manager/references/add-and-handoff.md" line
+  local ref=".claude/skills-store/skill-storage/skill-curator/references/add-and-handoff.md" line
   [ -f "$ref" ] || return 1
   line=$(grep -F "| $1 |" "$ref" | head -1)
   [ -z "$line" ] && return 1
@@ -57,8 +58,8 @@ case "$cmd" in
   status)
     echo "== active ($ACTIVE):"
     for d in "$ACTIVE"/*/; do
-      n=$(basename "$d"); p=$(policy_of "$n")
-      printf '  %-24s %s\n' "$n" "${p:-!! no policy in frontmatter — drift}"
+      n=$(basename "$d"); g=$(group_of "$n")
+      printf '  %-24s %s\n' "$n" "${g:-(no group)}"
     done
     echo "== dormant ($SHELF, not currently active):"
     found=0
@@ -66,7 +67,7 @@ case "$cmd" in
       [ -d "$d" ] || continue; n=$(basename "$d")
       [ -e "$ACTIVE/$n" ] && continue      # active copy shadows the store master
       found=1
-      printf '  %-24s %s\n' "$n" "$(policy_of "$n")"
+      printf '  %-24s %s\n' "$n" "$(group_of "$n")"
     done
     [ "$found" = 1 ] || echo "  (none dormant)"
     ;;
@@ -79,25 +80,31 @@ case "$cmd" in
       [ -e "$ACTIVE/$n" ] && { echo "skillctl: '$n' already active"; continue; }
       cp -r "$SHELF/$n" "$ACTIVE/$n" && echo "loaded: $n (live immediately)"
     done
-    reindex
     ;;
   unload)
-    # Remove the active COPY only (the store master remains). An always-on system
-    # skill has no store master and cannot be unloaded here.
+    # Remove the active COPY only (the store master remains). A skill with no store
+    # master is committed always-on and cannot be unloaded here — change the
+    # .gitignore whitelist to alter its status instead.
     [ $# -ge 1 ] || { echo "skillctl: unload needs names or --all"; exit 2; }
     if [ "$1" = "--all" ]; then set -- $(ls "$ACTIVE"); fi
     for n in "$@"; do
       [ -d "$ACTIVE/$n" ] || { echo "skillctl: '$n' not active — skipped"; continue; }
-      p=$(policy_of "$n")
-      case "$p" in
-        pinned|ride-along) echo "refused: $n is $p — stays loaded"; continue;;
-      esac
       if [ ! -d "$SHELF/$n" ]; then
         echo "refused: $n is a committed always-on skill (no store master) — change the .gitignore whitelist to alter its status"; continue
       fi
       rm -rf "$ACTIVE/$n" && echo "unloaded: $n (store master kept)"
     done
-    reindex
+    ;;
+  remove)
+    # Bare store-master delete — no cross-reference scrubbing. Use this only for a
+    # skill that was never wired into MODE-SHORTLISTS/exclusive-with/LOCK elsewhere;
+    # otherwise use the skill-curator skill's `delete` verb for a full teardown.
+    [ $# -ge 1 ] || { echo "skillctl: remove needs skill names"; exit 2; }
+    for n in "$@"; do
+      [ -d "$SHELF/$n" ] || { echo "skillctl: '$n' not in store — skipped"; continue; }
+      [ -e "$ACTIVE/$n" ] && { echo "skillctl: '$n' still active — unload first"; continue; }
+      rm -rf "$SHELF/$n" && echo "removed: $n (store master deleted)"
+    done
     ;;
   check-updates)
     # Detection only — compares pinned SHA to upstream HEAD (cheap: ls-remote, no fetch).
@@ -117,7 +124,7 @@ case "$cmd" in
             tmp=$(mktemp -d); newdate="?"
             git clone --depth 1 -q "$url" "$tmp" 2>/dev/null && newdate=$(git -C "$tmp" log -1 --format=%cI 2>/dev/null || echo "?")
             rm -rf "$tmp"
-            echo "  $name: UPDATE available — ours: $pin ($ourdate)  latest: ${remote:0:12} ($newdate) — review with: skill-manager update $name"
+            echo "  $name: UPDATE available — ours: $pin ($ourdate)  latest: ${remote:0:12} ($newdate) — review with: skill-curator update $name"
             ;;
           esac
         fi
@@ -127,12 +134,12 @@ case "$cmd" in
     ;;
   check-conflicts)
     # Mechanical, read-only, derived-not-logged: for each machine-parseable exclusive
-    # group in CONFLICTS.md, glob each member's footprint (add-and-handoff.md §2a)
-    # against THIS project. Reports which unused members should be suppressed from
-    # mode-entry suggestions because an exclusive peer's footprint is already present.
-    # Naming a suppressed skill explicitly still goes through the normal load-time
-    # warn (add-and-handoff.md §3c) — this command only informs suggestion-building.
-    CONF=".claude/skills/skill-manager/references/conflict-rulings.md"
+    # group in conflict-rulings.md, glob each member's footprint (add-and-handoff.md
+    # §2a) against THIS project. Reports which unused members should be suppressed
+    # from mode-entry suggestions because an exclusive peer's footprint is already
+    # present. Naming a suppressed skill explicitly still goes through the normal
+    # load-time warn (add-and-handoff.md §3c) — this command only informs suggestions.
+    CONF=".claude/skills-store/skill-storage/skill-curator/references/conflict-rulings.md"
     [ -f "$CONF" ] || { echo "skillctl: $CONF missing"; exit 0; }
     groups=$(awk '
       /^## Exclusive groups/ {f=1; next}
@@ -163,7 +170,7 @@ case "$cmd" in
     [ "$found_any" = 1 ] || echo "check-conflicts: no suppressions — no exclusive-group footprints found in this project"
     ;;
   pin)
-    # Resolve a source to exact, deterministic provenance for a LOCK.md row (used by add/update).
+    # Resolve a source to exact, deterministic provenance for a LOCK.md row (used by install/update).
     [ $# -ge 1 ] || { echo "skillctl: pin needs a source (github:owner/repo or URL)"; exit 2; }
     url=$(printf '%s' "$1" | sed 's#^github:#https://github.com/#')
     full=$(git ls-remote "$url" HEAD 2>/dev/null | awk '{print $1}')
@@ -173,5 +180,5 @@ case "$cmd" in
     rm -rf "$tmp"
     printf 'sha=%s short=%s date=%s\n' "$full" "${full:0:12}" "$date"
     ;;
-  *) echo "usage: skillctl.sh status | load <n>... | unload <n>... | unload --all | check-conflicts | check-updates | pin <source>"; exit 2;;
+  *) echo "usage: skillctl.sh status | load <n>... | unload <n>... | unload --all | remove <n>... | check-conflicts | check-updates | pin <source>"; exit 2;;
 esac

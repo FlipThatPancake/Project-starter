@@ -1,14 +1,15 @@
-# MODE SKILL SHORTLISTS — per-mode starter picks for the skill-manager's Mode-entry GATE.
-Consulted FIRST when building the "top suggested picks" for a session; the gate then
-broadens to scan the generated INDEX.md (installed skills) + Upstream candidates in WIKI.md for anything
-else that fits the confirmed task. Not exhaustive by design — a short, curated guess,
-not a duplicate of the catalog.
-maintained-by: skill-manager, per the "New-skill mode-fit check" (SKILL.md) — updated
+# MODE SKILL SHORTLISTS — per-mode starter picks, consulted only if you choose to.
+Not a gate — skills are opt-in (v3). Consulted FIRST if you want a suggestion for
+"top picks" for a session; broaden by scanning the session-start hook's skill index
+(active + dormant) + Upstream candidates in WIKI.md for anything else that fits the
+confirmed task. Not exhaustive by design — a short, curated guess, not a duplicate
+of the store.
+maintained-by: skill-curator, per the "New-skill mode-fit check" (SKILL.md) — updated
 only with user confirmation, never silently.
 
 | mode | shortlist | why |
 |---|---|---|
-| 1-system-dev | (none beyond skill-manager, pinned) | system/skill work is self-contained; no store skill adds value here |
+| 1-system-dev | (none — load `skill-curator` only for install/update/extract/delete work) | system/skill work is self-contained; no other store skill adds value here |
 | 2-new-project | designer-skills OR ui-ux-pro-max (exclusive — see conflict-rulings.md, picker chooses one), awesome-design-md (reference, copy-in), grilling (already active — flag for running a grilling session before locking structure/stack) | bootstrapping structure/stack/design-system decisions |
 | 3-new-route | anti-slop-preflight, impeccable, taste-skill | building a page/route touches visual quality (accesslint-scan dropped 2026-07-07 — it's a plugin+MCP bundle, not installable via our skill-store flow; see WIKI.md note) |
 | 4-continue-route | anti-slop-preflight, session-log | resuming visual work; session-log captures progress |
@@ -17,15 +18,15 @@ only with user confirmation, never silently.
 | 7-other | (task-dependent — no preset) | scope undefined until the user clarifies; ask broadly instead of guessing |
 
 ## Notes
-- A shortlist entry being listed does NOT mean auto-load — the Mode-entry GATE still
-  presents it as a suggestion and waits for the user's confirm/redaction, same as any
+- A shortlist entry being listed does NOT mean auto-load — if you consult this file,
+  present it as a suggestion and wait for the user's confirm/redaction, same as any
   other candidate.
 - Rows here are starting guesses, not rulings — conflict-rulings.md exclusivity/precedence
   still applies when the user picks ≥2 shortlisted skills together.
 - When a mode's shortlist and the confirmed task purpose disagree (e.g. mode 5 but the
   task clearly touches visual work), state the mismatch and broaden the search rather
   than silently following the shortlist.
-- On an in-progress project, `skillctl.sh check-conflicts` (run at every GATE) can
-  suppress a shortlisted skill if its exclusive peer already has footprint files in
-  the project — e.g. row 2's "designer-skills OR ui-ux-pro-max" collapses to whichever
-  one this project actually used. See skill-manager SKILL.md → Mode-entry GATE.
+- On an in-progress project, `scripts/skillctl.sh check-conflicts` can suppress a
+  shortlisted skill if its exclusive peer already has footprint files in the project
+  — e.g. row 2's "designer-skills OR ui-ux-pro-max" collapses to whichever one this
+  project actually used. See `skill-curator` SKILL.md for the install/conflict flow.

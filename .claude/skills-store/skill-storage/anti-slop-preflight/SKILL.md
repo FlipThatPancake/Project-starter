@@ -1,8 +1,7 @@
 ---
 name: anti-slop-preflight
 description: Run before finalizing ANY visual, CSS, layout, typography, or design change to a web page (including minor/mechanical tweaks that skip the skill gate) — the anti-slop checklist, on-system fidelity principles, and this project's style lock. Not for pure logic/data edits with no visual surface. If any box fails, the change is not done; fix before delivering.
-policy: manual
-category: design-guardrails
+group: design-guardrails
 ---
 
 # Design guardrail (distilled from Leonxlnx/taste-skill §14 + pbakaus/impeccable polish; project style lock ALWAYS outranks this list)

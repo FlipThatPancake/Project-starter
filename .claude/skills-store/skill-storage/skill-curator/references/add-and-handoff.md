@@ -1,13 +1,15 @@
-> **v2 model change (2026-07):** the central `CATALOG.md`, `CONFLICTS.md`, and
-> `MODULES.md` were retired. Skill metadata (`policy`/`category`/`exclusive-with`)
-> now lives in each skill's own SKILL.md frontmatter; `.claude/skills-store/INDEX.md`
-> is GENERATED (`node scripts/gen-skill-index.mjs`, gitignored). CONFLICTS.md →
-> `references/conflict-rulings.md`; MODULES.md → `references/module-index.md`.
-> Read "write a CATALOG row" below as "set frontmatter + regenerate the INDEX", and
-> "MODULES.md" as "module-index.md". Activation COPIES store→active (gitignored).
+> **v3 model change (2026-07):** `skill-manager` (pinned) was retired; this doc
+> now belongs to `skill-curator` (dormant — loaded only for install/update/
+> extract/delete). The `policy` frontmatter field is GONE — "always-on" is
+> defined solely by the `.gitignore` whitelist. `category` was renamed `group`
+> (free-text, optional, no enum). There is no generated `INDEX.md` any more —
+> the session-start hook enumerates `.claude/skills/` + the store directly.
+> (Earlier v2 note, still true: the central `CATALOG.md`/`CONFLICTS.md`/
+> `MODULES.md` tables were retired in favor of per-skill frontmatter +
+> `references/conflict-rulings.md` / `references/module-index.md`.)
 
 # Add classification · footprint detection · load-time handoff
-Loaded by skill-manager only during `add`/`load` — NOT resident. SKILL.md carries pointers; the detail is here.
+Loaded by skill-curator only during `install`/`load` — NOT resident. SKILL.md carries pointers; the detail is here.
 
 ## 1. Classify a fetched source (pack vs deep-skill vs standalone)
 Inspect the fetched repo tree, then confirm with the user before writing rows:

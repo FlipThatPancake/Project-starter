@@ -14,7 +14,8 @@ Distilled from a production project where un-instrumented sessions cost
 | `CLAUDE.md` | session token-discipline rules |
 | `.claude/skills/project-memory/` | auto-skill: memory-first navigation protocol |
 | `.claude/skills/checkpoint/` | `/checkpoint`: safe memory rewrites |
-| `.claude/skills/skill-manager/` | install/remove/update skills; lean active loadout vs. dormant `skills-store/` |
+| `scripts/skillctl.sh` | thin skill loadout mechanics — list/load/unload/remove (`/skills`) |
+| `.claude/skills-store/skill-storage/skill-curator/` | dormant skill: install/update/extract/delete a skill (heavy, infrequent ops) |
 | `.claude/skills/anti-slop-preflight/` | pre-ship checklist for visual/design changes |
 | `.claude/memory/` | `INDEX.md` registry + per-route maps + shared registries (committed = persistent) |
 | `.claude/skills-store/` | dormant skill library (zero context cost until loaded) |
@@ -48,7 +49,7 @@ from this one (or clone it and re-point `origin`), then:
 | change route mid-session | say "switch to /route" or "unlock scope" — scope is never re-inferred silently |
 | ship a chunk | `scripts/ship.sh "msg"` (validates + builds changed routes + commits + pushes) |
 | Stop-hook nudge appears | run `/checkpoint` |
-| need a new capability | ask for it, or `/skills load <name>` from the store (thin — no doctrine read); skill-manager installs a brand-new one from the web |
+| need a new capability | ask for it, or `/skills load <name>` from the store (thin — no doctrine read); `skill-curator` installs a brand-new one from the web |
 
 ## Environment notes
 

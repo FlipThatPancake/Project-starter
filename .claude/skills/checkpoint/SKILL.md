@@ -1,8 +1,7 @@
 ---
 name: checkpoint
 description: Use when the user says /checkpoint, "save progress", or "update memory". Rewrites .claude/memory/INDEX.md and the touched routes/<route>.md maps to reflect this session's changes, validates them, and stages them for commit.
-policy: pinned
-category: core
+group: core
 ---
 
 # Checkpoint — memory rewrite protocol

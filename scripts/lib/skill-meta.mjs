@@ -1,19 +1,16 @@
-// Shared skill-metadata reader + index renderer.
-// Single source of truth for BOTH gen-skill-index.mjs (writes INDEX.md) and
-// validate.mjs (checks INDEX.md is in sync) so the two can never diverge.
+// Shared skill-metadata reader — single source of truth for validate.mjs's
+// --skills checks and any script that needs to enumerate skills programmatically.
 //
-// The model (design proposal v2 §B3/B4): a skill's metadata lives in its OWN
-// SKILL.md frontmatter (policy, category, optional exclusive-with). State
-// (active/dormant) is derived from location. `size` is computed here (SKILL.md
-// non-empty line count), never hand-stored. There is no central CATALOG table.
+// The model (v3): a skill's metadata lives in its OWN SKILL.md frontmatter
+// (name, description, optional group, optional exclusive-with). State
+// (active/dormant) is derived from location. "Always-on" is defined solely by
+// the .gitignore whitelist — there is no policy field and no generated index
+// file; the session-start hook enumerates directories directly in bash.
 import { readFileSync, existsSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 
 export const ACTIVE_DIR = '.claude/skills';
 export const STORE_DIR = '.claude/skills-store/skill-storage';
-export const INDEX_PATH = '.claude/skills-store/INDEX.md';
-export const POLICIES = ['pinned', 'ride-along', 'menu', 'manual'];
-export const PINNED_BASELINE = ['skill-manager', 'project-memory', 'checkpoint'];
 
 // Parse the leading `---\n...\n---` YAML-ish frontmatter (flat keys only).
 export function parseFrontmatter(text) {
@@ -44,8 +41,8 @@ export function readSkillMeta(shelf, dir) {
     name: fm.name || dir,
     dir,
     state: shelf === ACTIVE_DIR ? 'active' : 'dormant',
-    category: fm.category || '',
-    policy: fm.policy || '',
+    description: fm.description || '',
+    group: fm.group || '',
     size: nonEmptyLineCount(text),
     exclusive,
     error: null,
@@ -53,10 +50,24 @@ export function readSkillMeta(shelf, dir) {
 }
 
 // Scan both shelves → sorted array of skill metadata.
-// Activation COPIES store→active (the store keeps the master so a gitignored active
-// copy can never lose it), so a loaded skill exists on BOTH shelves. Active shadows
-// dormant: a name present in .claude/skills/ is reported once, as active; its store
-// master is the invisible backing copy. So the index shows each skill exactly once.
+// Activation COPIES store→active (the store keeps the master, so a gitignored
+// active copy can never lose it), so a loaded skill exists on BOTH shelves.
+// Active shadows dormant: a name present in .claude/skills/ is reported once,
+// as active; its store master is the invisible backing copy.
+// alwaysOnFromGitignore() — the "always-on" set is defined solely by the
+// `!.claude/skills/<name>/` negation lines in .gitignore (v3 model). Returns
+// an array of skill names.
+export function alwaysOnFromGitignore(gitignorePath = '.gitignore') {
+  if (!existsSync(gitignorePath)) return [];
+  const text = readFileSync(gitignorePath, 'utf8');
+  const names = [];
+  for (const line of text.split('\n')) {
+    const m = line.match(/^!\.claude\/skills\/([^/]+)\/?$/);
+    if (m) names.push(m[1]);
+  }
+  return names;
+}
+
 export function scanSkills() {
   const out = [];
   const seen = new Set();
@@ -69,23 +80,6 @@ export function scanSkills() {
       out.push(readSkillMeta(shelf, dir));
     }
   }
-  out.sort((a, b) => (a.category || '').localeCompare(b.category || '') || a.name.localeCompare(b.name));
+  out.sort((a, b) => (a.group || '').localeCompare(b.group || '') || a.name.localeCompare(b.name));
   return out;
-}
-
-// Render the generated INDEX.md — the ONLY browse surface (hook prints it cheaply).
-export function renderIndex(skills) {
-  const lines = [];
-  lines.push('# SKILL INDEX — GENERATED, do not hand-edit. Run `node scripts/gen-skill-index.mjs`.');
-  lines.push('Metadata lives in each skill\'s SKILL.md frontmatter; state = folder location.');
-  lines.push('active = in .claude/skills/ (in context) · dormant = in skills-store/ (zero tokens until loaded).');
-  lines.push('');
-  lines.push('| skill | state | category | policy | size | exclusive-with |');
-  lines.push('|---|---|---|---|---|---|');
-  for (const s of skills) {
-    const ex = s.exclusive && s.exclusive.length ? s.exclusive.join(', ') : '—';
-    lines.push(`| ${s.name} | ${s.state} | ${s.category || '?'} | ${s.policy || '?'} | ${s.size} | ${ex} |`);
-  }
-  lines.push('');
-  return lines.join('\n');
 }

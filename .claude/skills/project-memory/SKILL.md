@@ -1,8 +1,7 @@
 ---
 name: project-memory
 description: Use at the start of every session in this repo — first to establish the session's route scope (portal profile), and whenever locating any route, page section, component, or element, including when the user names a route or a section ("the preference list", "/reports"). Read .claude/memory/INDEX.md and the matching routes/<route>.md map BEFORE any exploratory file reads or greps.
-policy: pinned
-category: core
+group: core
 ---
 
 # Project memory — session scope + read protocol
