@@ -7,109 +7,102 @@ category: core
 
 # Skill manager — loadout protocol
 
-States: **active** = dir in `.claude/skills/` (in context, can trigger) · **dormant** = dir in `.claude/skills-store/skill-storage/` (zero tokens — metadata `.md` files live at the store's ROOT, never mixed with skill dirs) · **fixed** = harness/claude.ai/plugin skills (in session context, NOT controllable here — list live, never catalog).
-Metadata (store, read when invoked, never preemptively): `CATALOG.md` (what exists + policy) · `MODULES.md` (sub-modules) · `CONFLICTS.md` (rulings the picker/add enforce) · `LOCK.md` (third-party pinned versions) · `MODE-SHORTLISTS.md` (per-mode starter picks for the entry GATE) · `WIKI.md` (deep evidence, only for analysis/onboarding). State is derived from folder location; never written.
+**Two layers (v2):** *thin mechanics* run in bash and need NO reading of this file —
+`/skills list|load|unload` just moves dirs. This SKILL.md is *doctrine*: read it only
+for the heavy operations (installing a NEW skill from the web, extract, update,
+conflict resolution). Loading an already-stored skill never requires opening this file.
 
-## Verbs (mechanics run in bash — `scripts/skillctl.sh` — never hand-move dirs)
+States: **active** = dir in `.claude/skills/` (in context, can trigger) · **dormant** =
+dir in `.claude/skills-store/skill-storage/` (zero tokens) · **fixed** =
+harness/claude.ai/plugin skills (in session context, NOT controllable here).
+**Metadata model:** each skill's own `SKILL.md` frontmatter carries `policy` +
+`category` (+ optional `exclusive-with`); state is derived from folder location; `size`
+is computed. `.claude/skills-store/INDEX.md` is GENERATED from that
+(`node scripts/gen-skill-index.mjs`) — gitignored, rebuilt at session start and after
+every load/unload. There is **no central CATALOG**. Add-time doctrine lives in
+`references/` (`conflict-rulings.md`, `module-index.md`, `catalog-format.md`,
+`add-and-handoff.md`, `updates.md`); `skills-store/` root holds only `INDEX.md`
+(generated), `LOCK.md`, `MODE-SHORTLISTS.md`, `WIKI.md`.
+
+**Activation is COPY, not move.** `load` copies the store master into `.claude/skills/`;
+the master stays in the store. The active copy is **gitignored** (except the always-on
+whitelist in `.gitignore`) so a skill loaded for one task never leaks to other branches
+or main. `unload` deletes the active copy; the master remains. To make a skill
+permanently always-on, add a `!` line to the `.gitignore` whitelist (rare, deliberate).
+
+## Verbs (mechanics in `.claude/skills/skill-manager/scripts/skillctl.sh` — never hand-move dirs)
 | verb | do |
 |---|---|
-| list / status | `skillctl.sh status` + fixed skills from session context, grouped by category; capability hunts also check MODULES.md and Upstream candidates. First manager use in a new project & `LOCK.md` last-checked is stale/absent → offer `check-updates` |
-| load <name…> | run the load-time conflict check FIRST (`references/add-and-handoff.md` §3: already-active? sequential predecessor's files present → offer handoff §4? exclusive peer's files present → warn?), then `skillctl.sh load …`; live immediately |
-| unload <name…> / --all | `skillctl.sh unload …` — script refuses pinned/ride-along |
-| add <source> | interactive install — §add below |
-| extract <parent>/<module> | carve a module into a standalone store skill — §extract below |
-| remove <name> | delete from store + its catalog row + its MODULES rows |
-| sync | pull starter-repo URL from CATALOG header; unset → say so and stop. Also runs `check-updates` |
-| check-updates | `skillctl.sh check-updates` — compare pinned refs (LOCK.md) to upstream HEAD; DETECTION ONLY, never applies. Auto-run at add/sync/new-project; Stop-hook nudges when stale (>7d) |
-| check-conflicts | `skillctl.sh check-conflicts` — globs CONFLICTS.md's machine-parseable exclusive groups against live project footprints; reports which unused peer to suppress from GATE suggestions. Read-only, DETECTION ONLY — auto-run at every Mode-entry GATE (below) |
-| update <skill> | review-gated apply — `references/updates.md`: diff description/footprint/local-mods/modules; RE-APPLY our local-mods; **reconcile the project's existing dependency files against the updated skill's new structure** (`structcheck.sh`, migrate on drift); never auto-apply |
+| list / status | `skillctl.sh status` (reads frontmatter, no catalog). The session-start hook already injected the INDEX, so usually no command needed |
+| load <name…> | quick check: already active? exclusive-with a currently-active skill (its frontmatter)? → warn. Then `skillctl.sh load …` (copies, regenerates INDEX); live immediately. **Pack-member fast path (F7):** a sibling of an already-loaded pack (same LOCK source) → one yes/no, reuse the pin, no full add |
+| unload <name…> / --all | `skillctl.sh unload …` — refuses pinned/ride-along and committed always-on skills |
+| add <source> | interactive install of a NEW skill — §add below (this is the only verb that needs this file) |
+| extract <parent>/<module> | carve a module into a standalone store skill — §extract |
+| remove <name> | delete the store master; regenerate INDEX |
+| check-updates | `skillctl.sh check-updates` — compare pinned refs (LOCK.md) to upstream HEAD; DETECTION ONLY. Stop-hook nudges when stale (>7d) |
+| check-conflicts | `skillctl.sh check-conflicts` — globs `references/conflict-rulings.md` exclusive groups vs project footprints; read-only, optional (only useful if you consult MODE-SHORTLISTS) |
+| update <skill> | review-gated apply — `references/updates.md`; RE-APPLY local-mods; reconcile dep files (`structcheck.sh`); never auto-apply |
 
-## Mode-entry skill GATE — on every session-mode lock
-When a session mode is locked (`.claude/modes/README.md` step 4), this is a GATE, not
-an offer: do not install, load, or otherwise act on any skill until the user has
-confirmed or redacted the list below — in EVERY mode, not just design.
-- Print the **full catalogue as markdown tables** in chat (not a constrained picker —
-  the catalogue is too large to fit ~4 options). Tables, not bullet lists — this is
-  the first thing the user reads in the session and must scan cleanly in the
-  claude.ai chat UI:
-  - **Top: suggested picks** — one table, columns `skill | state | why/how`. Build
-    it from **`MODE-SHORTLISTS.md`'s row for the locked mode FIRST** (its curated
-    starter guess for this mode), then broaden: scan the rest of CATALOG.md
-    (Installed + Upstream) for anything else that matches the confirmed session
-    purpose by keyword/category, even if absent from the shortlist. Merge both into
-    2–4 rows, each with a short why/how (≤1 line) in the last column. If the
-    shortlist and the actual task disagree (e.g. mode 5 but the task is visibly
-    visual work), say so above the table and follow the task, not the shortlist.
-  - **Below: everything else, one table per category** — `skillctl.sh status`
-    grouped by CATALOG.md category, PLUS Upstream candidates `add` could pull in,
-    PLUS dormant store skills not yet loaded. Columns: `skill | state | policy |
-    load-when`. `state` is one of active / dormant / fixed (never omit — this is
-    the detail that's easy to get wrong and the user just corrected). Always-on
-    pinned/ride-along skills get `state = active` in their row for transparency —
-    they are still listed, just not part of the choice.
-- **Run `skillctl.sh check-conflicts` before finalizing either list.** For any
-  reported `suppress: X — exclusive with already-used: Y`, drop `X` from BOTH the
-  top picks and the "everything else" list — this project already committed to `Y`
-  via an exclusive pair, so suggesting `X` unprompted would just be wrong, not merely
-  unhelpful. Don't hide it silently forever, though: if the user names `X` explicitly
-  anyway, proceed to the normal load-time warn (`add-and-handoff.md` §3c) rather than
-  refusing outright — suppression is a suggestion filter, not a hard block.
-- **Wait for the user's free-text reply** confirming or redacting the selection.
-  Do not proceed to load/install anything until they respond.
-- **Skip only when the user already named specific skills inline, or explicitly
-  said "no skills" / "none"** in the prompt that triggered mode lock — then honor
-  that directly instead of printing the list. Otherwise the gate is absolute:
-  always show the full list, every mode, every session.
-- Apply the same CONFLICTS.md checks as the menu picker before loading the chosen set.
+## Loading is OPT-IN — no mandatory gate
+The session-start hook injects the skill index for free, so the model already knows what
+exists. There is **no session-start gate** that blocks work waiting for a skill decision.
+Load a dormant skill only when: the task needs its capability, the user names it, or you
+choose to consult `MODE-SHORTLISTS.md` for a per-mode suggestion. When the user names
+skills inline, just load them. Before loading a set, check each one's `exclusive-with`
+frontmatter against what's already active (and `references/conflict-rulings.md` for
+not-yet-installed upstream pairs) — warn on a real conflict, otherwise proceed.
 
-## Menu picker — per TASK, never sticky
-Menu skills are muted (`disable-model-invocation: true` in our copies), so they can never fire uninvited — this picker is their only activation path. Trigger: the task calls for design judgment (or a menu skill's domain) AND menu skills/modules are installed.
-- Ask on EVERY new task/prompt. Follow-up iterations of the SAME task reuse the last choice; a new task asks fresh. No session persistence.
-- Skip the ask when the user names skills inline ("use impeccable/typeset") or says "no skills".
-- First read `CONFLICTS.md`: drop options that are `exclusive` with an already-active skill, present a `compatible` pair as the recommended **Combined**, and let `precedence` set ordering. An unrecorded conflict → resolve with the user, then append the ruling.
-- Options (AskUserQuestion, multiSelect on): first = **"Combined: <the 2-3 complementary picks> (Recommended)"** when several genuinely fit; then individual skills and MODULES (`parent/module` granularity from MODULES.md — never "whole pack"); last = "None — pinned + guardrails only".
+## Menu picker — per TASK, never sticky (only if menu-policy skills are installed)
+Menu skills are muted (`disable-model-invocation: true`), so this picker is their only
+activation path. Trigger: a design-judgment task AND menu skills installed.
+- Ask per task (a new task asks fresh); skip when the user names skills or says "none".
+- Read `references/conflict-rulings.md`: drop options `exclusive` with an active skill,
+  present a `compatible` pair as the recommended **Combined**, let `precedence` order.
+- Options (AskUserQuestion, multiSelect): first = **"Combined: <2–3 picks> (Recommended)"**;
+  then individual skills/modules (`references/module-index.md`); last = "None".
 
 ## Combine protocol (when ≥2 skills/modules are chosen)
-1. Read ONLY the selected guidance files. 2. Overlapping rules → keep the single best fit per conflict, applying `CONFLICTS.md` precedence (default chain: project design-m3 › anti-slop-preflight › best task fit); unique rules → union. 3. Execution: single-stage task → apply the merged set at once; multistage task → assign skills/modules to stages (e.g. IA module → structure pass, typeset → typography pass) and state the stage map in one line before starting.
+1. Read ONLY the selected guidance files. 2. **An explicit user decision (a grilled
+requirement, a named brand color, a stated constraint) outranks every skill heuristic,
+seed, or checklist line — mechanical, no judgment call.** Below that: project design
+tokens › anti-slop-preflight › best task fit (`references/conflict-rulings.md`). Overlaps
+→ keep the single best fit; unique rules → union. 3. Single-stage task → apply the merged
+set at once; multistage → assign skills to stages, state the stage map in one line first.
 
-## add <source> — interactive install
+## add <source> — interactive install of a NEW skill (the heavy path)
 1. Fetch into the store (`git clone --depth 1` / curl); read frontmatter description ONLY.
-2. Classify pack / deep / standalone (`references/add-and-handoff.md` §1) and confirm with the user — a PACK registers members individually, never as a unit.
-3. Recommend a policy from `references/catalog-format.md`; AskUserQuestion to confirm policy (recommended first) — and category when not obvious. Hand-dropped dirs flagged by drift start here too.
-4. Check `CONFLICTS.md` + footprints (§2): `duplicate`/`exclusive` with something installed, or its dep files already in the repo → warn before writing the row; genuinely new overlap → propose a rule, append once the user rules; record the new skill's footprint in §2. If the new rule is `exclusive` and BOTH members now have real CATALOG.md names, also add a row to CONFLICTS.md's "Exclusive groups" machine-parseable table (`check-conflicts` can't suppress it otherwise).
-5. Write ONE Installed row (load-when = trigger, ≤10 words); policy=menu → set `disable-model-invocation: true` in our copy.
-6. Deep/pack → index notable modules/members in MODULES.md (a module MAY sit in a different category than its parent).
-7. Third-party source → `skillctl.sh pin <source>` for exact sha/date (deterministic, not filesystem mtime — survives re-cloning); record a `LOCK.md` row (source, pinned-ref=short sha, upstream-date, install date, local-mods e.g. "set disable-model-invocation").
-8. `node scripts/validate.mjs --skills` must pass before the turn ends.
-9. Run the **New-skill mode-fit check** (below) before ending the turn.
+2. Classify pack / deep / standalone (`references/add-and-handoff.md` §1) — a PACK
+   registers members individually, never as a unit.
+3. Set the new skill's frontmatter `policy` + `category` (recommend from
+   `references/catalog-format.md`). **Batch path (F5):** if the user named N skills
+   inline with an install directive, derive each policy/category from the source's own
+   annotation and confirm ALL in ONE line — do not ask per-skill. policy=menu → also set
+   `disable-model-invocation: true` in our copy.
+4. Conflicts: check `references/conflict-rulings.md` + footprints (§2). `duplicate`/
+   `exclusive` with something installed, or dep files already present → warn; genuinely
+   new overlap → propose a rule, append once the user rules. Record `exclusive-with` in
+   BOTH skills' frontmatter (symmetry — `validate --skills` enforces it).
+5. Deep/pack → index notable modules in `references/module-index.md`.
+6. Third-party → `skillctl.sh pin <source>`; record a `LOCK.md` row (source, short sha,
+   upstream-date, install date, local-mods).
+7. `node scripts/gen-skill-index.mjs` then `node scripts/validate.mjs --skills` must pass.
+8. Run the **New-skill mode-fit check** below.
 
-## New-skill mode-fit check — runs after every `add` (and `extract`)
-A newly-installed skill should be considered for `MODE-SHORTLISTS.md`, not just left
-undiscoverable in the full catalogue. After step 8 above:
-1. Read the new skill's category + description against each of the 7 mode one-liners
-   (`.claude/modes/README.md` → "The 7 modes").
-2. For every mode where it plausibly fits (category match, or description clearly
-   serves that mode's kind of task), note it as a candidate addition to that mode's
-   shortlist row — apply the same CONFLICTS.md exclusivity/precedence checks a normal
-   shortlist entry would need.
-3. Propose the fit(s) to the user in one line per mode ("fits mode 3/6 shortlist
-   because X — add it?") and **wait for confirmation** — never add silently, since
-   shortlist curation is a judgment call, not a mechanical derivation.
-4. On confirmation, update the shortlist row(s) in `MODE-SHORTLISTS.md` only (never
-   auto-load the skill itself — that still goes through the normal GATE/picker).
-5. If it fits no mode particularly well, say so and leave `MODE-SHORTLISTS.md`
-   untouched — not every installed skill needs to be in a shortlist.
+## New-skill mode-fit check — after every add / extract
+Consider the new skill for `MODE-SHORTLISTS.md`. Read its category + description against
+the 7 mode one-liners (`.claude/modes/README.md`); for each plausible fit, propose it in
+one line and **wait for confirmation** (shortlist curation is a judgment call, never
+silent). On confirm, update the shortlist row only — never auto-load.
 
 ## extract <parent>/<module>
-When a module earns independent life (precedent: anti-slop-preflight ← taste-skill §14): distill it into its own store dir with frontmatter, add an Installed row (provenance in the note), flip its MODULES.md status to `extracted`, leave the parent untouched. Prefer extract over loading a whole deep skill for one module you use often. Then run the **New-skill mode-fit check** above — an extracted module is a newly-installed store skill too.
+Distill a module into its own store dir with frontmatter (policy+category), flip its
+`references/module-index.md` status to `extracted`, leave the parent untouched. Then run
+the mode-fit check. Regenerate the INDEX.
 
 ## Hard rules
-- Fixed skills: report truthfully as "active — not controllable here"; never pretend to unload one.
-- Packs (gsap, tapestry, accesslint): register/load MEMBERS individually.
-- The manager never edits pinned rows and never unloads itself.
-- **Mode scope:** `add`/`extract`/`remove` write only to `.claude/skills-store/skill-storage/`
-  (dormant catalog) + the store's own root metadata (CATALOG.md/MODULES.md/LOCK.md/
-  MODE-SHORTLISTS.md) — available in ANY mode. Only `load`/`unload` (which move a dir
-  into/out of `.claude/skills/**`, the active loadout) and edits to the mechanics
-  themselves (this file, `skillctl.sh`, the hooks, `.claude/modes/**`) are restricted
-  to Mode 1 (system-dev).
+- Fixed skills: report truthfully as "active — not controllable here"; never fake-unload one.
+- Packs (gsap, tapestry): register/load MEMBERS individually.
+- The manager never unloads itself or another pinned/ride-along skill.
+- **Mode scope:** loading, unloading, and cataloguing are available in ANY mode
+  (activation is local + gitignored). Only editing the *mechanics* — this file,
+  `skillctl.sh`, the hooks, `.claude/modes/**` — is Mode 1 (system-dev) work.
