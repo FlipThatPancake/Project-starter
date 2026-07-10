@@ -22,7 +22,7 @@ the session-start hook whether to steer toward new-project bootstrap (see
 ## 1. Session scope lock (when INDEX lists ≥2 routes)
 - First user prompt names a route/project unambiguously → lock silently; state one line: `Scope: /<route>`.
 - Ambiguous → ask ONE AskUserQuestion with options built live from INDEX's route table, plus "whole project / cross-route" and "new route". Nothing more — every other survey answer already lives in the memory files.
-- On lock, persist it: `echo "/<route>" > /tmp/claude-scope-$(pwd | sha256sum | cut -d' ' -f1 | cut -c1-8)` — and re-read that file whenever scope is uncertain (e.g. after a context compaction).
+- On lock, persist it: `echo "/<route>" > /tmp/claude-route-scope-$(pwd | sha256sum | cut -d' ' -f1 | cut -c1-8)` — and re-read that file whenever scope is uncertain (e.g. after a context compaction).
 - The lock is advisory but binding: confine reads/greps/edits to the locked route's paths + the shared files its pointer rows name. Re-scope ONLY when the user says so ("switch to /x", "unlock scope") — never re-infer from a later ambiguous prompt.
 
 ### Enforcement (scope-guard)

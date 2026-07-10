@@ -53,6 +53,44 @@ if [ "$NOBUILD" = 0 ] && [ -d src/routes ]; then
 fi
 
 git add -A
+
+# F9 guard: never commit an embedded git repo (gitlink, mode 160000) — e.g. a stray
+# agent worktree swept in by `git add -A`. A silent gitlink is a broken clone; a
+# blocked commit is recoverable. Fix by `git rm --cached <path>` or .gitignore.
+GITLINKS=$(git ls-files -s | awk '$1=="160000"{print $4}')
+if [ -n "$GITLINKS" ]; then
+  echo "ship: refusing to commit embedded git repo(s) (gitlink):" >&2
+  echo "$GITLINKS" | sed 's/^/  /' >&2
+  echo "ship: remove with 'git rm --cached <path>' or add the path to .gitignore" >&2
+  exit 2
+fi
+
+# F4 cross-route scope gate — runs BEFORE the commit (was previously on the push
+# path only, so --no-push commits went ungated). If a route scope-lock exists,
+# every STAGED file must fall inside the locked route's dir or .claude/. Override
+# with @allow-cross-route in the commit message.
+CWD_HASH=$(pwd | sha256sum | cut -d' ' -f1 | cut -c1-8)
+SCOPE_FILE="/tmp/claude-route-scope-$CWD_HASH"
+if [ -f "$SCOPE_FILE" ]; then
+  LOCKED_ROUTE=$(cat "$SCOPE_FILE")
+  ROUTE_DIR="src/routes/$LOCKED_ROUTE"
+  VIOLATIONS=""
+  for file in $(git diff --cached --name-only 2>/dev/null || true); do
+    if [[ ! "$file" =~ ^$ROUTE_DIR/ ]] && [[ ! "$file" =~ ^\.claude/ ]]; then
+      VIOLATIONS="$VIOLATIONS$file"$'\n'
+    fi
+  done
+  if [ -n "$VIOLATIONS" ]; then
+    if ! [[ "$MSG" =~ @allow-cross-route ]]; then
+      echo "ship: scope violation — commit touches files outside '$LOCKED_ROUTE':" >&2
+      echo "$VIOLATIONS" >&2
+      echo "ship: include @allow-cross-route in your prompt + commit message to allow cross-route edits" >&2
+      exit 2
+    fi
+    echo "ship: cross-route override (@allow-cross-route) detected, proceeding" >&2
+  fi
+fi
+
 git diff --cached --quiet && { echo "ship: nothing to commit"; exit 0; }
 git commit -m "$MSG"
 
@@ -70,39 +108,7 @@ if [ "$NOPUSH" = 0 ]; then
   fi
   [ "$AUTO_PUSH" != "true" ] && [ "$FORCEPUSH" = 1 ] && echo "ship: --force-push overriding CLAUDE_AUTO_PUSH_TO_MAIN=false for this push" >&2
 
-  # Cross-route gate: if a scope-lock exists, check that no edits fall outside
-  # the locked route's allowlist (src/routes/<locked>/** and .claude/memory/**).
-  # Override with @allow-cross-route in the commit message.
-  CWD_HASH=$(pwd | sha256sum | cut -d' ' -f1 | cut -c1-8)
-  SCOPE_FILE="/tmp/claude-scope-$CWD_HASH"
-
-  if [ -f "$SCOPE_FILE" ]; then
-    LOCKED_ROUTE=$(cat "$SCOPE_FILE")
-    ROUTE_DIR="src/routes/$LOCKED_ROUTE"
-
-    # Collect files changed in this commit
-    CHANGED_FILES=$(git diff HEAD~1 --name-only 2>/dev/null || true)
-    VIOLATIONS=""
-
-    for file in $CHANGED_FILES; do
-      # Violations: not in route dir and not in .claude/memory/
-      if [[ ! "$file" =~ ^$ROUTE_DIR/ ]] && [[ ! "$file" =~ ^\.claude/memory/ ]]; then
-        VIOLATIONS="$VIOLATIONS$file"$'\n'
-      fi
-    done
-
-    if [ -n "$VIOLATIONS" ]; then
-      # Cross-route changes detected — check for override marker
-      if ! [[ "$MSG" =~ @allow-cross-route ]]; then
-        echo "ship: scope violation — commit touches files outside '$LOCKED_ROUTE':" >&2
-        echo "$VIOLATIONS" >&2
-        echo "ship: include @allow-cross-route in your prompt + commit message to allow cross-route edits" >&2
-        exit 2
-      fi
-      echo "ship: cross-route override (@allow-cross-route) detected, proceeding" >&2
-    fi
-  fi
-
+  # (Cross-route scope gate now runs pre-commit, above — F4.)
   BR="$(git branch --show-current)"
   PUSHED=0
   for delay in 0 2 4 8 16; do

@@ -44,7 +44,7 @@ checkpoint) exists to keep those two halves honest and small over time.
 ```
 project-memory skill (SKILL.md)          ← session-level protocol Claude follows
    │  writes                                 (route count → scope-lock →
-   │  /tmp/claude-scope-<hash>                read-order → anchor navigation)
+   │  /tmp/claude-route-scope-<hash>                read-order → anchor navigation)
    ▼
 scope-guard-hook.sh (PreToolUse hook)     ← reads that file, enforces scope
    +
@@ -253,7 +253,7 @@ When INDEX lists ≥2 routes:
 - On lock, persist it to a tmp file so it survives context compaction within
   the session:
   ```bash
-  echo "/<route>" > /tmp/claude-scope-$(pwd | sha256sum | cut -d' ' -f1 | cut -c1-8)
+  echo "/<route>" > /tmp/claude-route-scope-$(pwd | sha256sum | cut -d' ' -f1 | cut -c1-8)
   ```
   The hash is of the absolute repo path, so different repos/worktrees don't
   collide. **This exact hash formula must match across the skill doc, the
