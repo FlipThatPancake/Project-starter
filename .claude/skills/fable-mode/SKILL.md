@@ -1,6 +1,8 @@
 ---
 name: fable-mode
 description: >
+policy: manual
+category: process
   Enforces staged execution discipline on large tasks: a written stage plan,
   parallel delegation where the runtime supports it, a failable verification
   check at each stage, and a skeptical self-review before delivery. This-repo

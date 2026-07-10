@@ -1,6 +1,8 @@
 ---
 name: skill-manager
 description: Use when the user wants to see, load, unload, install, extract, or remove skills ("what skills are available", "load gsap", "add this skill", "start a design session"), when a session needs a capability beyond the pinned set, when the Stop hook or validate --skills reports loadout drift, or on a design-judgment task when menu-policy skills are installed (run the picker). Manages .claude/skills/ (active) vs .claude/skills-store/skill-storage/ (dormant, zero context cost) — the store's root holds only metadata .md files.
+policy: pinned
+category: core
 ---
 
 # Skill manager — loadout protocol

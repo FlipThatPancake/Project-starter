@@ -1,13 +1,27 @@
 #!/usr/bin/env bash
 # skillctl.sh — deterministic skill loadout ops; the model decides WHAT, this does the moving.
 # Usage: skillctl.sh status | load <name>... | unload <name>... | unload --all
+#
+# Model (design proposal v2 §B2/B3/B6): metadata lives in each skill's SKILL.md
+# frontmatter; there is NO central CATALOG. `load` COPIES store→active (the store keeps
+# the master, so the gitignored active copy can never lose it); `unload` removes the
+# active copy (master stays in the store). Always-on system skills live committed in
+# .claude/skills/ with no store master and cannot be unloaded here.
 set -euo pipefail
 cd "$(git rev-parse --show-toplevel)"
-ACTIVE=.claude/skills; STORE=.claude/skills-store; SHELF="$STORE/skill-storage"; CAT="$STORE/CATALOG.md"
-[ -f "$CAT" ] || { echo "skillctl: $CAT missing — catalog required"; exit 2; }
+ACTIVE=.claude/skills; STORE=.claude/skills-store; SHELF="$STORE/skill-storage"
 mkdir -p "$SHELF"
 
-policy_of() { awk -F'|' -v s=" $1 " '$2==s {gsub(/ /,"",$5); print $5; exit}' "$CAT"; }
+reindex() { node scripts/gen-skill-index.mjs >/dev/null 2>&1 || true; }
+
+# policy_of <skill> — read `policy:` from the skill's own frontmatter (active copy
+# preferred, else store master). Empty if the skill or field is absent.
+policy_of() {
+  local f
+  for f in "$ACTIVE/$1/SKILL.md" "$SHELF/$1/SKILL.md"; do
+    [ -f "$f" ] && { sed -n 's/^policy:[[:space:]]*//p' "$f" | head -1; return; }
+  done
+}
 
 # footprint_of <skill> — comma-separated glob list from add-and-handoff.md §2a's
 # footprint table, raw (still backtick-quoted); empty if the skill has no dedicated row.
@@ -44,35 +58,46 @@ case "$cmd" in
     echo "== active ($ACTIVE):"
     for d in "$ACTIVE"/*/; do
       n=$(basename "$d"); p=$(policy_of "$n")
-      printf '  %-24s %s\n' "$n" "${p:-!! NOT IN CATALOG — drift}"
+      printf '  %-24s %s\n' "$n" "${p:-!! no policy in frontmatter — drift}"
     done
-    echo "== dormant ($SHELF):"
+    echo "== dormant ($SHELF, not currently active):"
     found=0
     for d in "$SHELF"/*/; do
-      [ -d "$d" ] || continue; found=1; n=$(basename "$d")
+      [ -d "$d" ] || continue; n=$(basename "$d")
+      [ -e "$ACTIVE/$n" ] && continue      # active copy shadows the store master
+      found=1
       printf '  %-24s %s\n' "$n" "$(policy_of "$n")"
     done
-    [ "$found" = 1 ] || echo "  (store empty)"
+    [ "$found" = 1 ] || echo "  (none dormant)"
     ;;
   load)
+    # COPY store→active (master stays in the store); the active copy is gitignored
+    # unless whitelisted, so it never leaks to other branches.
     [ $# -ge 1 ] || { echo "skillctl: load needs skill names"; exit 2; }
     for n in "$@"; do
       [ -d "$SHELF/$n" ] || { echo "skillctl: '$n' not in store"; exit 1; }
-      [ -e "$ACTIVE/$n" ] && { echo "skillctl: '$n' already active"; exit 1; }
-      mv "$SHELF/$n" "$ACTIVE/$n" && echo "loaded: $n (live immediately)"
+      [ -e "$ACTIVE/$n" ] && { echo "skillctl: '$n' already active"; continue; }
+      cp -r "$SHELF/$n" "$ACTIVE/$n" && echo "loaded: $n (live immediately)"
     done
+    reindex
     ;;
   unload)
+    # Remove the active COPY only (the store master remains). An always-on system
+    # skill has no store master and cannot be unloaded here.
     [ $# -ge 1 ] || { echo "skillctl: unload needs names or --all"; exit 2; }
     if [ "$1" = "--all" ]; then set -- $(ls "$ACTIVE"); fi
     for n in "$@"; do
       [ -d "$ACTIVE/$n" ] || { echo "skillctl: '$n' not active — skipped"; continue; }
       p=$(policy_of "$n")
       case "$p" in
-        pinned|ride-along) echo "refused: $n is $p — stays loaded";;
-        *) mv "$ACTIVE/$n" "$SHELF/$n" && echo "unloaded: $n";;
+        pinned|ride-along) echo "refused: $n is $p — stays loaded"; continue;;
       esac
+      if [ ! -d "$SHELF/$n" ]; then
+        echo "refused: $n is a committed always-on skill (no store master) — change the .gitignore whitelist to alter its status"; continue
+      fi
+      rm -rf "$ACTIVE/$n" && echo "unloaded: $n (store master kept)"
     done
+    reindex
     ;;
   check-updates)
     # Detection only — compares pinned SHA to upstream HEAD (cheap: ls-remote, no fetch).
@@ -107,7 +132,7 @@ case "$cmd" in
     # mode-entry suggestions because an exclusive peer's footprint is already present.
     # Naming a suppressed skill explicitly still goes through the normal load-time
     # warn (add-and-handoff.md §3c) — this command only informs suggestion-building.
-    CONF="$STORE/CONFLICTS.md"
+    CONF=".claude/skills/skill-manager/references/conflict-rulings.md"
     [ -f "$CONF" ] || { echo "skillctl: $CONF missing"; exit 0; }
     groups=$(awk '
       /^## Exclusive groups/ {f=1; next}

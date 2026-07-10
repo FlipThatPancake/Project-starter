@@ -1,6 +1,8 @@
 ---
 name: ship-now
 description: Use when the user says "ship it", "push now", "save my work", "ship to main", or "PR to main", or wants to commit+push at session end even with CLAUDE_AUTO_PUSH_TO_MAIN=false. Two targets — branch (default) or pr (whenever main is meant) — using GitHub's own PR merge as the ONLY normal path to main. A local direct merge exists solely as a confirmed fallback if the GitHub merge is blocked.
+policy: manual
+category: core
 ---
 
 # ship-now — commit + push, to a clearly-chosen target

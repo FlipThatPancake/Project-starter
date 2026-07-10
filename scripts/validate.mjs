@@ -11,6 +11,7 @@
 import { readFileSync, existsSync, readdirSync, statSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import vm from 'node:vm';
+import { scanSkills, renderIndex, INDEX_PATH, POLICIES, PINNED_BASELINE, ACTIVE_DIR, STORE_DIR } from './lib/skill-meta.mjs';
 
 const failures = [];
 const fail = (file, line, rule, detail) => failures.push(`${file}:${line}: ${rule}: ${detail}`);
@@ -187,73 +188,51 @@ function checkMemory(memDir = '.claude/memory', deepRoutes = null) {
     fail(sessionLog, 0, 'cap', `>${CAPS.sessionLog} non-empty lines`);
 }
 
-// ── Skill loadout lint (active dir ↔ store ↔ catalog coherence) ──────────────
+// ── Skill loadout lint (distributed model — v2 §B3/B4) ───────────────────────
+// Metadata lives in each skill's SKILL.md frontmatter; state = folder location;
+// INDEX.md is generated. No central CATALOG/CONFLICTS table to parse.
 function checkSkills() {
-  const active = '.claude/skills', store = '.claude/skills-store', shelf = join(store, 'skill-storage'), cat = join(store, 'CATALOG.md');
-  if (!existsSync(cat)) { fail(cat, 0, 'missing', 'skill catalog not found — run the skill-manager skill'); return; }
-  const text = readFileSync(cat, 'utf8');
-  if (lineCount(cat) > 120) fail(cat, 0, 'cap', '>120 non-empty lines');
+  const skills = scanSkills();
 
-  // Installed rows: | name | kind | category | policy | load-when |
-  const inst = text.match(/## Installed\n([\s\S]*?)(\n## |$)/);
-  if (!inst) { fail(cat, 0, 'shape', 'missing "## Installed" section'); return; }
-  const rows = [...inst[1].matchAll(/^\| ([a-z0-9-]+) \| (skill|pack-member|tool|reference) \| ([a-z0-9-]+) \| (pinned|ride-along|menu|manual) \|/gm)]
-    .map(m => ({ name: m[1], kind: m[2], category: m[3], policy: m[4] }));
-  const names = rows.map(r => r.name);
-  for (const d of [...new Set(names.filter((n, i) => names.indexOf(n) !== i))])
-    fail(cat, 0, 'dup', `"${d}" has more than one Installed row`);
-
-  // every dir on either shelf must have an Installed row
-  const dirsOf = p => existsSync(p) ? readdirSync(p).filter(d => statSync(join(p, d)).isDirectory()) : [];
-  for (const d of dirsOf(active))
-    if (!names.includes(d)) fail(cat, 0, 'unregistered', `.claude/skills/${d} active but not in catalog — run the skill-manager skill`);
-  for (const d of dirsOf(shelf))
-    if (!names.includes(d)) fail(cat, 0, 'unregistered', `skills-store/skill-storage/${d} present but not in catalog — run the skill-manager skill`);
-
-  // row ↔ disk coherence (loadable kinds only)
-  for (const r of rows.filter(r => r.kind === 'skill' || r.kind === 'pack-member')) {
-    const here = existsSync(join(active, r.name)), there = existsSync(join(shelf, r.name));
-    if ((r.policy === 'pinned' || r.policy === 'ride-along') && !here)
-      fail(cat, 0, 'not-loaded', `${r.name} is ${r.policy} but missing from .claude/skills/`);
-    if (!here && !there) fail(cat, 0, 'gone', `${r.name} in catalog but on neither shelf`);
-    if (here && there) fail(cat, 0, 'twice', `${r.name} present in BOTH skills/ and skills-store/skill-storage/`);
+  // 1. frontmatter completeness (policy + category on every skill)
+  for (const s of skills) {
+    const p = join(s.state === 'active' ? ACTIVE_DIR : STORE_DIR, s.dir, 'SKILL.md');
+    if (s.error) { fail(p, 0, 'frontmatter', s.error); continue; }
+    if (!POLICIES.includes(s.policy)) fail(p, 0, 'policy', `invalid/missing policy "${s.policy}" (one of ${POLICIES.join('|')})`);
+    if (!s.category) fail(p, 0, 'category', 'missing category in frontmatter');
   }
 
-  // core pinned baseline
-  for (const p of ['skill-manager', 'project-memory', 'checkpoint'])
-    if (!rows.some(r => r.name === p && r.policy === 'pinned'))
-      fail(cat, 0, 'core', `"${p}" must be a pinned Installed row`);
+  // (No dup-across-shelves check: activation copies store→active by design, so a
+  //  loaded skill legitimately sits on both shelves; scanSkills shadows it to one.)
 
-  // module index (optional file): caps + every parent must exist in the catalog
-  const mod = join(store, 'MODULES.md');
-  if (existsSync(mod)) {
-    if (lineCount(mod) > 80) fail(mod, 0, 'cap', '>80 non-empty lines');
-    const mtext = readFileSync(mod, 'utf8');
-    for (const m of mtext.matchAll(/^\| [^|]+ \| ([a-z0-9-]+) \| [^|]+ \| (referenced|extracted) \|/gm))
-      if (m[1] !== 'parent' && !text.includes(m[1]))
-        fail(mod, 0, 'orphan', `module parent "${m[1]}" not found in CATALOG.md`);
+  // 3. pinned baseline must be active + pinned
+  for (const b of PINNED_BASELINE) {
+    const s = skills.find(x => x.name === b);
+    if (!s) fail('skills', 0, 'core', `"${b}" missing from both shelves`);
+    else if (s.state !== 'active') fail('skills', 0, 'core', `"${b}" must be active (found ${s.state})`);
+    else if (s.policy !== 'pinned') fail('skills', 0, 'core', `"${b}" must have policy pinned (found ${s.policy})`);
   }
 
-  // lock file (optional): cap + every tracked third-party skill must be in the catalog
-  const lock = join(store, 'LOCK.md');
-  if (existsSync(lock)) {
-    if (lineCount(lock) > 60) fail(lock, 0, 'cap', '>60 non-empty lines');
-    for (const m of readFileSync(lock, 'utf8').matchAll(/^\| ([a-z0-9-]+) \| github:/gm))
-      if (!text.includes(m[1])) fail(lock, 0, 'orphan', `LOCK skill "${m[1]}" not in CATALOG.md`);
+  // 4. every pinned/ride-along skill must be active (dormant = never fires)
+  for (const s of skills)
+    if ((s.policy === 'pinned' || s.policy === 'ride-along') && s.state !== 'active')
+      fail('skills', 0, 'not-loaded', `${s.name} is ${s.policy} but dormant — must be active`);
+
+  // 5. exclusive-with symmetry (only checkable among installed skills)
+  for (const s of skills) for (const peer of s.exclusive) {
+    const p = skills.find(x => x.name === peer);
+    if (p && !p.exclusive.includes(s.name))
+      fail('skills', 0, 'exclusive-asym', `${s.name} lists exclusive-with ${peer}, but ${peer} does not reciprocate`);
   }
 
-  // conflict rulings (optional file): cap + only the 5 known rule types.
-  // Deliberately NOT parsing the freeform "skills / group" cell (⊕/›/+ make it brittle).
-  const conf = join(store, 'CONFLICTS.md');
-  if (existsSync(conf)) {
-    if (lineCount(conf) > 60) fail(conf, 0, 'cap', '>60 non-empty lines');
-    const okTypes = new Set(['precedence', 'exclusive', 'sequential', 'compatible', 'duplicate']);
-    for (const m of readFileSync(conf, 'utf8').matchAll(/^\| ([a-z-]+) \|/gm)) {
-      const t = m[1];
-      if (t === 'type' || /^-+$/.test(t)) continue;
-      if (!okTypes.has(t)) fail(conf, 0, 'rule-type', `unknown conflict rule type "${t}"`);
-    }
-  }
+  // 6. INDEX.md exists and is in sync with the frontmatter (regenerate + compare)
+  if (!existsSync(INDEX_PATH)) fail(INDEX_PATH, 0, 'missing', 'run: node scripts/gen-skill-index.mjs');
+  else if (renderIndex(skills).trim() !== readFileSync(INDEX_PATH, 'utf8').trim())
+    fail(INDEX_PATH, 0, 'stale', 'out of sync with skill frontmatter — run: node scripts/gen-skill-index.mjs');
+
+  // 7. LOCK.md (optional third-party pins): cap only
+  const lock = '.claude/skills-store/LOCK.md';
+  if (existsSync(lock) && lineCount(lock) > 60) fail(lock, 0, 'cap', '>60 non-empty lines');
 }
 
 // ── CLI ──────────────────────────────────────────────────────────────────────
@@ -274,7 +253,7 @@ if (args.includes('--all')) {
   if (!targets.length && existsSync('index.html')) targets.push('index.html');
   targets.forEach(checkHtml);
   if (existsSync('.claude/memory/INDEX.md')) checkMemory();   // --all = deep, no filter
-  if (existsSync('.claude/skills-store/CATALOG.md')) checkSkills();
+  if (existsSync('.claude/skills')) checkSkills();
 } else {
   if (args.includes('--src')) args.slice(args.indexOf('--src') + 1).filter(a => !a.startsWith('--')).forEach(checkHtml);
   if (args.includes('--memory')) checkMemory('.claude/memory', routesArg);

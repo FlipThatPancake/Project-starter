@@ -6,6 +6,11 @@
 # one task lands in .claude/skills/ locally but must NOT leak to other branches or
 # main. The whitelist below IS the always-on baseline; to promote a new skill to
 # always-on, add a "!" line here (a deliberate, rare edit).
+# Generated, per-working-copy browse surface — regenerated at session start and
+# after every load/unload. Gitignored so a local activation never leaks via a
+# committed INDEX (it reflects THIS working copy's active set, which is local).
+.claude/skills-store/INDEX.md
+
 .claude/skills/*
 !.claude/skills/skill-manager/
 !.claude/skills/project-memory/

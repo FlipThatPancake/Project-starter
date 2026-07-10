@@ -1,6 +1,8 @@
 ---
 name: session-log
 description: Summarize the current conversation session and append results to the weekly agent-log. Use when user says "log this", "session log", "summarize this session", or asks to write results to the agent-log.
+policy: manual
+category: research
 allowed-tools: Read,Write,Edit,Bash
 ---
 
