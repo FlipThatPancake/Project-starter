@@ -20,11 +20,11 @@ read-at: picker/load time (filter + order options) · add time (warn on duplicat
 | exclusive | webgpu-threejs-tsl ⊕ freshtechbro threejs-webgl / react-three-fiber | never co-load TWO contradicting renderers (WebGPU vs classic WebGL). Loading ONE 3D skill mid-session is FINE — the block is only against a second, conflicting renderer | user ruling + WIKI §8 |
 | exclusive | designer-skills ⊕ ui-ux-pro-max | both new-project starters, incompatible token + named-style systems — pick ONE per project. Kept exclusive until user tests them (2026-07-04) | user ruling |
 
-## Exclusive groups — machine-parseable (exact CATALOG.md names, comma-separated; read by
+## Exclusive groups — machine-parseable (exact skill names (frontmatter `name:`), comma-separated; read by
 `skillctl.sh check-conflicts` to suppress an unused member from mode-entry suggestions
 when its excluded peer already has footprint files in the project — see
 `add-and-handoff.md` §2a for footprint globs). A group appears here ONLY once every
-member's name matches a real CATALOG.md row — until then it stays prose-only above.
+member's name matches a real installed skill — until then it stays prose-only above.
 The `webgpu-threejs-tsl ⊕ freshtechbro threejs-webgl / react-three-fiber` row (line 20)
 is NOT here yet: those are pack-member names, not yet registered as their own CATALOG
 rows (per `add-and-handoff.md` §1, freshtechbro packs register per-member on `add`) —

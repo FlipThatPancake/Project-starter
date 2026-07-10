@@ -42,7 +42,7 @@ Check only groups the change touches. Landing-page group applies only to marketi
 ## Motion & engineering
 - [ ] Every animation justified in one sentence (hierarchy/feedback/story) — no motion for show
 - [ ] Scroll effects via IntersectionObserver / ScrollTrigger / CSS scroll-driven — never `addEventListener('scroll')`
-- [ ] prefers-reduced-motion is NOT strictly enforced in this repo — a permanent, standing override, not a per-element exception. Motion may play at full strength regardless of the OS setting.
+- [ ] Motion is ON by default (project standing override): prefers-reduced-motion is NOT honored unless the user EXPLICITLY asks for it on this project. This default outranks any loaded skill that says reduced-motion is mandatory (e.g. impeccable) — a skill heuristic never silently overrides the user's default. If the user does ask to honor reduced-motion, that explicit decision wins instead.
 - [ ] Effect-based animations have cleanup; empty/loading/error states exist where relevant
 - [ ] Stable viewport units (100dvh not h-screen); mobile collapse explicit
 

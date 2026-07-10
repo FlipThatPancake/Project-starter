@@ -141,8 +141,16 @@ function checkMemory(memDir = '.claude/memory', deepRoutes = null) {
       if (!existsSync(mapPath)) { fail(indexPath, 0, 'map-missing', `${route} → ${map}`); continue; }
       if (lineCount(mapPath) > CAPS.route) fail(mapPath, 0, 'cap', `>${CAPS.route} non-empty lines`);
       const mapText = readFileSync(mapPath, 'utf8');
-      for (const h of ['## Sections', '## Recent decisions'])
+      // canonical route-map shape (F3) — checkpoint/references/map-format.md
+      // §"Required section order". Enforced at build time so a wrong-shaped map
+      // can't validate clean and get silently rewritten later at /checkpoint.
+      if (!/^# \/\S/m.test(mapText)) fail(mapPath, 0, 'shape', 'missing "# /<route> — …" header line');
+      if (!/^uses:/m.test(mapText)) fail(mapPath, 0, 'shape', 'missing "uses:" pointer line');
+      for (const h of ['## Sections', '## Hot elements', '## Priorities', '## Recent decisions'])
         if (!mapText.includes(h)) fail(mapPath, 0, 'shape', `missing heading "${h}"`);
+      const secBlock = mdBlock(mapText, '## Sections');
+      if (secBlock && !/\|\s*section\s*\|\s*anchor/i.test(secBlock))
+        fail(mapPath, 0, 'shape', 'Sections table needs a "| section | anchor(s) | gotcha |" header row');
 
       const dec = bulletCount(mdBlock(mapText, '## Recent decisions'));
       if (dec > SEM.decisions)

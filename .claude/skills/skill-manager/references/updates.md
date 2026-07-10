@@ -1,3 +1,11 @@
+> **v2 model change (2026-07):** the central `CATALOG.md`, `CONFLICTS.md`, and
+> `MODULES.md` were retired. Skill metadata (`policy`/`category`/`exclusive-with`)
+> now lives in each skill's own SKILL.md frontmatter; `.claude/skills-store/INDEX.md`
+> is GENERATED (`node scripts/gen-skill-index.mjs`, gitignored). CONFLICTS.md →
+> `references/conflict-rulings.md`; MODULES.md → `references/module-index.md`.
+> Read "write a CATALOG row" below as "set frontmatter + regenerate the INDEX", and
+> "MODULES.md" as "module-index.md". Activation COPIES store→active (gitignored).
+
 # Updating a third-party store skill — review-gated, never auto-applied
 Loaded only when the manager runs `update`. Third-party skills are VENDORED copies; a curator's change can help OR break. `LOCK.md` pins what we vendored so drift is detectable and rollback is possible.
 

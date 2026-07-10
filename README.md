@@ -48,4 +48,14 @@ from this one (or clone it and re-point `origin`), then:
 | change route mid-session | say "switch to /route" or "unlock scope" — scope is never re-inferred silently |
 | ship a chunk | `scripts/ship.sh "msg"` (validates + builds changed routes + commits + pushes) |
 | Stop-hook nudge appears | run `/checkpoint` |
-| need a new capability | ask for it — skill-manager loads it from `.claude/skills-store/` or installs it |
+| need a new capability | ask for it, or `/skills load <name>` from the store (thin — no doctrine read); skill-manager installs a brand-new one from the web |
+
+## Environment notes
+
+- **Vendoring a web library** (e.g. GSAP) for a self-contained build: fetch from
+  `https://registry.npmjs.org/<pkg>/-/<pkg>-<ver>.tgz`. `unpkg.com` is blocked by the
+  agent proxy (CONNECT 403); the npm registry is allowlisted. Drop the minified file in
+  the route's dir and `@inline` it — but never whole-file Read that blob (built-file hazard).
+- **Skill activation is local.** `/skills load X` copies a skill into `.claude/skills/`,
+  which is gitignored except the always-on whitelist — so it never leaks to other
+  branches. The store (`.claude/skills-store/skill-storage/`) is the shared library.
