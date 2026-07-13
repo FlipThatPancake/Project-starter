@@ -1,5 +1,15 @@
+> **v3 model change (2026-07):** `skill-manager` (pinned) was retired; this doc
+> now belongs to `skill-curator` (dormant — loaded only for install/update/
+> extract/delete). The `policy` frontmatter field is GONE — "always-on" is
+> defined solely by the `.gitignore` whitelist. `category` was renamed `group`
+> (free-text, optional, no enum). There is no generated `INDEX.md` any more —
+> the session-start hook enumerates `.claude/skills/` + the store directly.
+> (Earlier v2 note, still true: the central `CATALOG.md`/`CONFLICTS.md`/
+> `MODULES.md` tables were retired in favor of per-skill frontmatter +
+> `references/conflict-rulings.md` / `references/module-index.md`.)
+
 # Add classification · footprint detection · load-time handoff
-Loaded by skill-manager only during `add`/`load` — NOT resident. SKILL.md carries pointers; the detail is here.
+Loaded by skill-curator only during `install`/`load` — NOT resident. SKILL.md carries pointers; the detail is here.
 
 ## 1. Classify a fetched source (pack vs deep-skill vs standalone)
 Inspect the fetched repo tree, then confirm with the user before writing rows:

@@ -1,6 +1,7 @@
 ---
 name: project-memory
 description: Use at the start of every session in this repo — first to establish the session's route scope (portal profile), and whenever locating any route, page section, component, or element, including when the user names a route or a section ("the preference list", "/reports"). Read .claude/memory/INDEX.md and the matching routes/<route>.md map BEFORE any exploratory file reads or greps.
+group: core
 ---
 
 # Project memory — session scope + read protocol
@@ -17,12 +18,12 @@ Route COUNT is the ONLY driver of locking — no portal/standalone flag. A one-r
 project that grows a 2nd route starts locking automatically; nothing to flip.
 The `state:` line (`starter`/`in-progress`) is unrelated to scope — it only tells
 the session-start hook whether to steer toward new-project bootstrap (see
-`.claude/modes/README.md`). Missing `state:` = treat as `starter`.
+`.claude/modes/MODES_PROTOCOL.md`). Missing `state:` = treat as `starter`.
 
 ## 1. Session scope lock (when INDEX lists ≥2 routes)
 - First user prompt names a route/project unambiguously → lock silently; state one line: `Scope: /<route>`.
 - Ambiguous → ask ONE AskUserQuestion with options built live from INDEX's route table, plus "whole project / cross-route" and "new route". Nothing more — every other survey answer already lives in the memory files.
-- On lock, persist it: `echo "/<route>" > /tmp/claude-scope-$(pwd | sha256sum | cut -d' ' -f1 | cut -c1-8)` — and re-read that file whenever scope is uncertain (e.g. after a context compaction).
+- On lock, persist it: `echo "/<route>" > /tmp/claude-route-scope-$(pwd | sha256sum | cut -d' ' -f1 | cut -c1-8)` — and re-read that file whenever scope is uncertain (e.g. after a context compaction).
 - The lock is advisory but binding: confine reads/greps/edits to the locked route's paths + the shared files its pointer rows name. Re-scope ONLY when the user says so ("switch to /x", "unlock scope") — never re-infer from a later ambiguous prompt.
 
 ### Enforcement (scope-guard)

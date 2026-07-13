@@ -1,0 +1,20 @@
+# Isolated agent worktrees (test harness etc.) — never part of the repo.
+.claude/worktrees/
+
+# Skill activation is per-session and LOCAL — design proposal v2 §B6.
+# Only the always-on "system" skills are committed; any skill activated ad-hoc for
+# one task lands in .claude/skills/ locally but must NOT leak to other branches or
+# main. The whitelist below IS the always-on baseline (v3: this whitelist alone
+# defines "always-on" — no policy frontmatter field); to promote a new skill to
+# always-on, add a "!" line here (a deliberate, rare edit).
+
+.claude/skills/*
+!.claude/skills/project-memory/
+!.claude/skills/checkpoint/
+!.claude/skills/grilling/
+!.claude/skills/domain-modeling/
+!.claude/skills/grill-me/
+!.claude/skills/grill-with-docs/
+!.claude/skills/handoff/
+!.claude/skills/fable-mode/
+!.claude/skills/ship-now/

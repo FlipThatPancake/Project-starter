@@ -1,4 +1,20 @@
-# Skill Management System — handoff for a fresh Claude session
+> **HISTORICAL — superseded by v3 (2026-07).** `skill-manager` (the pinned skill
+> this doc onboards you to) was retired and split: everyday load/unload/list/
+> remove is now the thin `scripts/skillctl.sh` (`/skills`, no doctrine read);
+> install/update/extract/delete moved to the dormant `skill-curator` skill in
+> `.claude/skills-store/skill-storage/skill-curator/`. The `policy` field is
+> gone entirely — "always-on" is defined solely by the `.gitignore` whitelist;
+> `category` was renamed `group` (free-text). There is no generated `INDEX.md`
+> — the session-start hook enumerates skills directly. This file is kept as a
+> historical record of the ORIGINAL design rationale (§2's principles still
+> hold); do not follow its verb/file-path specifics — read `skill-curator`'s
+> own SKILL.md for the current mechanics instead.
+>
+> (Earlier v2 note, for reference: the central `CATALOG.md`/`CONFLICTS.md`/
+> `MODULES.md` were retired in favor of per-skill frontmatter + a generated
+> INDEX.md, itself since removed in v3.)
+
+# Skill Management System — handoff for a fresh Claude session (historical, v1/v2 design)
 
 You are reading this because you've just landed in an environment/repo that has this
 system installed, and you need the complete picture without re-deriving it from

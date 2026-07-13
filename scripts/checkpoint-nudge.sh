@@ -8,14 +8,18 @@
 set -u
 cd "$(git rev-parse --show-toplevel 2>/dev/null)" || exit 0
 
-# skill loadout drift → recommend the skill-manager skill (own hourly stamp)
-CAT=".claude/skills-store/CATALOG.md"
+# skill loadout drift → recommend the skill-curator skill (own hourly stamp).
+# Model v3: a skill is "registered" iff its own SKILL.md carries name+description
+# frontmatter (no policy field, no central CATALOG). Missing either = drift. Skips
+# the active copy of a skill whose store master already covers the name (shadowing).
 if [ -d .claude/skills ]; then
   DRIFT=""
   for d in .claude/skills/*/ .claude/skills-store/skill-storage/*/; do
     [ -d "$d" ] || continue
-    n=$(basename "$d")
-    if [ ! -f "$CAT" ] || ! grep -q "| $n |" "$CAT"; then DRIFT="${DRIFT:+$DRIFT, }$n"; fi
+    f="$d/SKILL.md"
+    if [ ! -f "$f" ] || ! grep -q '^name:' "$f" || ! grep -q '^description:' "$f"; then
+      DRIFT="${DRIFT:+$DRIFT, }$(basename "$d")"
+    fi
   done
   if [ -n "$DRIFT" ]; then
     SSTAMP="/tmp/skill-drift-$(pwd | cksum | cut -d' ' -f1)"
@@ -23,7 +27,7 @@ if [ -d .claude/skills ]; then
     snow=$(date +%s)
     if [ $((snow - slast)) -ge 3600 ]; then
       date +%s > "$SSTAMP"
-      printf '{"systemMessage":"\\ud83e\\udde9 Skill loadout drift: %s not in skills-store/CATALOG.md. Run the skill-manager skill."}\n' "$DRIFT"
+      printf '{"systemMessage":"\\ud83e\\udde9 Skill loadout drift: %s missing name/description frontmatter."}\n' "$DRIFT"
       exit 0
     fi
   fi
@@ -41,7 +45,7 @@ if [ -f "$LOCK" ] && grep -q 'github:' "$LOCK"; then
     if [ $((now - ulast)) -ge 86400 ]; then
       date +%s > "$USTAMP"
       days=$(( (now - lcs) / 86400 ))
-      printf '{"systemMessage":"\\ud83d\\udd04 Third-party skills unchecked for %s days. Run the skill-manager skill: check-updates (detection only, never auto-applies)."}\n' "$days"
+      printf '{"systemMessage":"\\ud83d\\udd04 Third-party skills unchecked for %s days. Run the skill-curator skill: check-updates (detection only, never auto-applies)."}\n' "$days"
       exit 0
     fi
   fi

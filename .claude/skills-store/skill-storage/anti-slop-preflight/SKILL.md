@@ -1,6 +1,7 @@
 ---
 name: anti-slop-preflight
 description: Run before finalizing ANY visual, CSS, layout, typography, or design change to a web page (including minor/mechanical tweaks that skip the skill gate) — the anti-slop checklist, on-system fidelity principles, and this project's style lock. Not for pure logic/data edits with no visual surface. If any box fails, the change is not done; fix before delivering.
+group: design-guardrails
 ---
 
 # Design guardrail (distilled from Leonxlnx/taste-skill §14 + pbakaus/impeccable polish; project style lock ALWAYS outranks this list)
@@ -40,7 +41,7 @@ Check only groups the change touches. Landing-page group applies only to marketi
 ## Motion & engineering
 - [ ] Every animation justified in one sentence (hierarchy/feedback/story) — no motion for show
 - [ ] Scroll effects via IntersectionObserver / ScrollTrigger / CSS scroll-driven — never `addEventListener('scroll')`
-- [ ] prefers-reduced-motion is NOT strictly enforced in this repo — a permanent, standing override, not a per-element exception. Motion may play at full strength regardless of the OS setting.
+- [ ] Motion is ON by default (project standing override): prefers-reduced-motion is NOT honored unless the user EXPLICITLY asks for it on this project. This default outranks any loaded skill that says reduced-motion is mandatory (e.g. impeccable) — a skill heuristic never silently overrides the user's default. If the user does ask to honor reduced-motion, that explicit decision wins instead.
 - [ ] Effect-based animations have cleanup; empty/loading/error states exist where relevant
 - [ ] Stable viewport units (100dvh not h-screen); mobile collapse explicit
 
@@ -53,5 +54,5 @@ Deliberately direction-agnostic: this enforces consistency with WHATEVER system/
 - System ambiguous? ASK — don't guess a new direction into a minor edit.
 
 ## Project style lock — the committed style for THIS project (record decisions here whenever this skill is loaded)
-When you commit a style decision, add/update a line here so even a mechanical tweak adheres, next time this skill loads. Full detail lives in the project's shared design file under `.claude/memory/shared/` (source of truth, registered in INDEX.md's Shared registries) — this is the per-load summary; on any conflict that file wins. Mirror new decisions into both. (Policy is `manual` as of 2026-07-07 — see MODE-SHORTLISTS.md for which modes suggest loading it; it no longer auto-fires every session.)
+When you commit a style decision, add/update a line here so even a mechanical tweak adheres, next time this skill loads. Full detail lives in the project's shared design file under `.claude/memory/shared/` (source of truth, registered in INDEX.md's Shared registries) — this is the per-load summary; on any conflict that file wins. Mirror new decisions into both. (Dormant, load explicitly when a visual change needs it — it no longer auto-fires every session.)
 - (none yet — starter repo; record this project's first committed style decisions here)

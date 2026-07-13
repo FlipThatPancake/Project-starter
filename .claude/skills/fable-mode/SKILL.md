@@ -1,5 +1,6 @@
 ---
 name: fable-mode
+group: process
 description: >
   Enforces staged execution discipline on large tasks: a written stage plan,
   parallel delegation where the runtime supports it, a failable verification

@@ -5,7 +5,7 @@ set -e
 
 # Compute cwd hash (matches project-memory session-lock logic)
 CWD_HASH=$(pwd | sha256sum | cut -d' ' -f1 | cut -c1-8)
-SCOPE_FILE="/tmp/claude-scope-$CWD_HASH"
+SCOPE_FILE="/tmp/claude-route-scope-$CWD_HASH"
 MODE_FILE="/tmp/claude-mode-$CWD_HASH"
 
 # No mode lock AND no route lock → nothing to enforce

@@ -1,5 +1,9 @@
+> **v3 model change (2026-07):** `skill-manager` (pinned) was retired; this doc
+> now belongs to `skill-curator` (dormant). No more `policy` field; `category`
+> was renamed `group` (free-text, optional). No generated `INDEX.md`.
+
 # Updating a third-party store skill — review-gated, never auto-applied
-Loaded only when the manager runs `update`. Third-party skills are VENDORED copies; a curator's change can help OR break. `LOCK.md` pins what we vendored so drift is detectable and rollback is possible.
+Loaded only when skill-curator runs `update`. Third-party skills are VENDORED copies; an update can help OR break. `LOCK.md` pins what we vendored so drift is detectable and rollback is possible.
 
 ## Detect (cheap, safe, run often — changes nothing)
 `skillctl.sh check-updates` — `git ls-remote` per LOCK row vs the pinned ref (cheap, no fetch); only on a SHA diff does it pay for a shallow clone to read the new commit's date. Prints ours-vs-latest (sha + upstream-date, both from git history — never filesystem mtime, so the comparison is valid even if the skill dir was re-cloned/re-copied since). Stamps `last-checked`.
