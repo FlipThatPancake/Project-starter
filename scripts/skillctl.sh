@@ -97,7 +97,7 @@ case "$cmd" in
     ;;
   remove)
     # Bare store-master delete — no cross-reference scrubbing. Use this only for a
-    # skill that was never wired into MODE-SHORTLISTS/exclusive-with/LOCK elsewhere;
+    # skill that was never wired into exclusive-with/LOCK/mode-docs elsewhere;
     # otherwise use the skill-curator skill's `delete` verb for a full teardown.
     [ $# -ge 1 ] || { echo "skillctl: remove needs skill names"; exit 2; }
     for n in "$@"; do

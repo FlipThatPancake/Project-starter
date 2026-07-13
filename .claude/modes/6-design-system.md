@@ -9,11 +9,10 @@ opt into.
   printf '%s\n' src/shared/ > /tmp/claude-mode-$H
   ```
 - **read-set:** `.claude/memory/INDEX.md` + the shared registry file(s) in `.claude/memory/shared/` + the maps of routes that consume the tokens (to gauge blast radius). Not route code.
-- **skills:** gate on the store (see `.claude/skills-store/MODE-SHORTLISTS.md` row for
-  this mode); design-judgement skills are the point here — expect the picker to
-  surface them.
+- **skills:** opt-in, same as every mode — design-judgement skills are the point
+  of this mode, so load whatever the shared system's decisions need.
 - **guardrails:**
   - A token change ripples to every consuming route — check the shared registry's `used-by` before editing.
-  - Load `anti-slop-preflight` (manual, shortlisted for this mode) and run it before finalizing any visual change.
+  - Load `anti-slop-preflight` (dormant) and run it before finalizing any visual change.
   - Cross-route by nature: use `@allow-cross-route` in prompt + commit message.
   - Route-local styling belongs in the route (mode 3/4), not here.

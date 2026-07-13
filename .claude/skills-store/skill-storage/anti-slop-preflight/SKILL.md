@@ -54,5 +54,5 @@ Deliberately direction-agnostic: this enforces consistency with WHATEVER system/
 - System ambiguous? ASK — don't guess a new direction into a minor edit.
 
 ## Project style lock — the committed style for THIS project (record decisions here whenever this skill is loaded)
-When you commit a style decision, add/update a line here so even a mechanical tweak adheres, next time this skill loads. Full detail lives in the project's shared design file under `.claude/memory/shared/` (source of truth, registered in INDEX.md's Shared registries) — this is the per-load summary; on any conflict that file wins. Mirror new decisions into both. (Policy is `manual` as of 2026-07-07 — see MODE-SHORTLISTS.md for which modes suggest loading it; it no longer auto-fires every session.)
+When you commit a style decision, add/update a line here so even a mechanical tweak adheres, next time this skill loads. Full detail lives in the project's shared design file under `.claude/memory/shared/` (source of truth, registered in INDEX.md's Shared registries) — this is the per-load summary; on any conflict that file wins. Mirror new decisions into both. (Dormant, load explicitly when a visual change needs it — it no longer auto-fires every session.)
 - (none yet — starter repo; record this project's first committed style decisions here)

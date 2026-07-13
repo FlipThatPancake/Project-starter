@@ -7,5 +7,11 @@ uses: none | data: none
 | hero | @sec:hero | — |
 | footer | @sec:footer | — |
 
+## Hot elements
+- @sec:hero
+
+## Priorities / planned
+- (none)
+
 ## Recent decisions (cap 10, newest first)
 - 2026-07-05 initial map

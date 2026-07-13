@@ -10,10 +10,10 @@ Not part of the anchor/map system itself (deliberately outside
 `.claude/memory/`): this describes the *tooling*, and is prose by design. The
 anchor-checker in `scripts/validate.mjs` only scans `.html`/`.css`/`.js`/`.mjs`
 for `@sec:`/`@css:`/`@js:` anchors — it never reads `.md`, so this file (like
-`.claude/skills/skill-manager/SKILL-DEVELOPMENT-LOG.md`) can't and shouldn't be wired into `INDEX.md`'s route
+`.claude/memory/agent-log/SKILL-DEVELOPMENT-LOG.md`) can't and shouldn't be wired into `INDEX.md`'s route
 table.
 
-For the chronological *why* behind each decision, see `.claude/skills/skill-manager/SKILL-DEVELOPMENT-LOG.md`.
+For the chronological *why* behind each decision, see `.claude/memory/agent-log/SKILL-DEVELOPMENT-LOG.md`.
 This file is the *what/how*, organized as a reference, not a log.
 
 ---
@@ -87,7 +87,7 @@ are protocol Claude reads and follows — they are not executable.
 | `.claude/memory/INDEX.md` | The registry: profile line, route table, shared registries, global gotchas |
 | `.claude/memory/routes/<route>.md` | Per-route section→anchor map (only for routes past the complexity threshold) |
 | `.claude/memory/shared/<id>.md` | Cross-route facts (design tokens, shared data) — never duplicated per-route |
-| `scripts/validate.mjs` | Lints both source anchors (`--src`) and memory (`--memory`); also `--skills` (separate, skill-manager's loadout lint, unrelated to memory) |
+| `scripts/validate.mjs` | Lints both source anchors (`--src`) and memory (`--memory`); also `--skills` (separate, skill loadout lint, unrelated to memory) |
 | `scripts/scope-guard-hook.sh` | PreToolUse hook: blocks Edit/Write outside the locked route's allowlist |
 | `scripts/ship.sh` | validate → build changed routes → commit → cross-route gate → push (with retry) |
 | `scripts/checkpoint-nudge.sh` | Stop hook: zero-token `/checkpoint` recommender |
@@ -215,7 +215,7 @@ what's in a shared file.
 Early versions of this system had `profile: standalone` and `profile: portal`
 as a **structural** fork — standalone meant a flat-file project, portal meant
 `src/routes/<name>/`. That fork was collapsed (see
-`.claude/skills/skill-manager/SKILL-DEVELOPMENT-LOG.md`, "sixth work chunk") because it created a painful
+`.claude/memory/agent-log/SKILL-DEVELOPMENT-LOG.md`, "sixth work chunk") because it created a painful
 migration cliff the moment a standalone project grew a second route.
 
 **Current model**: structure is ALWAYS route-based conceptually (even a
@@ -391,13 +391,13 @@ codebase:
 - `shared-solo` is a **warning**, not a failure — printed to stderr, but exit
   code stays 0. Everything else above is a hard failure (exit 1).
 
-**`--skills`** (unrelated to memory — this is the `skill-manager` system's
-loadout lint, lints `.claude/skills-store/CATALOG.md` coherence against
-`.claude/skills/`. It happens to live in the same file because both systems
-converged on `main` after being built in parallel sessions. If you're reading
-this in a repo that doesn't have `skill-manager` installed, `--skills` and
-`--all`'s optional `checkSkills()` call will simply no-op — `--all` only runs
-it `if (existsSync('.claude/skills-store/CATALOG.md'))`.)
+**`--skills`** (unrelated to memory — this is the skill loadout lint: checks
+each skill's own SKILL.md frontmatter (name/description/exclusive-with) against
+the `.gitignore` always-on whitelist. It happens to live in the same file
+because both systems converged on `main` after being built in parallel
+sessions. If you're reading this in a repo without the skill-loadout system,
+`--skills` and `--all`'s optional `checkSkills()` call will simply no-op —
+`--all` only runs it `if (existsSync('.claude/skills'))`.)
 
 Exit codes throughout: `0` clean (possibly with warnings) · `1` validation
 failures (all listed, not just the first) · `2` usage/IO error.
@@ -425,7 +425,7 @@ Thresholds (any one crossing triggers the nudge): ≥5 files, ≥150 lines, ≥1
 anchor line touched, ≥1 new src file. Emits a `systemMessage` JSON line the
 harness surfaces to the user; does not block anything, purely advisory.
 
-If `skill-manager` is installed in the repo, `checkpoint-nudge.sh` on `main`
+If the skill-loadout system is installed in the repo, `checkpoint-nudge.sh` on `main`
 also carries two unrelated nudges (skill-loadout drift, third-party skill
 staleness) that were added by that parallel system — these coexist in the
 same file but are logically independent of the memory-checkpoint nudge.
@@ -519,7 +519,7 @@ ported and may not exist depending on which branch you're reading this from:
 `usage-analysis` (on-demand transcript token analyzer), `project-setup` v2 /
 `init-fresh` (session router + new-project bootstrap checklist),
 `grill-with-docs` pack (`grilling` + `domain-modeling`, interview-driven
-plan-stress-testing). These are documented in `.claude/skills/skill-manager/SKILL-DEVELOPMENT-LOG.md` if
+plan-stress-testing). These are documented in `.claude/memory/agent-log/SKILL-DEVELOPMENT-LOG.md` if
 you need them; they're independent of the core memory/anchor/enforcement
 system described in this file and can be added or skipped without affecting
 anything above.

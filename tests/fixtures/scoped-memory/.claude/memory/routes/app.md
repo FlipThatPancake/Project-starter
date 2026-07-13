@@ -7,5 +7,11 @@ uses: design-x (shared/design-x.md) | data: none
 | hero | @sec:hero | — |
 | ghost | @sec:ghost | — |
 
+## Hot elements
+- @sec:hero
+
+## Priorities / planned
+- (none)
+
 ## Recent decisions (cap 10, newest first)
 - 2026-07-05 initial map

@@ -51,11 +51,9 @@ reads only what's relevant and never wanders:
 4. **Skills are opt-in — no mandatory gate.** The session-start hook already
    injected the skill index (active + dormant, with sizes) into context for
    free, so you know what exists without reading anything. Load a dormant skill
-   only when the task actually needs it, or the user asks, or you want a
-   suggestion — `.claude/skills-store/MODE-SHORTLISTS.md` lists per-mode picks
-   if you choose to consult it. To load: `/skills load <name>` (thin mechanics —
-   copies from the store; reading skill-curator's SKILL.md is needed ONLY to
-   install/update/extract/delete a skill). Do not print the whole catalogue or
+   only when the task actually needs it, or the user asks. To load: `/skills load
+   <name>` (thin mechanics — copies from the store; reading skill-curator's
+   SKILL.md is needed ONLY to install/update/extract/delete a skill). Do not print the whole catalogue or
    block the session waiting for a skill decision.
 5. **Make the mode explicit** (§Branch & log below) — this is the persistent
    record of what each session/branch was scoping on.

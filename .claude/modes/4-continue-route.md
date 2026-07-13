@@ -9,7 +9,7 @@ Resume work on a route that already exists.
   echo "/<route>" > /tmp/claude-route-scope-$H   # route lock
   ```
 - **read-set:** `.claude/memory/INDEX.md` + `routes/<route>.md` map ONLY, then anchor-navigate into code (project-memory §2–4).
-- **skills:** gate on the store (see `.claude/skills-store/MODE-SHORTLISTS.md` row for this mode); loadout varies by task.
+- **skills:** opt-in, same as every mode — loadout varies by task; `anti-slop-preflight` (dormant) is worth loading if the resumed work touches visuals.
 - **guardrails:**
   - If the route is ambiguous, ask (`AskUserQuestion` built from INDEX's route table) — never re-infer silently mid-session.
   - Peek other routes' MAPS freely; touch their CODE only via a `shared/` pointer or explicit request.

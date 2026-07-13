@@ -9,7 +9,7 @@ Scaffold and build ONE new route in an existing project.
   echo "/<route>" > /tmp/claude-route-scope-$H   # also set the route lock
   ```
 - **read-set:** `.claude/memory/INDEX.md` only, then bootstrap the route (project-memory §6). No other route maps.
-- **skills:** gate on the store (see `.claude/skills-store/MODE-SHORTLISTS.md` row for this mode); design skills typically.
+- **skills:** opt-in, same as every mode — this is visual work, so `anti-slop-preflight` (dormant) is usually worth loading before finalizing; load anything else the route's design needs.
 - **guardrails:**
   - Ask for the route name/purpose if not given — don't invent one.
   - `cp -r src/routes/_skeleton src/routes/<route>`, add the row to `INDEX.md`, give it a `routes/<route>.md` map once it earns one.

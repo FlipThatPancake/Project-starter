@@ -42,12 +42,11 @@ copy never risks the only copy, and never leaks to other branches.
 6. Third-party → `skillctl.sh pin <source>`; record a `LOCK.md` row (source,
    short sha, upstream-date, install date, local-mods).
 7. `node scripts/validate.mjs --skills` must pass.
-8. Run the New-skill mode-fit check below.
 
 ## extract <parent>/<module> — carve a module into its own store skill
 Distill the module into its own store dir with frontmatter (`name`,
 `description`, `group`); flip its `references/module-index.md` status to
-`extracted`; leave the parent untouched. Then run the mode-fit check below.
+`extracted`; leave the parent untouched.
 
 ## update <skill> — review-gated apply, never auto
 Full procedure: `references/updates.md`. Short form: fetch upstream into a
@@ -64,20 +63,13 @@ been live long enough to accumulate references elsewhere in the system:
 1. Unload it if active (`skillctl.sh unload <name>`), then remove the store
    master (`skillctl.sh remove <name>`).
 2. Grep the whole repo for the skill's name and scrub every hit:
-   `.gitignore` whitelist line (if promoted), `MODE-SHORTLISTS.md` rows,
-   `exclusive-with` entries in OTHER skills' frontmatter (peer must drop it
-   too — symmetry cuts both ways), `LOCK.md` row, `references/conflict-rulings.md`
-   rules/groups naming it, `references/module-index.md` rows where it's the
-   parent, any README/CLAUDE.md mentions.
+   `.gitignore` whitelist line (if promoted), `exclusive-with` entries in
+   OTHER skills' frontmatter (peer must drop it too — symmetry cuts both
+   ways), `LOCK.md` row, `references/conflict-rulings.md` rules/groups
+   naming it, `references/module-index.md` rows where it's the parent, any
+   README/CLAUDE.md mentions.
 3. `node scripts/validate.mjs --skills` must pass clean afterward — that's the
    proof nothing was left half-scrubbed.
-
-## New-skill mode-fit check — after every install / extract
-Consider the new skill for `MODE-SHORTLISTS.md`. Read its `group` +
-description against the 7 mode one-liners (`.claude/modes/README.md`); for
-each plausible fit, propose it in one line and **wait for confirmation**
-(shortlist curation is a judgment call, never silent). On confirm, update the
-shortlist row only — never auto-load.
 
 ## Hard rules
 - Fixed skills: report truthfully as "active — not controllable here"; never fake-unload one.
