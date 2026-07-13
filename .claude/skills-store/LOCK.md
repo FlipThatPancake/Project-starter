@@ -4,7 +4,7 @@ pinned-ref = the upstream commit (short SHA) we vendored. upstream-date = that c
 
 | skill | source | pinned-ref | upstream-date | installed | local-mods |
 |---|---|---|---|---|---|
-| session-log | github:michalparkola/tapestry-skills | 80e1dc5 | 2026-07-04 | 2026-07-07 | group/allowed-tools frontmatter added (v3 metadata distribution) |
-| learn-this | github:michalparkola/tapestry-skills | 80e1dc5 | 2026-07-04 | 2026-07-07 | group/allowed-tools frontmatter added (v3 metadata distribution) |
-| article-extractor | github:michalparkola/tapestry-skills | 80e1dc5 | 2026-07-04 | 2026-07-07 | group/allowed-tools frontmatter added (v3 metadata distribution) |
-| ship-learn-next | github:michalparkola/tapestry-skills | 80e1dc5 | 2026-07-04 | 2026-07-07 | group/allowed-tools frontmatter added (v3 metadata distribution) |
+| session-log | github:michalparkola/tapestry-skills | 80e1dc5 | 2026-07-04 | 2026-07-07 | group frontmatter added (v3 metadata distribution; replaced old policy/category fields). allowed-tools is upstream-native, not a local mod |
+| learn-this | github:michalparkola/tapestry-skills | 80e1dc5 | 2026-07-04 | 2026-07-07 | group frontmatter added (v3 metadata distribution; replaced old policy/category fields). allowed-tools is upstream-native, not a local mod |
+| article-extractor | github:michalparkola/tapestry-skills | 80e1dc5 | 2026-07-04 | 2026-07-07 | group frontmatter added (v3 metadata distribution; replaced old policy/category fields). allowed-tools is upstream-native, not a local mod |
+| ship-learn-next | github:michalparkola/tapestry-skills | 80e1dc5 | 2026-07-04 | 2026-07-07 | group frontmatter added (v3 metadata distribution; replaced old policy/category fields). allowed-tools is upstream-native, not a local mod |
