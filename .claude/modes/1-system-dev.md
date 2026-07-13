@@ -14,11 +14,11 @@ NOT require this mode — see skill-curator SKILL.md → Hard rules.
   ```
 - **read-set:** the ENTIRE meta/infrastructure surface, freely — all of `.claude/**`
   (including `skills-store/WIKI.md`, `.claude/memory/agent-log/SKILL-MANAGER-HANDOFF.md`,
-  other mode files), `scripts/**`, `tests/**`, `CLAUDE.md`, `README.md` (see README's
-  "Meta/infrastructure read scope" — this is the one mode exempt from the narrow-reads
-  default, since understanding/changing that surface IS the job). Still prefer
-  grep/anchors over whole-file reads on large files. `src/**` stays out of scope
-  unless the task is cross-cutting tooling that explicitly names route code.
+  other mode files), `scripts/**`, `tests/**`, `CLAUDE.md`, `README.md`. This is the
+  one mode exempt from the narrow-reads default, since understanding/changing that
+  surface IS the job. Still prefer grep/anchors over whole-file reads on large files.
+  `src/**` stays out of scope unless the task is cross-cutting tooling that explicitly
+  names route code.
 - **skills:** no pinned skill-manager anymore (v3) — load `skill-curator` from the
   store only when doing install/update/extract/delete work; otherwise the active
   baseline (checkpoint/project-memory/etc.) is enough.

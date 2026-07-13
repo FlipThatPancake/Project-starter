@@ -65,9 +65,9 @@ SESSION MODE SELECTION (from session-start-hook) — do this before reading any 
 
 $STATE_LINE
 
-Pick a session mode per .claude/modes/README.md:
+Pick a session mode (steps summarized here — the full spec is .claude/modes/MODES_PROTOCOL.md, read it ONLY if you need detail beyond this summary):
   1 system-dev · 2 new-project · 3 new-route · 4 continue-route · 5 backend-routing · 6 design-system · 7 other
-Rule: restate the session's purpose in one line. If the first prompt is explicit and unambiguous, state your understanding + inferred mode and proceed; otherwise WAIT for the user's confirmation before locking a mode (AskUserQuestion) — never assume. Then lock it (write /tmp/claude-mode-<hash>) and read ONLY .claude/modes/<n>-*.md + .claude/memory/INDEX.md (lazy start — do NOT read skill-curator or its references unless you actually act on skills).
+Rule: restate the session's purpose in one line. If the first prompt is explicit and unambiguous, state your understanding + inferred mode and proceed; otherwise WAIT for the user's confirmation before locking a mode (AskUserQuestion) — never assume. Then lock the mode + read ONLY the chosen .claude/modes/<n>-*.md (it carries the exact lock command + allowlist) + .claude/memory/INDEX.md (lazy start — do NOT read skill-curator or its references unless you actually act on skills).
 Skills are OPT-IN (no mandatory gate). The current loadout is below — load a dormant skill only when the task needs it or the user asks, via \`/skills load <name>\` (thin mechanics; reading skill-curator's SKILL.md is only for installing/updating/extracting/deleting a skill).
 Address, don't act: acknowledge the substance of the user's request as soon as understood, but do NOT execute changes until the mode is locked.
 

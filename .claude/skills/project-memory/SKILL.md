@@ -18,7 +18,7 @@ Route COUNT is the ONLY driver of locking — no portal/standalone flag. A one-r
 project that grows a 2nd route starts locking automatically; nothing to flip.
 The `state:` line (`starter`/`in-progress`) is unrelated to scope — it only tells
 the session-start hook whether to steer toward new-project bootstrap (see
-`.claude/modes/README.md`). Missing `state:` = treat as `starter`.
+`.claude/modes/MODES_PROTOCOL.md`). Missing `state:` = treat as `starter`.
 
 ## 1. Session scope lock (when INDEX lists ≥2 routes)
 - First user prompt names a route/project unambiguously → lock silently; state one line: `Scope: /<route>`.
