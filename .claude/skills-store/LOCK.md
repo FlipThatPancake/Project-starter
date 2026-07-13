@@ -4,7 +4,7 @@ pinned-ref = the upstream commit (short SHA) we vendored. upstream-date = that c
 
 | skill | source | pinned-ref | upstream-date | installed | local-mods |
 |---|---|---|---|---|---|
-| session-log | github:michalparkola/tapestry-skills | 80e1dc5 | 2026-07-04 | 2026-07-07 | none |
-| learn-this | github:michalparkola/tapestry-skills | 80e1dc5 | 2026-07-04 | 2026-07-07 | none |
-| article-extractor | github:michalparkola/tapestry-skills | 80e1dc5 | 2026-07-04 | 2026-07-07 | none |
-| ship-learn-next | github:michalparkola/tapestry-skills | 80e1dc5 | 2026-07-04 | 2026-07-07 | none |
+| session-log | github:michalparkola/tapestry-skills | 80e1dc5 | 2026-07-04 | 2026-07-07 | group/allowed-tools frontmatter added (v3 metadata distribution) |
+| learn-this | github:michalparkola/tapestry-skills | 80e1dc5 | 2026-07-04 | 2026-07-07 | group/allowed-tools frontmatter added (v3 metadata distribution) |
+| article-extractor | github:michalparkola/tapestry-skills | 80e1dc5 | 2026-07-04 | 2026-07-07 | group/allowed-tools frontmatter added (v3 metadata distribution) |
+| ship-learn-next | github:michalparkola/tapestry-skills | 80e1dc5 | 2026-07-04 | 2026-07-07 | group/allowed-tools frontmatter added (v3 metadata distribution) |
