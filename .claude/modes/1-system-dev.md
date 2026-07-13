@@ -13,7 +13,7 @@ NOT require this mode — see skill-curator SKILL.md → Hard rules.
   printf '%s\n' .claude/ scripts/ tests/ CLAUDE.md README.md > /tmp/claude-mode-$H
   ```
 - **read-set:** the ENTIRE meta/infrastructure surface, freely — all of `.claude/**`
-  (including `skills-store/WIKI.md`, `.claude/memory/agent-log/SKILL-MANAGER-HANDOFF.md`,
+  (including `skills-store/WIKI.md`, `.claude/memory/agent-log/SKILL-DEVELOPMENT-LOG.md`,
   other mode files), `scripts/**`, `tests/**`, `CLAUDE.md`, `README.md`. This is the
   one mode exempt from the narrow-reads default, since understanding/changing that
   surface IS the job. Still prefer grep/anchors over whole-file reads on large files.
