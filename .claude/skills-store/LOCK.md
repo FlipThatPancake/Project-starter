@@ -1,4 +1,4 @@
-# SKILL LOCK — provenance + pinned versions of THIRD-PARTY store skills only. Read/written by skill-curator update ops. First-party skills (skill-curator, project-memory, checkpoint, anti-slop-preflight) are ours → not tracked here.
+# SKILL LOCK — provenance + pinned versions of THIRD-PARTY skills, whether dormant in the store or active baseline (e.g. the grilling cluster lives in `.claude/skills/`, not the store — third-party origin is what earns a row, not location). Read/written by skill-curator update ops. First-party skills (skill-curator, project-memory, checkpoint, anti-slop-preflight) are ours → not tracked here.
 last-checked: 2026-07-14
 pinned-ref = the upstream commit (short SHA) we vendored. upstream-date = that commit's OWN authorship date (from git history, not filesystem mtime — hardcoded text here so it survives any re-clone/re-copy of the skill dir, e.g. via the starter-repo). installed = when WE vendored it into this project (local event, separate from upstream-date). local-mods = edits we made to our copy that an update must PRESERVE. Rollback = re-install the previous pinned-ref.
 
@@ -8,3 +8,8 @@ pinned-ref = the upstream commit (short SHA) we vendored. upstream-date = that c
 | learn-this | github:michalparkola/tapestry-skills | 80e1dc5 | 2026-07-04 | 2026-07-07 | none |
 | article-extractor | github:michalparkola/tapestry-skills | 80e1dc5 | 2026-07-04 | 2026-07-07 | none |
 | ship-learn-next | github:michalparkola/tapestry-skills | 80e1dc5 | 2026-07-04 | 2026-07-07 | none |
+| grilling | github:mattpocock/skills | 16a2a5c | 2026-07-06 | 2026-07-07 | announce-when-firing rule (2026-07-07); fact-finding scoped to current mode's read-set, declined upstream's "environment" broadening (2026-07-14) |
+| grill-me | github:mattpocock/skills | 16a2a5c | 2026-07-06 | 2026-07-07 | none |
+| grill-with-docs | github:mattpocock/skills | 16a2a5c | 2026-07-06 | 2026-07-07 | none |
+| domain-modeling | github:mattpocock/skills | 16a2a5c | 2026-07-06 | 2026-07-07 | announce-when-writing rule; project-memory cross-reference note (2026-07-07) |
+| handoff | github:mattpocock/skills | 16a2a5c | 2026-07-06 | 2026-07-07 | repo-path save location (not OS temp); records locked mode + route scope; SESSION-LOG.md/INDEX.md reference pointers (2026-07-14) |
