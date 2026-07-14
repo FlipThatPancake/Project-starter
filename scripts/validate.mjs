@@ -79,7 +79,7 @@ function checkHtml(file) {
 }
 
 // ── Memory lint (stack-agnostic) ─────────────────────────────────────────────
-const CAPS = { 'INDEX.md': 60, route: 100, shared: 80, sessionLog: 40 };
+const CAPS = { 'INDEX.md': 60, route: 100, shared: 80, sessionLog: 40, spec: 120, glossary: 80 };
 // semantic caps from checkpoint/references/map-format.md — line caps alone
 // don't stop a cheap model from stuffing 20 decisions into a route map
 const SEM = { globalGotchas: 8, decisions: 10, routeGotchas: 10 };
@@ -194,6 +194,16 @@ function checkMemory(memDir = '.claude/memory', deepRoutes = null) {
   const sessionLog = join(memDir, 'SESSION-LOG.md');
   if (existsSync(sessionLog) && lineCount(sessionLog) > CAPS.sessionLog)
     fail(sessionLog, 0, 'cap', `>${CAPS.sessionLog} non-empty lines`);
+
+  // SPEC.md cap (optional file, written by the `spec` skill — free-form, no shape check)
+  const specFile = join(memDir, 'SPEC.md');
+  if (existsSync(specFile) && lineCount(specFile) > CAPS.spec)
+    fail(specFile, 0, 'cap', `>${CAPS.spec} non-empty lines`);
+
+  // CONTEXT.md cap (optional file, written by the `domain-modeling` skill — free-form, no shape check)
+  const contextFile = join(memDir, 'CONTEXT.md');
+  if (existsSync(contextFile) && lineCount(contextFile) > CAPS.glossary)
+    fail(contextFile, 0, 'cap', `>${CAPS.glossary} non-empty lines`);
 }
 
 // ── Skill loadout lint (v3 model) ─────────────────────────────────────────────

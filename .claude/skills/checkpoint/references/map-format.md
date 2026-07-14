@@ -8,6 +8,10 @@
 | `shared/<id>.md` | 80 | tokens/patterns tables; NEVER concrete values duplicated from code — names + pointers only |
 | `ref/<topic>.md` | none | deep/rare material, loaded on demand only |
 | `SESSION-LOG.md` | 40 | one row per session: date, branch, mode, one-line scope (see `.claude/modes/MODES_PROTOCOL.md` §Branch & log); newest first, evict oldest |
+| `SPEC.md` | 120 | forward-looking plan: per-project "what it is" / "what matters" / tickets; written by the `spec` skill, NOT checkpoint |
+| `CONTEXT.md` | 80 | project-specific term glossary (term + tight definition + `_Avoid_` synonyms); written by the `domain-modeling` skill, NOT checkpoint |
+
+`SPEC.md` and `CONTEXT.md` are first-class memory files — validated by `validate.mjs --memory` on the same cap basis as everything above — but checkpoint never writes them. Their own skills (`spec`, `domain-modeling`) own the write discipline; checkpoint's job stays scoped to `INDEX.md` + route maps.
 
 ## INDEX state line (required, line 2)
 `state: starter` (fresh/unbootstrapped) or `state: in-progress` (real project);

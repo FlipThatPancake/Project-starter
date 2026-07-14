@@ -14,6 +14,8 @@ The glossary lives at `.claude/memory/CONTEXT.md` — beside `INDEX.md` (what ex
 
 Create it **lazily** — only when the first real project-specific term is settled. A project with no special vocabulary needs no `CONTEXT.md`; don't force one.
 
+**Cap: 80 non-empty lines**, enforced by `validate.mjs --memory` alongside every other memory file. Terms are canonical vocabulary, not a log — they're rarely evicted. If ever over cap, that's a signal to retire terms genuinely no longer relevant to current work, not to trim definitions thinner.
+
 `CONTEXT.md` is a glossary and nothing else — no implementation details, no decisions (those live in `SPEC.md`'s "What matters" and the memory maps' "Recent decisions"), no scratch notes.
 
 ### Format

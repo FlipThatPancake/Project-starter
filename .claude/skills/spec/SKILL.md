@@ -25,6 +25,8 @@ One living file, the forward-looking twin of `INDEX.md`. `INDEX.md` records what
 
 Create it lazily — only when the first spec is written. Don't pre-create an empty file.
 
+**Cap: 120 non-empty lines**, enforced by `validate.mjs --memory` alongside every other memory file. If a project's section is fully shipped (every ticket checked), delete that whole section rather than letting it accumulate — `SPEC.md` is a working plan, not a shipped-work archive (that's `INDEX.md`'s job). If nearing the cap with active work still open, that's a signal the spec is trying to hold too much — split by project/feature name rather than trimming ticket detail that's still needed.
+
 ### Format
 ```markdown
 # Spec
