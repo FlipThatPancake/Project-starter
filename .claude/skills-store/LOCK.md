@@ -8,8 +8,6 @@ pinned-ref = the upstream commit (short SHA) we vendored. upstream-date = that c
 | learn-this | github:michalparkola/tapestry-skills | 80e1dc5 | 2026-07-04 | 2026-07-07 | none |
 | article-extractor | github:michalparkola/tapestry-skills | 80e1dc5 | 2026-07-04 | 2026-07-07 | none |
 | ship-learn-next | github:michalparkola/tapestry-skills | 80e1dc5 | 2026-07-04 | 2026-07-07 | none |
-| grilling | github:mattpocock/skills | 16a2a5c | 2026-07-06 | 2026-07-07 | announce-when-firing rule (2026-07-07); fact-finding scoped to current mode's read-set, declined upstream's "environment" broadening (2026-07-14) |
-| grill-me | github:mattpocock/skills | 16a2a5c | 2026-07-06 | 2026-07-07 | none |
-| grill-with-docs | github:mattpocock/skills | 16a2a5c | 2026-07-06 | 2026-07-07 | none |
+| grill-me | github:mattpocock/skills | 16a2a5c | 2026-07-06 | 2026-07-07 | collapsed grilling + grill-me + grill-with-docs into one skill under the grill-me name (2026-07-14): kept grilling's engine body verbatim + its announce-when-firing rule (2026-07-07) + its fact-finding scoped to current mode's read-set, declined upstream's "environment" broadening (2026-07-14); folded grill-with-docs's domain-modeling clause in as an optional paragraph |
 | domain-modeling | github:mattpocock/skills | 16a2a5c | 2026-07-06 | 2026-07-07 | announce-when-writing rule; project-memory cross-reference note (2026-07-07) |
 | handoff | github:mattpocock/skills | 16a2a5c | 2026-07-06 | 2026-07-07 | repo-path save location (not OS temp); records locked mode + route scope; SESSION-LOG.md/INDEX.md reference pointers (2026-07-14) |

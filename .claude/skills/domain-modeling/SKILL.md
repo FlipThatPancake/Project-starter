@@ -81,4 +81,4 @@ If any of the three is missing, skip the ADR. Use the format in [ADR-FORMAT.md](
 ## This-repo note: relationship to project-memory
 `project-memory` maps *where things live* (routes/files, read at session start to avoid re-deriving codebase structure). This skill maps *what terms mean and why hard decisions were made* — a different layer, deliberately excluding implementation/file details. The two don't overlap or need reconciling; a route map may reference a relevant `CONTEXT.md` entry, but `CONTEXT.md` never duplicates a route map's content.
 
-<!-- adapted from github:mattpocock/skills — skills/engineering/domain-modeling (pinned commit 16a2a5c); added the "announce when writing" rule to match this repo's grilling-cluster convention, and the project-memory cross-reference note -->
+<!-- adapted from github:mattpocock/skills — skills/engineering/domain-modeling (pinned commit 16a2a5c); added the "announce when writing" rule to match this repo's grill-me convention, and the project-memory cross-reference note -->
