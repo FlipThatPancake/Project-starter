@@ -16,4 +16,4 @@ Redact any sensitive information, such as API keys, passwords, or personally ide
 
 If the user passed arguments, treat them as a description of what the next session will focus on and tailor the doc accordingly.
 
-<!-- adapted from github:mattpocock/skills — skills/productivity/handoff; only change is the save location (repo path, not OS temp) -->
+<!-- adapted from github:mattpocock/skills — skills/productivity/handoff; changes: (1) save location (repo path, not OS temp), (2) reference-list wording widened from "specs" to "PRDs" plus an explicit `.claude/memory/SESSION-LOG.md` pointer, to match this repo's actual artifact set -->
