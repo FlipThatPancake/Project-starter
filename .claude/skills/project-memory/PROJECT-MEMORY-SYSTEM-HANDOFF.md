@@ -51,9 +51,15 @@ scope-guard-hook.sh (PreToolUse hook)     ← reads that file, enforces scope
 ship.sh's cross-route gate (post-commit) ← reads that file too, catches
                                              anything the hook missed
 
-checkpoint skill (SKILL.md + references/) ← the ONLY thing allowed to rewrite
-                                             .claude/memory/ content; format
-                                             spec lives in map-format.md
+checkpoint skill (SKILL.md + references/) ← rewrites INDEX.md + route maps
+                                             (the rear-view); format spec
+                                             lives in map-format.md
+   +
+spec skill / domain-modeling skill        ← sibling writers, same directory:
+                                             spec writes SPEC.md (road ahead),
+                                             domain-modeling writes CONTEXT.md
+                                             (glossary) — same cap discipline,
+                                             disjoint scope from checkpoint
 
 validate.mjs                              ← lints .claude/memory/* against
                                              real code (anchors resolve, caps
@@ -80,13 +86,17 @@ are protocol Claude reads and follows — they are not executable.
 |---|---|
 | `.claude/skills/project-memory/SKILL.md` | Session protocol: scope-lock, read order, anchor navigation, enforcement description |
 | `.claude/skills/project-memory/references/anchor-conventions.md` | Anchor syntax/naming rules, grep recipes |
-| `.claude/skills/checkpoint/SKILL.md` | Rewrite protocol for memory files (the only skill allowed to edit them) |
+| `.claude/skills/checkpoint/SKILL.md` | Rewrite protocol for `INDEX.md` + route maps (SPEC.md/CONTEXT.md have their own sibling writers — see §8) |
 | `.claude/skills/checkpoint/references/map-format.md` | The format spec: file caps, required headings, profile-line semantics |
 | `.claude/skills/checkpoint/references/example-index.md` | Canonical `INDEX.md` shape to copy exactly |
 | `.claude/skills/checkpoint/references/example-route-map.md` | Canonical `routes/<r>.md` shape to copy exactly |
 | `.claude/memory/INDEX.md` | The registry: profile line, route table, shared registries, global gotchas |
 | `.claude/memory/routes/<route>.md` | Per-route section→anchor map (only for routes past the complexity threshold) |
 | `.claude/memory/shared/<id>.md` | Cross-route facts (design tokens, shared data) — never duplicated per-route |
+| `.claude/skills/spec/SKILL.md` | Writes `.claude/memory/SPEC.md` — forward-looking plan + tickets, ticked only on explicit user confirmation |
+| `.claude/skills/domain-modeling/SKILL.md` | Writes `.claude/memory/CONTEXT.md` — project-specific term glossary |
+| `.claude/memory/SPEC.md` | The road ahead: per-project "what it is" / "what matters" / tickets (optional, lazily created) |
+| `.claude/memory/CONTEXT.md` | The shared glossary: canonical terms + `_Avoid_` synonyms (optional, lazily created) |
 | `scripts/validate.mjs` | Lints both source anchors (`--src`) and memory (`--memory`); also `--skills` (separate, skill loadout lint, unrelated to memory) |
 | `scripts/scope-guard-hook.sh` | PreToolUse hook: blocks Edit/Write outside the locked route's allowlist |
 | `scripts/ship.sh` | validate → build changed routes → commit → cross-route gate → push (with retry) |
@@ -208,6 +218,22 @@ Route maps point at these (`uses: design-m3 (shared/design-m3.md)`) but never
 copy concrete values out of them. A route's own map should never duplicate
 what's in a shared file.
 
+### `SPEC.md` (cap: 120 non-empty lines) — written by `spec`, not checkpoint
+The forward-looking twin of `INDEX.md`: per-project sections with "what it
+is", "what matters", and a ticket checklist. Optional, created lazily on the
+first spec. Full format lives in `.claude/skills/spec/SKILL.md` (not
+duplicated here to avoid two sources of truth). Tickets are ticked only on
+the user's explicit confirmation — never inferred from a diff or a push.
+Injected in full at every session start by `session-start-hook.sh` when
+present (zero-cost when absent).
+
+### `CONTEXT.md` (cap: 80 non-empty lines) — written by `domain-modeling`, not checkpoint
+The project's shared glossary: term, tight definition, `_Avoid_` synonyms.
+Optional, created lazily on the first settled term. Full format lives in
+`.claude/skills/domain-modeling/SKILL.md`. Glossary only — no decisions, no
+implementation detail. Also injected in full at session start, same
+mechanism as `SPEC.md`.
+
 ---
 
 ## 6. `profile:` line — what it actually controls (less than it sounds like)
@@ -321,11 +347,19 @@ sees a would-be edit accepted); the ship-time gate catches what slips past
 
 ---
 
-## 8. `checkpoint` skill — the only writer of memory content
+## 8. `checkpoint` skill — writer of INDEX.md and route maps
 
-`project-memory` is read-and-navigate; `checkpoint` is the only skill allowed
-to rewrite `.claude/memory/*`. Invoked on `/checkpoint`, "save progress", or
-"update memory" — or recommended by the Stop-hook nudge (§10).
+`project-memory` is read-and-navigate; `checkpoint` rewrites `INDEX.md` and
+`routes/<route>.md` — the rear-view of the memory system (what exists).
+Invoked on `/checkpoint`, "save progress", or "update memory" — or
+recommended by the Stop-hook nudge (§10).
+
+Two sibling files live in the same directory with their own writers, not
+checkpoint: `SPEC.md` (the road ahead — written by the `spec` skill) and
+`CONTEXT.md` (the shared glossary — written by `domain-modeling`). Both are
+first-class memory files, capped and validated the same way (§9), but
+checkpoint never touches them — see each skill's own `SKILL.md` for its
+write discipline.
 
 Protocol (`checkpoint/SKILL.md`):
 1. Read `map-format.md` + both example files FIRST, match their shape
@@ -372,7 +406,9 @@ codebase:
    source file's own directory.
 
 **`--memory [--routes a,b]`** (memory lint, stack-agnostic):
-- Line caps: INDEX 60 / route map 100 / shared file 80 (non-empty lines).
+- Line caps: INDEX 60 / route map 100 / shared file 80 / SESSION-LOG 40 /
+  SPEC.md 120 / CONTEXT.md 80 (non-empty lines; SPEC/CONTEXT checked only
+  when the file exists — both are optional, lazily created).
 - Shape: `profile:` line present and valid, required headings present in
   both INDEX and every registered route map.
 - **Semantic caps** (added specifically because line caps alone don't stop a

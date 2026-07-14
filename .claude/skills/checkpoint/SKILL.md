@@ -2,9 +2,13 @@
 name: checkpoint
 description: Use when the user says /checkpoint, "save progress", or "update memory". Rewrites .claude/memory/INDEX.md and the touched routes/<route>.md maps to reflect this session's changes, validates them, and stages them for commit.
 group: core
+disable-model-invocation: false
 ---
 
 # Checkpoint — memory rewrite protocol
+
+## Scope: INDEX.md + route maps only
+This skill rewrites `.claude/memory/INDEX.md` and `routes/<route>.md` — the rear-view of the memory system (what exists). `SPEC.md` (what's coming, owned by `spec`) and `CONTEXT.md` (what terms mean, owned by `domain-modeling`) are sibling first-class memory files with their own write discipline — checkpoint never touches them, but they share the same cap-enforcement (`validate.mjs --memory`) and directory.
 
 ## Before writing (mandatory, in order)
 1. Read `references/map-format.md`, `references/example-index.md`, `references/example-route-map.md`. Match their shape EXACTLY — same columns, same terseness.

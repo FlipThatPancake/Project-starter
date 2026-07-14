@@ -2,6 +2,7 @@
 name: project-memory
 description: Use at the start of every session in this repo — first to establish the session's route scope (portal profile), and whenever locating any route, page section, component, or element, including when the user names a route or a section ("the preference list", "/reports"). Read .claude/memory/INDEX.md and the matching routes/<route>.md map BEFORE any exploratory file reads or greps.
 group: core
+disable-model-invocation: false
 ---
 
 # Project memory — session scope + read protocol
@@ -34,6 +35,7 @@ Edit/Write tools are blocked outside the scope via PreToolUse hook: only edits t
 2. `routes/<locked-route>.md` ONLY. Never bulk-read `routes/`.
 3. Only the `shared/*.md` files that map's pointer rows name.
 4. `ref/*.md` only when a task explicitly demands deep material.
+5. `.claude/memory/SPEC.md` and `.claude/memory/CONTEXT.md`, if present — both injected in full by `session-start-hook.sh` at session start (zero-cost when absent); re-read directly only if that context was lost to compaction. SPEC's open tickets aren't ordered or one-per-session — treat the whole list as live. CONTEXT is the shared glossary — honor its canonical terms.
 
 ## 3. Task type → files to read
 | task | read |

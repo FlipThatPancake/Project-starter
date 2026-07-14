@@ -2,6 +2,7 @@
 name: skill-curator
 description: Use ONLY for curating the skill STORE itself — installing a brand-new skill from the web, updating a vendored third-party skill, extracting a module into its own skill, or fully deleting a skill and every line that references it. NOT for loading/unloading/listing skills already in the store — that's the thin `/skills` command, no doctrine read needed. Dormant by design; load only for these heavy, infrequent operations.
 group: skill-system
+disable-model-invocation: false
 ---
 
 # Skill curator — install / update / extract / delete (the heavy, infrequent ops)
