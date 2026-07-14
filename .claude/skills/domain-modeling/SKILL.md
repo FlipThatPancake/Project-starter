@@ -1,84 +1,48 @@
 ---
 name: domain-modeling
-description: Build and sharpen a project's domain model. Use when the user wants to pin down domain terminology or a ubiquitous language, record an architectural decision, or when another skill needs to maintain the domain model.
+description: Build and sharpen a project's shared vocabulary — the terms specific to what's being built. Use when the user wants to pin down what a term means, resolve a naming conflict, or when grill-me surfaces a fuzzy or overloaded word. Maintains .claude/memory/CONTEXT.md.
 group: productivity
 disable-model-invocation: false
 ---
 
-# Domain Modeling
+# Domain modeling — the project's shared vocabulary
 
-Actively build and sharpen the project's domain model as you design. This is the *active* discipline — challenging terms, inventing edge-case scenarios, and writing the glossary and decisions down the moment they crystallise. (Merely *reading* `CONTEXT.md` for vocabulary is not this skill — that's a one-line habit any skill can do. This skill is for when you're changing the model, not just consuming it.)
+Actively build and sharpen the glossary of terms specific to THIS project as you design — challenging fuzzy words, probing edge cases, and writing each term down the moment it's settled. This is the *active* discipline, not passive reading: reading `CONTEXT.md` for vocabulary is a one-line habit any skill can do; this skill is for when you're *changing* the model.
 
-## File structure
+## File: `.claude/memory/CONTEXT.md`
+The glossary lives at `.claude/memory/CONTEXT.md` — beside `INDEX.md` (what exists) and `SPEC.md` (what's coming) as the third of the memory triad: **what the terms mean**. Always writable in every mode (`.claude/memory/**` is unconditionally allowed by the scope-guard). Surfaced in full at every session start by `session-start-hook.sh` (zero-cost when absent), so every session opens already sharing the vocabulary.
 
-Most repos have a single context:
+Create it **lazily** — only when the first real project-specific term is settled. A project with no special vocabulary needs no `CONTEXT.md`; don't force one.
 
+`CONTEXT.md` is a glossary and nothing else — no implementation details, no decisions (those live in `SPEC.md`'s "What matters" and the memory maps' "Recent decisions"), no scratch notes.
+
+### Format
+```md
+# Terms
+
+**Segment**:
+A saved filter over the audience — a named set of rules, not a fixed list of people.
+_Avoid_: group, list, cohort
+
+**View**:
+One arrangement of panels a user can switch between on a dashboard.
+_Avoid_: tab, layout, page
 ```
-/
-├── CONTEXT.md
-├── docs/
-│   └── adr/
-│       ├── 0001-event-sourced-orders.md
-│       └── 0002-postgres-for-write-model.md
-└── src/
-```
+- **Be opinionated.** When several words mean the same thing, pick the best one; list the rest under `_Avoid_`.
+- **Keep definitions tight.** One or two sentences. Define what it IS, not what it does.
+- **Only project-specific terms.** If it's a general web or programming concept (button, dropdown, cache), it doesn't belong — only words that carry a meaning unique to this project. Ask before adding: would this mean the same thing on any project, or is it special to *this* one? Only the latter belongs.
+- **Group under subheadings** only if natural clusters emerge; a flat list is fine.
 
-If a `CONTEXT-MAP.md` exists at the root, the repo has multiple contexts. The map points to where each one lives:
+## While designing (especially inside a grill-me session)
+- **Challenge conflicts.** A new use of a term clashes with the glossary → call it out immediately. "Your glossary defines 'segment' as a saved filter, but you're using it to mean a fixed list — which is it?"
+- **Sharpen fuzzy words.** A vague or overloaded term → propose one precise canonical word. "You're saying 'user' — the person viewing the dashboard, or the account it belongs to? Those differ."
+- **Probe with a scenario.** When two concepts blur, invent a concrete case that forces the boundary. "If someone edits the filter after sharing it, does the shared link show the old results or the new ones?"
+- **Write it down inline.** The moment a term is settled, add it to `CONTEXT.md` right then — don't batch. Announce first: "Updating CONTEXT.md: pinning 'segment' as a saved filter, not a fixed list."
+- **Flag contradictions with what's built.** If a settled term contradicts what a route or section already does or says, surface it rather than quietly papering over it.
 
-```
-/
-├── CONTEXT-MAP.md
-├── docs/
-│   └── adr/                          ← system-wide decisions
-├── src/
-│   ├── ordering/
-│   │   ├── CONTEXT.md
-│   │   └── docs/adr/                 ← context-specific decisions
-│   └── billing/
-│       ├── CONTEXT.md
-│       └── docs/adr/
-```
+## Relationship to the rest of the system
+- Compatible with **grill-me**: when an interview surfaces or overloads a term, run this alongside to capture it — grill-me resolves the plan, this pins the words.
+- **project-memory** maps *where things live*; this maps *what words mean*. Different layers — a route map may reference a term, but never restates the glossary.
+- **spec** records what's being built and its tickets; `CONTEXT.md` never holds ticket or plan content.
 
-Create files lazily — only when you have something to write. If no `CONTEXT.md` exists, create one when the first term is resolved. If no `docs/adr/` exists, create it when the first ADR is needed.
-
-## During the session
-
-### Announce when actively writing
-State plainly the moment you're about to update `CONTEXT.md`, `CONTEXT-MAP.md`, or add an ADR — e.g. "Updating CONTEXT.md: pinning down 'Order' vs 'Purchase'." Passive reads of an existing `CONTEXT.md` for vocabulary don't need an announcement; writes do.
-
-### Challenge against the glossary
-
-When the user uses a term that conflicts with the existing language in `CONTEXT.md`, call it out immediately. "Your glossary defines 'cancellation' as X, but you seem to mean Y — which is it?"
-
-### Sharpen fuzzy language
-
-When the user uses vague or overloaded terms, propose a precise canonical term. "You're saying 'account' — do you mean the Customer or the User? Those are different things."
-
-### Discuss concrete scenarios
-
-When domain relationships are being discussed, stress-test them with specific scenarios. Invent scenarios that probe edge cases and force the user to be precise about the boundaries between concepts.
-
-### Cross-reference with code
-
-When the user states how something works, check whether the code agrees. If you find a contradiction, surface it: "Your code cancels entire Orders, but you just said partial cancellation is possible — which is right?"
-
-### Update CONTEXT.md inline
-
-When a term is resolved, update `CONTEXT.md` right there. Don't batch these up — capture them as they happen. Use the format in [CONTEXT-FORMAT.md](./CONTEXT-FORMAT.md).
-
-`CONTEXT.md` should be totally devoid of implementation details. Do not treat `CONTEXT.md` as a spec, a scratch pad, or a repository for implementation decisions. It is a glossary and nothing else.
-
-### Offer ADRs sparingly
-
-Only offer to create an ADR when all three are true:
-
-1. **Hard to reverse** — the cost of changing your mind later is meaningful
-2. **Surprising without context** — a future reader will wonder "why did they do it this way?"
-3. **The result of a real trade-off** — there were genuine alternatives and you picked one for specific reasons
-
-If any of the three is missing, skip the ADR. Use the format in [ADR-FORMAT.md](./ADR-FORMAT.md).
-
-## This-repo note: relationship to project-memory
-`project-memory` maps *where things live* (routes/files, read at session start to avoid re-deriving codebase structure). This skill maps *what terms mean and why hard decisions were made* — a different layer, deliberately excluding implementation/file details. The two don't overlap or need reconciling; a route map may reference a relevant `CONTEXT.md` entry, but `CONTEXT.md` never duplicates a route map's content.
-
-<!-- adapted from github:mattpocock/skills — skills/engineering/domain-modeling (pinned commit 16a2a5c); added the "announce when writing" rule to match this repo's grill-me convention, and the project-memory cross-reference note -->
+<!-- adapted from github:mattpocock/skills — skills/engineering/domain-modeling (pinned commit 16a2a5c); heavily rewritten 2026-07-14: stripped to glossary-only — dropped ADRs / docs/adr and the bounded-context / CONTEXT-MAP.md machinery (both softdev-DDD-specific), moved CONTEXT.md from repo root to .claude/memory/CONTEXT.md (scope-guard always-writable + memory triad + session-start injection), inlined the term format (deleted CONTEXT-FORMAT.md + ADR-FORMAT.md). Local mods kept: announce-when-writing rule, project-memory cross-reference note. -->

@@ -18,7 +18,7 @@ Do not enact the plan until I confirm we have reached a shared understanding.
 ## This-repo addition: announce when firing
 State plainly before the first question, e.g. "Running a grill-me session on this." — whether you triggered it by name, by a "grill" phrase, or on your own judgment that a plan needs stress-testing before being built. The user should never be mid-interview without knowing that's what's happening.
 
-## Optional: capture terms and decisions as you go
-If the plan introduces domain terms worth pinning down or hard-to-reverse decisions worth recording, also run `domain-modeling` alongside the interview.
+## Optional: capture terms as you go
+If the plan introduces or overloads terms worth pinning down, also run `domain-modeling` alongside the interview to capture them in `.claude/memory/CONTEXT.md`. (Decisions themselves belong in the spec's "What matters" and the memory maps' "Recent decisions", not here.)
 
 <!-- collapsed from github:mattpocock/skills (pinned commit 16a2a5c) — originally three skills: grilling (engine), grill-me (alias, no-op body: "Run a /grilling session"), grill-with-docs (alias + domain-modeling clause). Merged into one per user ruling 2026-07-14: kept the grill-me name (sticky for this user), grilling's engine body + local mods verbatim, and folded grill-with-docs's docs-clause in as an optional paragraph. Local mods preserved: (1) announce-when-firing rule (2026-07-07), (2) fact-finding scoped to current mode's read-set, declined upstream's later "environment (filesystem, tools, etc.)" broadening as unbounded scope-creep risk (2026-07-14). -->

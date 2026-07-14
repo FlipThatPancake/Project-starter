@@ -75,6 +75,20 @@ else
   SPEC_SECTION=""
 fi
 
+# 5. Context — surface .claude/memory/CONTEXT.md (the shared glossary) in full if
+#    it exists, same zero-cost-when-absent pattern, so every session opens sharing
+#    the project's vocabulary.
+CONTEXT_FILE=".claude/memory/CONTEXT.md"
+if [ -f "$CONTEXT_FILE" ]; then
+  CONTEXT_BLOCK=$(cat "$CONTEXT_FILE")
+  CONTEXT_SECTION="
+
+Terms (.claude/memory/CONTEXT.md) — the project's shared glossary, honor these canonical terms:
+${CONTEXT_BLOCK}"
+else
+  CONTEXT_SECTION=""
+fi
+
 CONTEXT=$(cat <<EOF
 SESSION MODE SELECTION (from session-start-hook) — do this before reading any code.
 
@@ -91,7 +105,7 @@ $SKILL_INDEX
 
 Remote branches by recency (for the new-project 'which branch to copy from' question):
 $BRANCHES
-${SPEC_SECTION}
+${SPEC_SECTION}${CONTEXT_SECTION}
 EOF
 )
 
