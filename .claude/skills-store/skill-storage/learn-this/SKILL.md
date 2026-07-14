@@ -3,6 +3,7 @@ name: learn-this
 description: Unified content extraction and action planning. Use when user says "learn-this <URL>", "learn this <URL>", "weave <URL>", "help me plan <URL>", "extract and plan <URL>", "make this actionable <URL>", or similar phrases indicating they want to extract content and create an action plan. Automatically detects content type (YouTube video, article, PDF) and processes accordingly.
 group: research
 allowed-tools: Bash,Read,Write
+disable-model-invocation: false
 ---
 
 # Tapestry: Unified Content Extraction + Action Planning
