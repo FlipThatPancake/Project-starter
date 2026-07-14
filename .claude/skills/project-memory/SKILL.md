@@ -35,6 +35,7 @@ Edit/Write tools are blocked outside the scope via PreToolUse hook: only edits t
 2. `routes/<locked-route>.md` ONLY. Never bulk-read `routes/`.
 3. Only the `shared/*.md` files that map's pointer rows name.
 4. `ref/*.md` only when a task explicitly demands deep material.
+5. `.claude/memory/SPEC.md`, if present — already injected in full by `session-start-hook.sh` at session start (zero-cost when absent); re-read the file directly only if that context has been lost to compaction. Its open tickets aren't ordered or one-per-session — treat the whole list as live.
 
 ## 3. Task type → files to read
 | task | read |

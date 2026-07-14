@@ -60,6 +60,21 @@ SKILL_INDEX="| skill | state | group | size |
 |---|---|---|---|
 ${SKILL_INDEX}"
 
+# 4. Spec — surface .claude/memory/SPEC.md in full if it exists (zero cost when
+#    absent, same pattern as the skill index). Tickets are small and often
+#    tackled out of order / several per session, so there's no single "next"
+#    pointer to compute — just hand over the whole open plan.
+SPEC_FILE=".claude/memory/SPEC.md"
+if [ -f "$SPEC_FILE" ]; then
+  SPEC_BLOCK=$(cat "$SPEC_FILE")
+  SPEC_SECTION="
+
+Spec (.claude/memory/SPEC.md) — read at session start, tickets may be tackled out of order:
+${SPEC_BLOCK}"
+else
+  SPEC_SECTION=""
+fi
+
 CONTEXT=$(cat <<EOF
 SESSION MODE SELECTION (from session-start-hook) — do this before reading any code.
 
@@ -76,6 +91,7 @@ $SKILL_INDEX
 
 Remote branches by recency (for the new-project 'which branch to copy from' question):
 $BRANCHES
+${SPEC_SECTION}
 EOF
 )
 
