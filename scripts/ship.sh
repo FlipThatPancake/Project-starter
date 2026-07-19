@@ -42,8 +42,9 @@ if [ "$NOBUILD" = 0 ] && [ -d src/routes ]; then
   if [ "$ALL" = 1 ]; then
     node scripts/build.mjs --all
   elif git rev-parse -q --verify HEAD >/dev/null 2>&1; then
-    # rebuild only routes whose src changed vs HEAD (incl. uncommitted)
-    CHANGED=$(git diff HEAD --name-only -- src/routes 2>/dev/null | sed -n 's|^src/routes/\([^/]*\)/.*|\1|p' | sort -u || true)
+    # rebuild only routes whose src changed vs HEAD (incl. uncommitted);
+    # skip templates (_skeleton) and dotfiles, same filter as build.mjs --all
+    CHANGED=$(git diff HEAD --name-only -- src/routes 2>/dev/null | sed -n 's|^src/routes/\([^/]*\)/.*|\1|p' | grep -v '^[_.]' | sort -u || true)
     if [ -n "$CHANGED" ]; then echo "$CHANGED" | xargs node scripts/build.mjs; fi
   else
     # unborn HEAD (first commit): build everything buildable
