@@ -15,7 +15,7 @@
 | Built-file hazard | dist/*.html are self-contained with inlined base64 — unscoped Read/grep pays the image tax; work in src/. Same for vendored minified libraries in src/ (e.g. a bundled gsap.min.js) — never whole-file Read them |
 | Never read dist/ | Generated output; sources only |
 | Scripts, not boilerplate | `node scripts/validate.mjs --all` · `node scripts/build.mjs <route>` · `scripts/ship.sh "msg"` — never inline `node -e` validators |
-| Batch commits | One `ship.sh` per work chunk, not per edit; push to main unless told otherwise |
+| Batch commits | One `ship.sh` per work chunk, not per edit. Shipping to git goes through the `ship-now` skill only — branch by default, main exclusively via its PR flow |
 | Checkpoint | Run /checkpoint when nudged by the Stop hook, or after finding a non-obvious root cause / making a future-constraining decision |
 | Session hygiene | Batch related fixes into one prompt's work; suggest a fresh session when a new work chunk starts |
 | Model hint | Mechanical edits/renames → cheap model is fine; debugging/design/checkpoint precision → larger model |

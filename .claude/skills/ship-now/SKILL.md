@@ -1,6 +1,6 @@
 ---
 name: ship-now
-description: Use when the user says "ship it", "push now", "save my work", "ship to main", or "PR to main", or wants to commit+push at session end even with CLAUDE_AUTO_PUSH_TO_MAIN=false. Two targets — branch (default) or pr (whenever main is meant) — using GitHub's own PR merge as the ONLY normal path to main. A local direct merge exists solely as a confirmed fallback if the GitHub merge is blocked.
+description: Use when the user says "ship it", "push now", "save my work", "ship to main", or "PR to main", or wants to commit+push at session end. The ONLY ship-to-git mechanism. Two targets — branch (default) or pr (whenever main is meant) — using GitHub's own PR merge as the ONLY normal path to main. A local direct merge exists solely as a confirmed fallback if the GitHub merge is blocked.
 group: core
 disable-model-invocation: false
 ---
@@ -24,7 +24,7 @@ routine option.
 ## The two targets
 | target | commits go to | main touched? | how |
 |---|---|---|---|
-| **branch** | `origin/<current-branch>` | no | `scripts/ship.sh "<msg>" --force-push` |
+| **branch** | `origin/<current-branch>` | no | `scripts/ship.sh "<msg>"` |
 | **pr** | `origin/<current-branch>` + PR into `main`, merged via GitHub | yes, through GitHub's own gates | push, then PR create/update + GitHub-side merge (§PR flow) |
 
 There is no routine "merge directly" option. If GitHub's merge is blocked,
@@ -43,7 +43,7 @@ see §Fallback — it requires the user's explicit yes each time, never assumed.
 1. Commit message: user's if given; else summarize the session (imperative,
    ≤72 chars), prefixed with the mode tag per CLAUDE.md, e.g. `[mode:1-system-dev] …`.
 2. If `.claude/memory/SESSION-LOG.md` lacks this session's row, append it first.
-3. `scripts/ship.sh "<msg>" --force-push`.
+3. `scripts/ship.sh "<msg>"`.
 4. Report commit hash + branch pushed to.
 
 ## Steps — pr (normal GitHub protocol)
@@ -63,7 +63,7 @@ see §Fallback — it requires the user's explicit yes each time, never assumed.
 ## Fallback — only after a blocked GitHub merge, only with explicit yes
 1. State plainly why the GitHub merge didn't go through.
 2. `AskUserQuestion`: offer to force it via a local direct merge
-   (`scripts/ship.sh "<msg>" --force-push --to-main` — merges via a disposable
+   (`scripts/ship.sh "<msg>" --to-main` — merges via a disposable
    temp branch, `--no-ff`, never force-pushes `main`; aborts clean on a real
    conflict) vs. leaving the PR open for manual resolution/review.
 3. Only run `--to-main` if the user picks that option. Never assume "PR failed"
@@ -71,7 +71,7 @@ see §Fallback — it requires the user's explicit yes each time, never assumed.
 4. Report the outcome (merged / still blocked / conflict needing manual resolution).
 
 ## Guardrails
-- Never edits `.claude/settings.json` — `--force-push` is a one-shot override.
+- Never edits `.claude/settings.json`.
 - Cross-route commits still need `@allow-cross-route` in the message.
 - Nothing staged/changed → ship.sh no-ops ("nothing to commit"); report plainly.
   For **pr** with no new commits, still check/refresh the existing PR and attempt

@@ -144,6 +144,18 @@ the other; a literal reader picks one.
   header says "keep last 20" rows while the validator caps 40 lines — compatible today,
   two units of measure tomorrow.
 
+## Follow-up (same day, user-ruled)
+
+Fixed in the follow-up commit: **A7 deleted** (CLAUDE_AUTO_PUSH_TO_MAIN ruled legacy —
+env var removed from settings.json, `--force-push` flag + AUTO_PUSH logic removed from
+ship.sh, ship-now updated to plain `ship.sh "<msg>"`); **B3 fixed** (CLAUDE.md's "push to
+main unless told otherwise" replaced — ship-now is the only ship-to-git mechanism);
+**B4 fixed** (all retired CONFLICTS.md/MODULES.md/CATALOG pointers in WIKI,
+add-and-handoff, updates, conflict-rulings, module-index replaced with current names;
+historical v3 banners left as-is); **C-anchor-dup fixed** (`_skeleton`'s route-local
+anchor renamed `@css:route-styles`; `@css:tokens` now belongs to shared tokens.css
+alone). Still open: A1–A6, B1, B2, B5, B6, D1–D4.
+
 ## Verdict
 
 The Node layer (validator/builder/tests) is tight and all-green. The decay is

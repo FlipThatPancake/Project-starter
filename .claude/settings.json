@@ -33,9 +33,6 @@
       }
     }
   },
-  "env": {
-    "CLAUDE_AUTO_PUSH_TO_MAIN": "true"
-  },
   "hooks": {
     "SessionStart": [
       {

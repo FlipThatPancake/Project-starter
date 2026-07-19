@@ -2,7 +2,7 @@
 updated-by: skill-curator · written when: user makes a ruling · `install` detects an overlap
 read-at: load time (`skillctl.sh check-conflicts`) · install time (warn on duplicate/exclusive)
 
-## Rule types (only these five; install-policy → CATALOG)
+## Rule types (only these five)
 - **precedence** — both may be active; LEFT wins the contested call
 - **exclusive** — never co-load; pick one (usually a per-project fact, decided once)
 - **sequential** — A → B: run A first, B builds on A's output files (see Handoffs). Order matters, not exclusion; re-loading A restarts A's flow
@@ -26,8 +26,8 @@ when its excluded peer already has footprint files in the project — see
 `add-and-handoff.md` §2a for footprint globs). A group appears here ONLY once every
 member's name matches a real installed skill — until then it stays prose-only above.
 The `webgpu-threejs-tsl ⊕ freshtechbro threejs-webgl / react-three-fiber` row (line 20)
-is NOT here yet: those are pack-member names, not yet registered as their own CATALOG
-rows (per `add-and-handoff.md` §1, freshtechbro packs register per-member on `add`) —
+is NOT here yet: those are pack-member names, not yet registered as installed skills
+(per `add-and-handoff.md` §1, freshtechbro packs register per-member on `add`) —
 add its row here once real names exist at vendor-time.
 | members (comma-separated) |
 |---|

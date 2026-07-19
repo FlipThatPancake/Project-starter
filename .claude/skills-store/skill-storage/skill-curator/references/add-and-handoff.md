@@ -15,10 +15,10 @@ Loaded by skill-curator only during `install`/`load` — NOT resident. SKILL.md 
 Inspect the fetched repo tree, then confirm with the user before writing rows:
 | tree shows | class | how to register |
 |---|---|---|
-| multiple `**/skills/<name>/SKILL.md` (or several top-level `<name>/SKILL.md` dirs) | **PACK** | register MEMBERS individually (kind=pack-member), one family prefix; NEVER install as a unit. Index shared modules in MODULES.md |
-| one `SKILL.md` + a `reference/`\|`docs/`\|`references/` folder of sub-files | **DEEP** | install as ONE dir (kind=skill); index notable modules in MODULES.md (status referenced) |
-| one flat `SKILL.md`, no sub-files | **STANDALONE** | install as one dir (kind=skill); no MODULES rows |
-Ambiguous (a root `SKILL.md` AND a `skills/` dir) → AskUserQuestion. Packs whose members overlap (freshtechbro) → install only the specific members needed, per CONFLICTS/CATALOG notes.
+| multiple `**/skills/<name>/SKILL.md` (or several top-level `<name>/SKILL.md` dirs) | **PACK** | register MEMBERS individually (kind=pack-member), one family prefix; NEVER install as a unit. Index shared modules in `module-index.md` |
+| one `SKILL.md` + a `reference/`\|`docs/`\|`references/` folder of sub-files | **DEEP** | install as ONE dir (kind=skill); index notable modules in `module-index.md` (status referenced) |
+| one flat `SKILL.md`, no sub-files | **STANDALONE** | install as one dir (kind=skill); no module-index rows |
+Ambiguous (a root `SKILL.md` AND a `skills/` dir) → AskUserQuestion. Packs whose members overlap (freshtechbro) → install only the specific members needed, per `conflict-rulings.md` notes.
 
 ## 2a. Footprint globs — files a skill reads/writes in a target project (from WIKI)
 Glob these to detect whether a skill's deps already exist, or whether adding a skill will collide with files already present.
@@ -43,14 +43,14 @@ Stateless skills (taste-skill, frontend-design, gsap-*) own no files → no sign
 
 ## 3. Load-time conflict detection (run on `load`, before moving the dir)
 a. **Already active?** `skillctl status` lists it under `.claude/skills/` → say so, skip the load.
-b. **Sequential order?** CONFLICTS `sequential` row names this skill as B with a predecessor A → glob A's footprint (§2). Present but B not yet loaded → this is the intended order; offer HANDOFF (§4). Absent → B runs standalone (fine).
+b. **Sequential order?** a `conflict-rulings.md` `sequential` row names this skill as B with a predecessor A → glob A's footprint (§2). Present but B not yet loaded → this is the intended order; offer HANDOFF (§4). Absent → B runs standalone (fine).
 c. **Exclusive peer's files present?** glob §2 for an `exclusive` peer's footprint → WARN: two source-of-truth systems would coexist; ask whether to proceed, pick one, or migrate.
 d. **Duplicate already installed?** (e.g. a gsap-scrolltrigger from another source) → refuse, name the kept copy.
 e. None → load normally.
 
 ## 4. Handoff seeding (a `sequential` predecessor's files exist)
 Goal: let the newly-loaded skill build on prior work instead of starting cold or ignoring it.
-1. Read the mapping from CONFLICTS.md Handoffs table (source files → target files → transfer notes).
+1. Read the mapping from `conflict-rulings.md`'s Handoffs table (source files → target files → transfer notes).
 2. Read the source file(s); draft the target file(s). This is a LOSSY schema translation, not a copy — surface what you inferred.
 3. AskUserQuestion: **seed now** (write targets, then let the new skill's init refine) / **start fresh** (new skill ignores prior files) / **cancel load**.
 4. Never overwrite an existing target file without explicit confirm. Record nothing to a log — the files themselves are the state.

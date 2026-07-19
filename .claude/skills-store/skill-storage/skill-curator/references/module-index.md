@@ -1,5 +1,5 @@
 # MODULE INDEX — notable sub-modules of installed/candidate skills. Consulted by the picker, `list`, and capability hunts. A module's category MAY differ from its parent's.
-status: referenced = use via parent (load parent, read only that module's file) · extracted = now a standalone skill (see CATALOG Installed)
+status: referenced = use via parent (load parent, read only that module's file) · extracted = now a standalone skill (in the store or the active baseline)
 
 | module | parent | category | status | note |
 |---|---|---|---|---|

@@ -71,7 +71,7 @@ Minimal frontmatter — no `disable-model-invocation`/`user-invocable`/`allowed-
 
 **Pipeline order (enforced, `design-flow` orchestrates):** grill-me → design-brief → information-architecture → design-tokens → brief-to-tasks → frontend-design → (design-review, optional/manual). `design-flow`'s own text: "read the corresponding SKILL.md file... during each phase" — confirms ONE phase loaded at a time, not all 8 upfront.
 
-**frontend-design here ≠ Anthropic's.** This version references **8 named aesthetic philosophies** (Dieter Rams, Swiss, Ma, Brutalist, Scandinavian, Art Deco, Neo-Memphis, Editorial) with concrete implementation params — this is the "independent-use candidate" module noted in our MODULES.md.
+**frontend-design here ≠ Anthropic's.** This version references **8 named aesthetic philosophies** (Dieter Rams, Swiss, Ma, Brutalist, Scandinavian, Art Deco, Neo-Memphis, Editorial) with concrete implementation params — this is the "independent-use candidate" module noted in skill-curator's `references/module-index.md`.
 
 **Conflict surface:** owns `.design/<slug>/` — collides in *concept* (not filename) with impeccable's root `PRODUCT.md`/`DESIGN.md` and with ui-ux-pro-max's `design-system/` (three different "source of truth" locations if all three ever coexist). Token format is stack-variable by design — if paired with a skill enforcing one fixed token format, outputs diverge and don't interoperate. Its 8 named philosophies vs. ui-ux-pro-max's 67 named styles share names ("Brutalist"/"Swiss") with likely-different parameters.
 
@@ -205,7 +205,7 @@ Optional third-party pack referenced via `bold-template-pack/selection-index.jso
 **Pipeline (7 phases):** 0 mode detect → 1 content Q&A (new-deck) *or* 4 PPTX extraction (reads an input `.pptx`) → 2 style discovery (3 generated single-slide previews — one safe preset, one bold-template, one wildcard; show-don't-tell) → 3 full build (loads viewport-base.css/html-template.md/animation-patterns.md) → 5 open in browser → 6 optional deploy/PDF export.
 **Real cross-invocation state (new finding) — Mode C: Enhancement.** The skill reads its own PRIOR generated HTML file back in to add content, re-verifying the fixed 16:9/1920×1080 stage invariant before editing — this is the one genuine persisted-state path in the skill (the deck file itself is the state).
 **Output:** single self-contained HTML, zero dependencies by design — README states verbatim "No npm, no build tools, no frameworks."
-**Conflict surface — NONE for our system (downgraded).** The "prioritize CSS-only / use Motion for React" vs. "zero dependencies, no npm" tension is INTERNAL to frontend-slides and self-resolves (default to the CSS-only path); it is not a cross-skill or project conflict and carries no CONFLICTS.md rule. frontend-slides lives in the store for standalone deck-making sessions. Its anti-generic-font stance is a within-skill preference, not something the loadout must arbitrate.
+**Conflict surface — NONE for our system (downgraded).** The "prioritize CSS-only / use Motion for React" vs. "zero dependencies, no npm" tension is INTERNAL to frontend-slides and self-resolves (default to the CSS-only path); it is not a cross-skill or project conflict and carries no conflict-rulings rule. frontend-slides lives in the store for standalone deck-making sessions. Its anti-generic-font stance is a within-skill preference, not something the loadout must arbitrate.
 
 ---
 
@@ -222,7 +222,7 @@ Optional third-party pack referenced via `bold-template-pack/selection-index.jso
 ---
 
 ## Cross-cutting conflict map (for the downstream model)
-This table is the DESCRIPTIVE evidence. The operational RULINGS that the picker/add-flow enforce live in `CONFLICTS.md` (single source of truth); update rulings there, not here.
+This table is the DESCRIPTIVE evidence. The operational RULINGS that the picker/add-flow enforce live in skill-curator's `references/conflict-rulings.md` (single source of truth); update rulings there, not here.
 
 | axis | competing skills | resolution needed |
 |---|---|---|
