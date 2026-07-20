@@ -2,7 +2,7 @@
 updated-by: skill-curator · written when: user makes a ruling · `install` detects an overlap
 read-at: load time (`skillctl.sh check-conflicts`) · install time (warn on duplicate/exclusive)
 
-## Rule types (only these five; install-policy → CATALOG)
+## Rule types (only these five)
 - **precedence** — both may be active; LEFT wins the contested call
 - **exclusive** — never co-load; pick one (usually a per-project fact, decided once)
 - **sequential** — A → B: run A first, B builds on A's output files (see Handoffs). Order matters, not exclusion; re-loading A restarts A's flow
@@ -23,12 +23,13 @@ read-at: load time (`skillctl.sh check-conflicts`) · install time (warn on dupl
 ## Exclusive groups — machine-parseable (exact skill names (frontmatter `name:`), comma-separated; read by
 `skillctl.sh check-conflicts` to suppress an unused member from mode-entry suggestions
 when its excluded peer already has footprint files in the project — see
-`add-and-handoff.md` §2a for footprint globs). A group appears here ONLY once every
-member's name matches a real installed skill — until then it stays prose-only above.
+`add-and-handoff.md` §2a for footprint globs). Rows may name skills not (yet) vendored
+into the store — such rows are inert until the member actually exists; the exclusivity
+warn fires ONLY when a load would make two peers simultaneously ACTIVE
+(`.claude/skills/`). Store coexistence is always fine. [user ruling 2026-07-19]
 The `webgpu-threejs-tsl ⊕ freshtechbro threejs-webgl / react-three-fiber` row (line 20)
-is NOT here yet: those are pack-member names, not yet registered as their own CATALOG
-rows (per `add-and-handoff.md` §1, freshtechbro packs register per-member on `add`) —
-add its row here once real names exist at vendor-time.
+stays prose-only for now: freshtechbro pack members get their real frontmatter names
+at vendor-time (per `add-and-handoff.md` §1) — add its row here then.
 | members (comma-separated) |
 |---|
 | designer-skills, ui-ux-pro-max |

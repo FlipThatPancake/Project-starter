@@ -10,8 +10,8 @@ cd "$(git rev-parse --show-toplevel 2>/dev/null)" || exit 0
 
 # skill loadout drift → recommend the skill-curator skill (own hourly stamp).
 # Model v3: a skill is "registered" iff its own SKILL.md carries name+description
-# frontmatter (no policy field, no central CATALOG). Missing either = drift. Skips
-# the active copy of a skill whose store master already covers the name (shadowing).
+# frontmatter (no policy field, no central CATALOG). Missing either = drift.
+# (A loaded skill is checked on both shelves — same file, so no false positives.)
 if [ -d .claude/skills ]; then
   DRIFT=""
   for d in .claude/skills/*/ .claude/skills-store/skill-storage/*/; do
@@ -50,6 +50,11 @@ if [ -f "$LOCK" ] && grep -q 'github:' "$LOCK"; then
     fi
   fi
 fi
+
+# starter repos never checkpoint — the volume nudge is pure noise on the mother
+# repo (and on any project before mode 2 bootstraps it). The drift/staleness
+# nudges above still run; only the /checkpoint recommender below is suppressed.
+grep -q '^state: starter' .claude/memory/INDEX.md 2>/dev/null && exit 0
 
 # rate-limit: one nudge per hour
 STAMP="/tmp/checkpoint-nudge-$(pwd | cksum | cut -d' ' -f1)"

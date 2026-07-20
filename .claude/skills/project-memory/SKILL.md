@@ -1,6 +1,6 @@
 ---
 name: project-memory
-description: Use at the start of every session in this repo — first to establish the session's route scope (portal profile), and whenever locating any route, page section, component, or element, including when the user names a route or a section ("the preference list", "/reports"). Read .claude/memory/INDEX.md and the matching routes/<route>.md map BEFORE any exploratory file reads or greps.
+description: Use at the start of every session in this repo — first to establish the session's route scope, and whenever locating any route, page section, component, or element, including when the user names a route or a section ("the preference list", "/reports"). Read .claude/memory/INDEX.md and the matching routes/<route>.md map BEFORE any exploratory file reads or greps.
 group: core
 disable-model-invocation: false
 ---
@@ -28,7 +28,7 @@ the session-start hook whether to steer toward new-project bootstrap (see
 - The lock is advisory but binding: confine reads/greps/edits to the locked route's paths + the shared files its pointer rows name. Re-scope ONLY when the user says so ("switch to /x", "unlock scope") — never re-infer from a later ambiguous prompt.
 
 ### Enforcement (scope-guard)
-Edit/Write tools are blocked outside the scope via PreToolUse hook: only edits to `src/routes/<locked>/**` and `.claude/memory/**` are allowed. Shared files (including `shared/tokens.css`) and other routes require override. To allow cross-route work, use `@allow-cross-route` in your prompt + final commit message — both the Edit/Write hook and ship-time gate check for it. Without override, cross-route commits are rejected at push time.
+Edit/Write tools are blocked outside the scope via PreToolUse hook: only edits to `src/routes/<locked>/**` and `.claude/**` are allowed. Shared files (including `shared/tokens.css`) and other routes are denied — the hook has NO inline override; to edit cross-route, re-lock scope ("switch to /x") or widen the mode allowlist. Separately, ship.sh's pre-commit gate rejects cross-route commits (it also catches Bash-written files the hook can't see) unless `@allow-cross-route` is in the commit message.
 
 ## 2. Read order (never deviate)
 1. `.claude/memory/INDEX.md` — always, first.
@@ -49,7 +49,7 @@ Edit/Write tools are blocked outside the scope via PreToolUse hook: only edits t
 - Maps list anchors (`@sec:concept-modal`, `@css:reveal-stagger`, `@js:render-preference`). `Grep` the anchor, then `Read` with offset/limit around the hit. NO exploratory whole-file Reads, NO blind Globs.
 - One name across `@sec:`/`@css:`/`@js:` = layers of one feature; grep together: `@(sec|css|js):name`.
 
-## 5. Cross-route etiquette: peek, don't wander (portal)
+## 5. Cross-route etiquette: peek, don't wander (multi-route)
 - Another route's MAP: read freely whenever the locked route references it (~cheap).
 - Another route's CODE: only via a `shared/` pointer or the user's explicit request this session.
 - A hub/home route consuming other routes' facts (titles, status, links) is SHARED DATA → maintain `shared/data-portal-manifest.md` (used-by: hub + all listed routes); never code-peek for it.

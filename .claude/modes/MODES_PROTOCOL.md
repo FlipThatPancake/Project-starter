@@ -46,7 +46,7 @@ reads only what's relevant and never wanders:
    H=$(pwd | sha256sum | cut -d' ' -f1 | cut -c1-8)
    printf '%s\n' <allowlist prefixes from the mode file> > /tmp/claude-mode-$H
    ```
-   (`.claude/memory/` is always allowed implicitly; no need to list it.)
+   (`.claude/` is always allowed implicitly; no need to list it.)
    State one line: `Mode: <n>-<name>`.
 4. **Skills are opt-in — no mandatory gate.** The session-start hook already
    injected the skill index (active + dormant, with sizes) into context for

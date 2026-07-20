@@ -87,10 +87,10 @@ are protocol Claude reads and follows — they are not executable.
 | `.claude/skills/project-memory/SKILL.md` | Session protocol: scope-lock, read order, anchor navigation, enforcement description |
 | `.claude/skills/project-memory/references/anchor-conventions.md` | Anchor syntax/naming rules, grep recipes |
 | `.claude/skills/checkpoint/SKILL.md` | Rewrite protocol for `INDEX.md` + route maps (SPEC.md/CONTEXT.md have their own sibling writers — see §8) |
-| `.claude/skills/checkpoint/references/map-format.md` | The format spec: file caps, required headings, profile-line semantics |
+| `.claude/skills/checkpoint/references/map-format.md` | The format spec: file caps, required headings, state-line semantics |
 | `.claude/skills/checkpoint/references/example-index.md` | Canonical `INDEX.md` shape to copy exactly |
 | `.claude/skills/checkpoint/references/example-route-map.md` | Canonical `routes/<r>.md` shape to copy exactly |
-| `.claude/memory/INDEX.md` | The registry: profile line, route table, shared registries, global gotchas |
+| `.claude/memory/INDEX.md` | The registry: state line, route table, shared registries, global gotchas |
 | `.claude/memory/routes/<route>.md` | Per-route section→anchor map (only for routes past the complexity threshold) |
 | `.claude/memory/shared/<id>.md` | Cross-route facts (design tokens, shared data) — never duplicated per-route |
 | `.claude/skills/spec/SKILL.md` | Writes `.claude/memory/SPEC.md` — forward-looking plan + tickets, ticked only on explicit user confirmation |
@@ -145,12 +145,12 @@ by `build.mjs`, not `validate.mjs`'s anchor lint, not a navigation aid):
 ## 5. Memory files: format and caps
 
 ### `INDEX.md` (cap: 60 non-empty lines)
-Required shape (line 2 is the profile line, exact heading names matter — the
+Required shape (line 2 is the state line, exact heading names matter — the
 validator string-matches them):
 
 ```markdown
 # MEMORY INDEX — read first; then ONLY your route's map + the shared files its pointer rows name
-profile: portal
+state: in-progress
 
 ## Routes
 | route | path | status | map | design | data-deps |
@@ -166,8 +166,7 @@ profile: portal
 - Never Read a route's dist/*.html — generated; sources only.
 ```
 
-- `profile:` is `portal` or `standalone` — see §6 for what it actually does
-  (less than the name implies).
+- `state:` is `starter` or `in-progress` — see §6 for what it actually does.
 - A route with no real complexity stays a one-row stub: `map: —`. It does NOT
   need its own `routes/<r>.md` file.
 - A `## Shared registries` row whose `used-by` column lists only ONE route is
@@ -236,35 +235,32 @@ mechanism as `SPEC.md`.
 
 ---
 
-## 6. `profile:` line — what it actually controls (less than it sounds like)
+## 6. `state:` line — what it actually controls
 
-Early versions of this system had `profile: standalone` and `profile: portal`
-as a **structural** fork — standalone meant a flat-file project, portal meant
+Early versions of this system had a `profile: portal|standalone` line as a
+**structural** fork — standalone meant a flat-file project, portal meant
 `src/routes/<name>/`. That fork was collapsed (see
 `.claude/memory/agent-log/SKILL-DEVELOPMENT-LOG.md`, "sixth work chunk") because it created a painful
-migration cliff the moment a standalone project grew a second route.
+migration cliff the moment a standalone project grew a second route. The
+`profile:` line is GONE — if you see it in an old copy of this system, it's
+stale; the validator now rejects it.
 
-**Current model**: structure is ALWAYS route-based conceptually (even a
-single `index.html` counts as one route). What actually varies is whether the
-session-scope-lock question fires, and that is driven by **route COUNT**, not
-the profile line:
+**Current model**: INDEX.md line 2 is `state: starter` (fresh/unbootstrapped —
+the mother Project-starter repo stays this forever) or `state: in-progress`
+(a real project; mode 2 new-project flips it once at first bootstrap). The
+line only tells the session-start hook whether to steer toward bootstrap.
+`checkpoint` never changes it.
+
+Scope-locking is unrelated to this line — it is driven by **route COUNT**:
 
 | INDEX route count | behavior |
 |---|---|
 | ≥ 2 | multi-route: every session locks to ONE route (§7) |
 | ≤ 1 | trivially scoped — the one route IS the whole project, skip locking |
 
-The `profile:` line is now just an **intent hint** — `standalone` means "I
-expect this to stay one route" (so don't bother asking the scope question
-even if it somehow has 2 rows), `portal` means "I expect multiple routes."
-Missing the line entirely = treat as `standalone`. `checkpoint` never
-auto-changes this line; a human/session updates it by hand if the label stops
-matching reality.
-
-This repo (`M3.o-june26-survey-report`) currently has `profile: standalone`
-and exactly one route (`/report`), so scope-lock has never actually fired
-here in practice — the whole locking/enforcement machinery below was built
-and tested, but this specific repo is too small to exercise it day-to-day.
+Structure is ALWAYS route-based conceptually (even a single `index.html`
+counts as one route); a one-route project that grows a second route starts
+locking automatically, nothing to flip.
 
 ---
 
@@ -321,25 +317,25 @@ typo here produces a hook that LOOKS installed and configured but enforces
 nothing — no error, no warning, just silent pass-through.
 
 The allowlist itself: only `src/routes/<locked-route>/**` and
-`.claude/memory/**` are permitted. Everything else — INCLUDING shared files
+`.claude/**` are permitted. Everything else — INCLUDING shared files
 like `shared/tokens.css` that the locked route actually depends on — is
 denied (exit 2, JSON reason on stderr) unless overridden. The reasoning:
 editing a shared file silently changes every route that inlines it, which is
 a cross-route change wearing a same-file disguise; there is no such thing as
 a "safe" shared-file edit from inside a single-route lock.
 
-**Override**: include `@allow-cross-route` in your prompt AND in the final
-commit message.
+**Override**: the hook itself has none — to edit cross-route, re-lock scope
+("switch to /x") or widen the mode allowlist. `@allow-cross-route` is the
+COMMIT gate's override (below), checked in the commit message only.
 
-**2. `ship.sh`'s post-commit cross-route gate.**
+**2. `ship.sh`'s pre-commit cross-route gate (F4).**
 The PreToolUse hook only sees tool calls — a Bash-written file (e.g.
 `sed -i` from inside a Bash tool call) bypasses it entirely; hooks that
 inspect Bash commands are best-effort/fails-open by nature. `ship.sh`
-provides the real backstop: after committing, it diffs `HEAD~1` (repo-
-relative paths from `git diff --name-only`, so no absolute-path handling
-needed there), checks every changed file against the same allowlist, and
-refuses to push (exit 2) if anything outside it lacks the
-`@allow-cross-route` marker in the commit message.
+provides the real backstop: after staging (`git add -A`), BEFORE committing,
+it checks every STAGED file (`git diff --cached --name-only`, repo-relative
+paths) against the same allowlist and refuses to commit (exit 2) if anything
+outside it lacks the `@allow-cross-route` marker in the commit message.
 
 Together: the hook stops most violations proactively (before the model even
 sees a would-be edit accepted); the ship-time gate catches what slips past
@@ -409,7 +405,7 @@ codebase:
 - Line caps: INDEX 60 / route map 100 / shared file 80 / SESSION-LOG 40 /
   SPEC.md 120 / CONTEXT.md 80 (non-empty lines; SPEC/CONTEXT checked only
   when the file exists — both are optional, lazily created).
-- Shape: `profile:` line present and valid, required headings present in
+- Shape: `state:` line present and valid, required headings present in
   both INDEX and every registered route map.
 - **Semantic caps** (added specifically because line caps alone don't stop a
   cheap model from stuffing 20 one-line decisions into a still-under-100-line
@@ -471,11 +467,13 @@ same file but are logically independent of the memory-checkpoint nudge.
 ## 11. `ship.sh` — the orchestration script
 
 ```
-scripts/ship.sh "commit message" [--no-validate] [--no-build] [--no-push] [--all] [--deep] [--sync]
+scripts/ship.sh "commit message" [--no-validate] [--no-build] [--no-push] [--all] [--deep] [--sync] [--to-main]
 ```
 
-Sequence: validate → build changed routes → `git add -A` + commit → (cross-
-route gate, §7) → push with retry (0s/2s/4s/8s/16s backoff).
+Sequence: validate → build changed routes → `git add -A` → cross-route gate
+(§7, pre-commit) → commit → push with retry (0s/2s/4s/8s/16s backoff).
+`--to-main` is the ship-now skill's confirmed fallback only — normal path to
+main is a GitHub PR merge.
 
 - Validation is **scoped by default**: derives changed route ids from
   `git diff HEAD` over `src/routes/`, `.claude/memory/routes/`, and root
@@ -570,9 +568,9 @@ anything above.
    `src/routes/`), and the `hooks` block of `.claude/settings.json` — from
    THIS repo directly (there is no separate `project-template/` — see §14).
 2. Create `.claude/memory/INDEX.md` shaped exactly like
-   `checkpoint/references/example-index.md`, with a `profile:` line
-   reflecting your honest expectation (`standalone` for one route,
-   `portal` if you already know there will be several).
+   `checkpoint/references/example-index.md`, with the `state:` line on line 2
+   (`starter` until the project's first real bootstrap flips it to
+   `in-progress`).
 3. Add anchor comments (`@sec:`/`@css:`/`@js:`) to source from the very first
    file — retrofitting anchors onto unanchored code later is strictly harder
    than starting with them.

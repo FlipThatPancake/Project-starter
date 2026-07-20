@@ -12,7 +12,7 @@ Summarize the current conversation and append to the weekly agent-log file.
 
 ## Output Location
 
-`YYYY-wWW Agent Log.md`
+`YYYY-wWW agent-log.md`
 
 Where `YYYY-wWW` is the ISO week of today's date. Calculate with:
 

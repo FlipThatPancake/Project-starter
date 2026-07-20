@@ -1,12 +1,4 @@
 {
-  "skillOverrides": {
-    "frontend-design": "on"
-  },
-  "disabledMcpjsonServers": [
-    "mcp__Adobe_for_creativity",
-    "mcp__Notion",
-    "mcp__Figma"
-  ],
   "extraKnownMarketplaces": {
     "impeccable": {
       "source": {
@@ -32,9 +24,6 @@
         "repo": "amaancoderx/npxskillui"
       }
     }
-  },
-  "env": {
-    "CLAUDE_AUTO_PUSH_TO_MAIN": "true"
   },
   "hooks": {
     "SessionStart": [

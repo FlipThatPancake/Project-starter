@@ -35,7 +35,7 @@ This skill rewrites `.claude/memory/INDEX.md` and `routes/<route>.md` — the re
 ## After writing
 1. Run `node scripts/validate.mjs --memory` — it mechanically checks caps, table shape, and that every anchor resolves in code. Fix failures before proceeding; do not commit failing memory.
 2. Stage memory files (plus any anchor comments re-inserted in code).
-3. Commit message: `chore(memory): checkpoint <routes touched>`.
+3. Commit message: prefix the mode tag, then the checkpoint marker — e.g. `[mode:1-system-dev] chore(memory): checkpoint <routes touched>`. The `[mode:…]` prefix is CLAUDE.md's per-commit rule; the `chore(memory): checkpoint` substring is what `checkpoint-nudge.sh` greps to find the last checkpoint baseline (a `git log --grep`, so the mode prefix in front is harmless). Both must be present.
 
 ## When to RECOMMEND running /checkpoint (criteria for the model; the Stop-hook nudge covers volume automatically)
 | signal | recommend? |
