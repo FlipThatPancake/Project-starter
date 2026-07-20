@@ -4,7 +4,7 @@ pinned-ref = the upstream commit (short SHA) we vendored. upstream-date = that c
 
 | skill | source | pinned-ref | upstream-date | installed | local-mods |
 |---|---|---|---|---|---|
-| session-log | github:michalparkola/tapestry-skills | 80e1dc5 | 2026-07-04 | 2026-07-07 | none |
+| session-log | github:michalparkola/tapestry-skills | 80e1dc5 | 2026-07-04 | 2026-07-07 | fixed upstream filename-casing bug (WIKI §11): prose said `YYYY-wWW Agent Log.md`, code writes `${WEEK} agent-log.md` — unified on lowercase (2026-07-19) |
 | learn-this | github:michalparkola/tapestry-skills | 80e1dc5 | 2026-07-04 | 2026-07-07 | none |
 | article-extractor | github:michalparkola/tapestry-skills | 80e1dc5 | 2026-07-04 | 2026-07-07 | none |
 | ship-learn-next | github:michalparkola/tapestry-skills | 80e1dc5 | 2026-07-04 | 2026-07-07 | none |

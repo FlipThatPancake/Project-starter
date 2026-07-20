@@ -55,9 +55,10 @@ has_footprint() {
 
 cmd="${1:-status}"; shift || true
 case "$cmd" in
-  status)
+  status|list)
     echo "== active ($ACTIVE):"
     for d in "$ACTIVE"/*/; do
+      [ -d "$d" ] || continue        # empty active dir → unexpanded glob
       n=$(basename "$d"); g=$(group_of "$n")
       printf '  %-24s %s\n' "$n" "${g:-(no group)}"
     done
@@ -180,5 +181,5 @@ case "$cmd" in
     rm -rf "$tmp"
     printf 'sha=%s short=%s date=%s\n' "$full" "${full:0:12}" "$date"
     ;;
-  *) echo "usage: skillctl.sh status | load <n>... | unload <n>... | unload --all | remove <n>... | check-conflicts | check-updates | pin <source>"; exit 2;;
+  *) echo "usage: skillctl.sh status|list | load <n>... | unload <n>... | unload --all | remove <n>... | check-conflicts | check-updates | pin <source>"; exit 2;;
 esac

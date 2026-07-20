@@ -73,6 +73,7 @@ CWD_HASH=$(pwd | sha256sum | cut -d' ' -f1 | cut -c1-8)
 SCOPE_FILE="/tmp/claude-route-scope-$CWD_HASH"
 if [ -f "$SCOPE_FILE" ]; then
   LOCKED_ROUTE=$(cat "$SCOPE_FILE")
+  LOCKED_ROUTE="${LOCKED_ROUTE#/}"   # locks are written "/<route>" — strip the slash
   ROUTE_DIR="src/routes/$LOCKED_ROUTE"
   VIOLATIONS=""
   for file in $(git diff --cached --name-only 2>/dev/null || true); do

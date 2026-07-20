@@ -1,12 +1,4 @@
 {
-  "skillOverrides": {
-    "frontend-design": "on"
-  },
-  "disabledMcpjsonServers": [
-    "mcp__Adobe_for_creativity",
-    "mcp__Notion",
-    "mcp__Figma"
-  ],
   "extraKnownMarketplaces": {
     "impeccable": {
       "source": {

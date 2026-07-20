@@ -14,6 +14,9 @@ MODE_FILE="/tmp/claude-mode-$CWD_HASH"
 # Guard the read: under `set -e`, a bare $(cat missing) would abort the script
 LOCKED_ROUTE=""
 [[ -f "$SCOPE_FILE" ]] && LOCKED_ROUTE=$(cat "$SCOPE_FILE")
+# Locks are written as "/<route>" (docs format) — strip the leading slash so
+# "src/routes/$LOCKED_ROUTE" doesn't become src/routes//<route> (matches nothing)
+LOCKED_ROUTE="${LOCKED_ROUTE#/}"
 
 # Read hook payload from stdin (JSON). Per Claude Code hooks schema, the tool
 # name is top-level "tool_name" and its arguments are under "tool_input"
@@ -39,8 +42,9 @@ if [[ "$FILE_PATH" == "$REPO_ROOT"/* ]]; then
   REL_PATH="${FILE_PATH#"$REPO_ROOT"/}"
 fi
 
-# .claude/memory/** is always writable (maps + INDEX), in any mode
-[[ "$REL_PATH" =~ ^\.claude/memory/ ]] && exit 0
+# .claude/** is always writable in any mode (memory, skill activation,
+# cataloguing) — matches MODES_PROTOCOL and ship.sh's commit gate
+[[ "$REL_PATH" =~ ^\.claude/ ]] && exit 0
 
 # Mode allowlist (set by the session-mode lock) supersedes the route lock.
 # File holds newline-separated repo-relative path prefixes; a lone '*' = allow all.
@@ -56,7 +60,7 @@ if [[ -f "$MODE_FILE" ]]; then
   "tool": "$TOOL_NAME",
   "file": "$REL_PATH",
   "error": "scope-violation",
-  "message": "Edit/Write blocked by the locked session mode. Allowed prefixes: $ALLOWED (plus .claude/memory/**). Switch mode, widen the mode allowlist deliberately, or use @allow-cross-route in your next prompt and commit message to override."
+  "message": "Edit/Write blocked by the locked session mode. Allowed prefixes: $ALLOWED (plus .claude/**). To proceed: switch mode, or deliberately widen the mode allowlist file — this hook has no inline override."
 }
 EOF
   exit 2
@@ -74,7 +78,7 @@ cat >&2 <<EOF
   "tool": "$TOOL_NAME",
   "file": "$REL_PATH",
   "error": "scope-violation",
-  "message": "Edit/Write blocked outside locked route '$LOCKED_ROUTE'. Only edits to $ROUTE_DIR/** and .claude/memory/** are allowed. Use @allow-cross-route in your next prompt and commit message to override."
+  "message": "Edit/Write blocked outside locked route '/$LOCKED_ROUTE'. Only edits to $ROUTE_DIR/** and .claude/** are allowed. To work cross-route: re-lock scope ('switch to /x') or widen the mode allowlist — this hook has no inline override. (ship.sh separately requires @allow-cross-route in the commit message for cross-route commits.)"
 }
 EOF
 exit 2
