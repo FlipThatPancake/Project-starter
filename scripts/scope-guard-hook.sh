@@ -22,9 +22,30 @@ LOCKED_ROUTE="${LOCKED_ROUTE#/}"
 # name is top-level "tool_name" and its arguments are under "tool_input"
 # (Edit/Write use "tool_input.file_path"); "cwd" is the repo root at invocation.
 PAYLOAD=$(cat)
-TOOL_NAME=$(echo "$PAYLOAD" | jq -r '.tool_name // empty')
-FILE_PATH=$(echo "$PAYLOAD" | jq -r '.tool_input.file_path // empty')
-REPO_ROOT=$(echo "$PAYLOAD" | jq -r '.cwd // empty')
+
+# Field extraction. jq is preferred, but this is the ENFORCEMENT hook — if jq is
+# absent, aborting under `set -e` would exit non-2, which the harness reads as
+# "allow" (fail-OPEN — the worst outcome for a guard). So fall back to a
+# sed-based extractor that handles the flat string fields we need. If BOTH fail
+# to yield a tool name on a payload that clearly has one, fail CLOSED (exit 2).
+if command -v jq >/dev/null 2>&1; then
+  TOOL_NAME=$(printf '%s' "$PAYLOAD" | jq -r '.tool_name // empty')
+  FILE_PATH=$(printf '%s' "$PAYLOAD" | jq -r '.tool_input.file_path // empty')
+  REPO_ROOT=$(printf '%s' "$PAYLOAD" | jq -r '.cwd // empty')
+else
+  # Minimal fallback: grab the first quoted value of each key. Good enough for
+  # the flat string fields Edit/Write payloads carry; not general JSON parsing.
+  jqless() { printf '%s' "$PAYLOAD" | sed -n "s/.*\"$1\"[[:space:]]*:[[:space:]]*\"\([^\"]*\)\".*/\1/p" | head -1; }
+  TOOL_NAME=$(jqless tool_name)
+  FILE_PATH=$(jqless file_path)
+  REPO_ROOT=$(jqless cwd)
+  # If the payload names a guarded tool but we couldn't extract a path, fail
+  # closed rather than silently allowing an unparsed Edit/Write.
+  if [[ -z "$TOOL_NAME" ]] && printf '%s' "$PAYLOAD" | grep -q '"tool_name"'; then
+    echo '{"error":"scope-guard-parse","message":"jq unavailable and fallback parse failed; blocking Edit/Write to fail safe. Install jq."}' >&2
+    exit 2
+  fi
+fi
 [[ -z "$REPO_ROOT" ]] && REPO_ROOT=$(pwd)
 
 # Only validate Edit and Write tools

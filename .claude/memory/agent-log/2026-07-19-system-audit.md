@@ -180,9 +180,25 @@ alone). Still open: A1–A6, B1, B2, B5, B6, D1–D4.
   suppression). First run immediately caught a latent `skillctl status` crash on an
   empty active dir — fixed (glob guard).
 - **D3 fixed**: checkpoint-nudge suppresses the volume nudge when `state: starter`.
-- Still open: B6 (commit-convention cross-reference), D2 (jq fallback in scope-guard),
-  D4 (SESSION-LOG row order), C-item (mode 1 read-set names superseded handoff doc
-  without a banner note).
+## Follow-up 3 (2026-07-20, opus) — final cleanups; all findings now closed
+
+- **B6 fixed**: checkpoint SKILL step 3 now shows the combined message
+  `[mode:…] chore(memory): checkpoint <routes>` and explains why both coexist (the nudge
+  greps the substring via `git log --grep`, so the mode prefix is harmless). Verified the
+  grep still matches.
+- **D2 fixed**: scope-guard-hook.sh no longer hard-depends on jq. If jq is absent it uses
+  a sed-based fallback extractor for the flat string fields; if even that yields no tool
+  name on a payload that clearly names one, it fails CLOSED (exit 2) instead of the old
+  fail-OPEN abort. Verified live with jq hidden from PATH: in-route → 0, out-of-route → 2.
+- **D4 fixed**: SESSION-LOG rows reordered strictly newest-first (07-14 and 07-10 were
+  misplaced); row content preserved byte-for-byte. Header's "keep last 20" reconciled to
+  the validator's real 40-non-empty-line cap.
+- **C-item fixed**: mode-1 read-set now flags `agent-log/*HANDOFF*` +
+  `SKILL-DEVELOPMENT-LOG.md` as historical/superseded (read for the *why*, not as spec),
+  while still naming the live `PROJECT-MEMORY-SYSTEM-HANDOFF.md` as current.
+
+Every finding A1–A7, B1–B6, C, D1–D4 is now resolved or explicitly re-ruled. Bash-layer
+regression coverage added so A1/A3-class drift can't recur silently.
 
 ## Verdict
 
