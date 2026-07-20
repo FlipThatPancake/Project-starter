@@ -16,13 +16,12 @@ Distilled from a production project where un-instrumented sessions cost
 | `.claude/skills/checkpoint/` | `/checkpoint`: safe memory rewrites |
 | `scripts/skillctl.sh` | thin skill loadout mechanics — list/load/unload/remove (`/skills`) |
 | `.claude/skills-store/skill-storage/skill-curator/` | dormant skill: install/update/extract/delete a skill (heavy, infrequent ops) |
-| `.claude/skills/anti-slop-preflight/` | pre-ship checklist for visual/design changes |
 | `.claude/memory/` | `INDEX.md` registry + per-route maps + shared registries (committed = persistent) |
-| `.claude/skills-store/` | dormant skill library (zero context cost until loaded) |
-| `.claude/settings.json` | Stop hook → `scripts/checkpoint-nudge.sh` (deterministic, zero-token recommender) |
-| `scripts/` | `validate.mjs` · `build.mjs` · `ship.sh` · `checkpoint-nudge.sh` · `scope-guard-hook.sh` |
+| `.claude/skills-store/` | dormant skill library, zero context cost until loaded (includes `anti-slop-preflight`, the pre-ship visual checklist) |
+| `.claude/settings.json` | wires the three hooks: SessionStart → `session-start-hook.sh` (mode menu + skill index), PreToolUse → `scope-guard-hook.sh` (scope enforcement), Stop → `checkpoint-nudge.sh` (zero-token /checkpoint recommender) |
+| `scripts/` | `validate.mjs` · `build.mjs` · `ship.sh` · `session-start-hook.sh` · `checkpoint-nudge.sh` · `scope-guard-hook.sh` |
 | `tests/` | fixtures + `test-tooling.mjs` covering the scripts above |
-| `src/routes/_skeleton/` | copy this when adding a new route (portal profile) |
+| `src/routes/_skeleton/` | copy this when adding a new route |
 | `src/shared/tokens.css` | shared design tokens routes opt into via `<!-- @inline:../../shared/tokens.css -->` |
 
 ## Starting a new project from this repo
@@ -30,12 +29,13 @@ Distilled from a production project where un-instrumented sessions cost
 This repo *is* the starter kit — for a new project, create a new GitHub repo
 from this one (or clone it and re-point `origin`), then:
 
-1. Set `profile:` in `.claude/memory/INDEX.md` — `portal` (multi-route domain:
-   every session locks onto ONE route, with an auto route-picker question when
-   the first prompt is ambiguous) or `standalone` (single site/app: whole
-   project is the scope, no lock ceremony).
-2. Add routes under `.claude/memory/INDEX.md` as they're created (`cp -r
-   src/routes/_skeleton src/routes/<route>`); give each a `routes/<route>.md`
+1. Start a session. The SessionStart hook reads `state: starter` in
+   `.claude/memory/INDEX.md` and steers into **mode 2 (new-project)**, which
+   asks the structure & stack, then flips the state to `in-progress`. (There is
+   no portal/standalone flag — scope-locking kicks in automatically once INDEX
+   lists ≥2 routes; a one-route project is trivially the whole scope.)
+2. Add routes (`cp -r src/routes/_skeleton src/routes/<route>`) and register
+   each as a row in `.claude/memory/INDEX.md`; give each a `routes/<route>.md`
    map once it earns one.
 3. Fill `src/shared/tokens.css` if routes will share a design system;
    otherwise leave empty.
@@ -45,7 +45,7 @@ from this one (or clone it and re-point `origin`), then:
 
 | when | do |
 |---|---|
-| session start | Claude reads `.claude/memory/INDEX.md` + the route map and locks scope (project-memory skill, automatic) |
+| session start | the SessionStart hook injects the mode menu + skill index; Claude locks a session mode, reads `.claude/memory/INDEX.md` (+ the route map on multi-route projects) and locks scope |
 | change route mid-session | say "switch to /route" or "unlock scope" — scope is never re-inferred silently |
 | ship a chunk | `scripts/ship.sh "msg"` (validates + builds changed routes + commits + pushes) |
 | Stop-hook nudge appears | run `/checkpoint` |

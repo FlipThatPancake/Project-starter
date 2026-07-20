@@ -156,6 +156,34 @@ historical v3 banners left as-is); **C-anchor-dup fixed** (`_skeleton`'s route-l
 anchor renamed `@css:route-styles`; `@css:tokens` now belongs to shared tokens.css
 alone). Still open: A1–A6, B1, B2, B5, B6, D1–D4.
 
+## Follow-up 2 (2026-07-19/20, user-ruled) — remediation round
+
+- **A1 fixed**: scope-guard-hook.sh and ship.sh F4 now strip a leading `/` from the
+  route lock, so the documented `echo "/<route>"` format works everywhere.
+- **A2 fixed**: `skillctl.sh list` added as an alias of `status`.
+- **A3 fixed** (user ruling: always writable): scope-guard now exempts all of
+  `.claude/**`, matching MODES_PROTOCOL and ship's gate — one truth across all three.
+- **A4 fixed** (block KEPT per recommendation — zero token cost): both hook denial
+  messages now state the real escape (re-scope / widen the mode allowlist) instead of
+  the nonexistent prompt override; project-memory §1 and HANDOFF §7 corrected to match.
+- **A5 fixed**: session-log casing unified on `agent-log.md`; LOCK.md local-mods row
+  records the fix.
+- **A6 fixed**: dead `disabledMcpjsonServers` + `skillOverrides` keys deleted.
+- **B1/B2 fixed**: README bootstrap + HANDOFF doc fully swept to `state:`/route-count
+  model; ship-gate description corrected to pre-commit; flag lists updated.
+- **B5 re-ruled** (user, 2026-07-19): exclusive-group rows MAY name not-yet-vendored
+  skills (inert until installed); the warn only fires when a load would make two peers
+  simultaneously ACTIVE. Header rewritten; `design-m3` precedence row left (harmless
+  house-rule example).
+- **D1 fixed**: test-tooling.mjs extended with 15 bash-layer cases (scope-guard payload
+  pipes, ship F4 + template filter in temp git repos, skillctl round-trip, nudge
+  suppression). First run immediately caught a latent `skillctl status` crash on an
+  empty active dir — fixed (glob guard).
+- **D3 fixed**: checkpoint-nudge suppresses the volume nudge when `state: starter`.
+- Still open: B6 (commit-convention cross-reference), D2 (jq fallback in scope-guard),
+  D4 (SESSION-LOG row order), C-item (mode 1 read-set names superseded handoff doc
+  without a banner note).
+
 ## Verdict
 
 The Node layer (validator/builder/tests) is tight and all-green. The decay is
