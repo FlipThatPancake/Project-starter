@@ -114,16 +114,21 @@ function bashCase(name, fn) {
   } catch (e) { failed++; console.error(`FAIL ${name}\n     ${e.message}`); }
 }
 
-// -- scope-guard-hook.sh: pipe a synthetic PreToolUse payload, assert exit code
-function guard(cwd, filePath, { mode, route, tool = 'Edit' } = {}) {
+// -- scope-guard-hook.sh: pipe a synthetic PreToolUse payload, assert exit code.
+// `noJq` sets SCOPE_GUARD_NO_JQ=1 to force the jq-free fallback parser (D2), so
+// that path is regression-covered without any PATH surgery. `rawPayload` sends a
+// literal string instead of a well-formed object (for the fail-closed case).
+function guard(cwd, filePath, { mode, route, tool = 'Edit', noJq = false, rawPayload } = {}) {
   const h = hashOf(cwd);
   const M = `/tmp/claude-mode-${h}`, S = `/tmp/claude-route-scope-${h}`;
   rmSync(M, { force: true }); rmSync(S, { force: true });
   if (mode) writeFileSync(M, mode.join('\n') + '\n');
   if (route) writeFileSync(S, route + '\n');
+  const input = rawPayload !== undefined ? rawPayload
+    : JSON.stringify({ tool_name: tool, tool_input: { file_path: join(cwd, filePath) }, cwd });
   const r = spawnSync('bash', [join(ROOT, 'scripts', 'scope-guard-hook.sh')], {
-    cwd, encoding: 'utf8',
-    input: JSON.stringify({ tool_name: tool, tool_input: { file_path: join(cwd, filePath) }, cwd }),
+    cwd, encoding: 'utf8', input,
+    env: noJq ? { ...process.env, SCOPE_GUARD_NO_JQ: '1' } : process.env,
   });
   rmSync(M, { force: true }); rmSync(S, { force: true });
   return r.status;
@@ -144,6 +149,17 @@ bashCase('scope-guard: route lock blocks other route', () =>
   guard(gdir, 'src/routes/other/x.html', { route: '/app' }) === 2 ? null : 'expected exit 2');
 bashCase('scope-guard: non-Edit/Write tools pass through', () =>
   guard(gdir, 'src/routes/other/x.html', { route: '/app', tool: 'Read' }) === 0 ? null : 'expected exit 0');
+// D2: jq-free fallback parser must still enforce correctly (allow in-route,
+// block out-of-route) and fail CLOSED when it can't parse a guarded payload.
+bashCase('scope-guard (no jq): fallback allows in-route edit', () =>
+  guard(gdir, 'src/routes/app/index.html', { mode: ['src/routes/app/'], noJq: true }) === 0 ? null : 'expected exit 0');
+bashCase('scope-guard (no jq): fallback blocks out-of-route edit', () =>
+  guard(gdir, 'src/routes/other/x.html', { mode: ['src/routes/app/'], noJq: true }) === 2 ? null : 'expected exit 2');
+bashCase('scope-guard (no jq): unparseable guarded payload fails closed', () =>
+  // tool_name present as a key but not a plain quoted string → fallback can't
+  // extract it → must block (exit 2), never silently allow
+  guard(gdir, 'x', { mode: ['src/routes/app/'], noJq: true,
+    rawPayload: '{"tool_name": 123, "tool_input": {"file_path": "x"}, "cwd": "y"}' }) === 2 ? null : 'expected exit 2 (fail-closed)');
 rmSync(gdir, { recursive: true, force: true });
 
 // -- ship.sh: cross-route commit gate (F4) + template build filter, in a temp git repo

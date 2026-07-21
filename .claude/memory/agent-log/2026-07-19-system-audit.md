@@ -200,6 +200,16 @@ alone). Still open: A1–A6, B1, B2, B5, B6, D1–D4.
 Every finding A1–A7, B1–B6, C, D1–D4 is now resolved or explicitly re-ruled. Bash-layer
 regression coverage added so A1/A3-class drift can't recur silently.
 
+## Follow-up 4 (2026-07-20, opus) — close the D2 test-coverage gap
+
+The D2 jq-fallback was verified live but had no automated guard (a PATH-stripping test
+is brittle — breaks the moment the script uses a new coreutil). Added a documented test
+seam instead: `SCOPE_GUARD_NO_JQ=1` forces the fallback branch, so the suite exercises it
+with zero PATH surgery. Three new cases (29 total): fallback allows in-route, blocks
+out-of-route, and fails CLOSED on an unparseable guarded payload. Negative-control
+checked — neutering the fail-closed guard makes the test fail, proving it has teeth.
+No known defects or coverage gaps remain in the audited surface.
+
 ## Verdict
 
 The Node layer (validator/builder/tests) is tight and all-green. The decay is
