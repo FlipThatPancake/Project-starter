@@ -1,0 +1,165 @@
+/* ============================================================================
+   MIDEA — RESEARCH REPORT DESIGN SYSTEM — DROP-IN TOKENS + BASE
+   ----------------------------------------------------------------------------
+   The official Midea design language for research/insight reports. For use on
+   Midea projects. The sole accent is MIDEA BLUE (#0098D1); keep it unless a
+   specific Midea sub-brand dictates otherwise.
+
+   Self-contained. Copy this file into any Midea project and link it, or paste
+   the <style> body inline. Every colour, radius, shadow and easing curve used
+   by the report lives here as a CSS custom property — nothing is hardcoded in
+   component rules, so re-theming the whole thing means editing ONLY the token
+   blocks below.
+
+   THEMES
+     • Default theme is LIGHT ("SnowUI" canvas + "Midea Blue" accent), in :root.
+     • DARK is an opt-in override block, activated with:  <html data-theme="dark">
+     • To add a NEW theme: copy the [data-theme="dark"] block, rename the
+       selector (e.g. [data-theme="brand"]), and change the values.
+     • Shape/elevation/easing tokens live in :root and are shared by all themes;
+       override per-theme only if a theme genuinely needs different geometry.
+
+   FONTS
+     Load these in <head> before this stylesheet (Google Fonts):
+       <link rel="preconnect" href="https://fonts.googleapis.com">
+       <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+       <link rel="stylesheet"
+         href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Hanken+Grotesk:wght@300..700&display=swap">
+   ========================================================================== */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  color-scheme: light;
+
+  /* ── Canvas & surfaces — "SnowUI" light ── */
+  --bg:        #F9F9FA;   /* page background — very light warm grey        */
+  --card:      #FFFFFF;   /* raised card surface                           */
+  --surface-2: #F3F4F6;   /* insets: toggle tracks, tabs, chips, avatars   */
+
+  /* ── Tinted card (rare — accent-washed panels) ── */
+  --card-blue: #E0F3FA;
+
+  /* ── Ink & text ramp ── */
+  --ink:   #000000;         /* active chrome: solid pills/buttons          */
+  --text:  #1C1C1C;         /* primary body & headings                     */
+  --text2: rgba(0,0,0,.60); /* secondary: sublabels, captions, values      */
+  --text3: rgba(0,0,0,.58); /* tertiary: eyebrow labels, axis numbers      */
+
+  /* ── Accent — the ONLY chromatic colour (Midea Blue) ── */
+  --accent:    #0098D1;   /* CTAs, active states, bar fills, links         */
+  --accent-d:  #0077A3;   /* darker accent (hover/pressed)                 */
+  --accent-lt: #E0F3FA;   /* accent wash — active-row bg, hover tint       */
+
+  /* ── Secondary tint — amber, for caveats/warnings ONLY ── */
+  --amber:    #C07B12;
+  --amber-lt: #FCF3E3;
+
+  /* ── Lines & tracks ── */
+  --border:   rgba(0,0,0,.10);  /* hairline card/section borders           */
+  --border-2: rgba(0,0,0,.18);  /* stronger outline (outlined panels)      */
+  --bar-bg:   rgba(0,0,0,.06);   /* empty bar-track background              */
+
+  /* ── Shape — border-radius scale ── */
+  --radius:      16px;   /* default card / panel                           */
+  --radius-lg:   20px;   /* large card                                     */
+  --radius-xl:   24px;   /* modal                                          */
+  --radius-md:   12px;   /* chips, small cards                             */
+  --radius-sm:    8px;   /* tight insets, thumbs                           */
+  --radius-pill: 999px;  /* bar tracks, toggle buttons, badges             */
+
+  /* ── Elevation — soft, diffuse, ACCENT-TINTED shadows (not neutral) ── */
+  --shadow:     0 1px 2px rgba(0,152,209,.04), 0 4px 12px rgba(0,152,209,.06);
+  --shadow-lg:  0 4px 16px rgba(0,152,209,.08), 0 8px 24px rgba(0,152,209,.06);
+  --shadow-pop: 0 8px 32px rgba(0,152,209,.12), 0 2px 8px rgba(0,152,209,.06);
+
+  /* ── On-colour text ── */
+  --on-accent:  #FFFFFF;
+  --on-overlay: #FFFFFF;
+
+  /* ── Neutral fills & overlays ── */
+  --thumb-bg:       #E5E9EF;      /* image placeholder / modal image panel  */
+  --overlay:        rgba(0,0,0,.80);
+  --overlay-strong: rgba(0,0,0,.85);
+  --overlay-soft:   rgba(0,0,0,.50);
+  --overlay-chip:   rgba(0,0,0,.45);
+  --overlay-btn:    rgba(0,0,0,.40);
+
+  /* ── Categorical segment ramp — monochromatic accent, light→lighter ── */
+  --seg-1: #0098D1;
+  --seg-2: #4CB5DC;
+  --seg-3: #8AD0E8;
+  --seg-4: #BEEAF8;
+
+  --notes-border: #C07B12;
+  --highlight: var(--amber);
+
+  /* ── Easing — exponential ease-OUT only. Fast start, long soft settle. ──
+       No bounce, no overshoot, no ease-in-out. ── */
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);   /* default UI          */
+  --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);  /* transforms/scale    */
+  --ease-out-expo:  cubic-bezier(0.16, 1, 0.3, 1);   /* reveals/entrances   */
+}
+
+/* ── DARK THEME (opt-in via <html data-theme="dark">) ── */
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --bg:        #141414;
+  --card:      #1F1F1F;
+  --surface-2: #2A2A2A;
+
+  --card-blue: #141E2E;
+
+  --ink:   #FFFFFF;
+  --text:  #E8E8E8;
+  --text2: rgba(255,255,255,.70);
+  --text3: rgba(255,255,255,.60);
+
+  --accent:    #5BA8FF;
+  --accent-d:  #4C98FD;
+  --accent-lt: #1A2A40;
+
+  --amber:    #FBBF24;
+  --amber-lt: #2D2010;
+
+  --border:   rgba(255,255,255,.08);
+  --border-2: rgba(255,255,255,.15);
+  --bar-bg:   rgba(255,255,255,.08);
+
+  --shadow:     0 1px 3px rgba(0,0,0,.40), 0 4px 12px rgba(0,0,0,.30);
+  --shadow-lg:  0 8px 24px rgba(0,0,0,.45), 0 2px 8px rgba(0,0,0,.35);
+  --shadow-pop: 0 12px 36px rgba(0,0,0,.50);
+
+  --on-accent:  #FFFFFF;
+  --on-overlay: #FFFFFF;
+
+  --thumb-bg:       #141414;
+  --overlay:        rgba(0,0,0,.80);
+  --overlay-strong: rgba(0,0,0,.85);
+  --overlay-soft:   rgba(0,0,0,.60);
+  --overlay-chip:   rgba(0,0,0,.55);
+  --overlay-btn:    rgba(0,0,0,.50);
+
+  --seg-1: #5BA8FF;
+  --seg-2: #7DBBFF;
+  --seg-3: #9FCDFF;
+  --seg-4: #C2DEFF;
+
+  --notes-border: #5A4A28;
+  --highlight: var(--amber);
+}
+
+/* ── Base ── */
+body {
+  font-family: 'Hanken Grotesk', system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;   /* aligned digits in tables/stats   */
+  font-optical-sizing: auto;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 16px;
+  line-height: 1.65;
+}
+
+/* Serif display face — headings only */
+.font-display { font-family: 'DM Serif Display', Georgia, serif; }
