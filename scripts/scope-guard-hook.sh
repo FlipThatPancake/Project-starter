@@ -28,7 +28,11 @@ PAYLOAD=$(cat)
 # "allow" (fail-OPEN — the worst outcome for a guard). So fall back to a
 # sed-based extractor that handles the flat string fields we need. If BOTH fail
 # to yield a tool name on a payload that clearly has one, fail CLOSED (exit 2).
-if command -v jq >/dev/null 2>&1; then
+# SCOPE_GUARD_NO_JQ=1 forces the jq-free fallback below — the test suite sets it
+# to exercise that path deterministically without stripping jq from PATH (which
+# would be brittle: it'd break the moment this script used a new coreutil). Never
+# set it in normal operation.
+if [ -z "${SCOPE_GUARD_NO_JQ:-}" ] && command -v jq >/dev/null 2>&1; then
   TOOL_NAME=$(printf '%s' "$PAYLOAD" | jq -r '.tool_name // empty')
   FILE_PATH=$(printf '%s' "$PAYLOAD" | jq -r '.tool_input.file_path // empty')
   REPO_ROOT=$(printf '%s' "$PAYLOAD" | jq -r '.cwd // empty')
