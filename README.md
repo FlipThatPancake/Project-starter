@@ -18,7 +18,7 @@ Distilled from a production project where un-instrumented sessions cost
 | `.claude/skills-store/skill-storage/skill-curator/` | dormant skill: install/update/extract/delete a skill (heavy, infrequent ops) |
 | `.claude/memory/` | `INDEX.md` registry + per-route maps + shared registries (committed = persistent) |
 | `.claude/skills-store/` | dormant skill library, zero context cost until loaded (includes `anti-slop-preflight`, the pre-ship visual checklist) |
-| `.claude/settings.json` | wires the three hooks: SessionStart → `session-start-hook.sh` (mode menu + skill index), PreToolUse → `scope-guard-hook.sh` (scope enforcement), Stop → `checkpoint-nudge.sh` (zero-token /checkpoint recommender) |
+| `.claude/settings.json` | wires the three hooks: SessionStart → `session-start-hook.sh` (scope prompt + skill index), PreToolUse → `scope-guard-hook.sh` (scope guard: advisory by default, opt-in enforce), Stop → `checkpoint-nudge.sh` (zero-token /checkpoint recommender) |
 | `scripts/` | `validate.mjs` · `build.mjs` · `ship.sh` · `session-start-hook.sh` · `checkpoint-nudge.sh` · `scope-guard-hook.sh` |
 | `tests/` | fixtures + `test-tooling.mjs` covering the scripts above |
 | `src/routes/_skeleton/` | copy this when adding a new route |
@@ -30,10 +30,11 @@ This repo *is* the starter kit — for a new project, create a new GitHub repo
 from this one (or clone it and re-point `origin`), then:
 
 1. Start a session. The SessionStart hook reads `state: starter` in
-   `.claude/memory/INDEX.md` and steers into **mode 2 (new-project)**, which
-   asks the structure & stack, then flips the state to `in-progress`. (There is
-   no portal/standalone flag — scope-locking kicks in automatically once INDEX
-   lists ≥2 routes; a one-route project is trivially the whole scope.)
+   `.claude/memory/INDEX.md` and steers toward the **new-project** bootstrap
+   (`.claude/modes/2-new-project.md`), which asks the structure & stack, then
+   flips the state to `in-progress`. (There is no portal/standalone flag —
+   scope-locking kicks in automatically once INDEX lists ≥2 routes; a one-route
+   project is trivially the whole scope.)
 2. Add routes (`cp -r src/routes/_skeleton src/routes/<route>`) and register
    each as a row in `.claude/memory/INDEX.md`; give each a `routes/<route>.md`
    map once it earns one.
@@ -45,8 +46,8 @@ from this one (or clone it and re-point `origin`), then:
 
 | when | do |
 |---|---|
-| session start | the SessionStart hook injects the mode menu + skill index; Claude locks a session mode, reads `.claude/memory/INDEX.md` (+ the route map on multi-route projects) and locks scope |
-| change route mid-session | say "switch to /route" or "unlock scope" — scope is never re-inferred silently |
+| session start | the SessionStart hook injects a scope prompt + skill index; Claude declares a free-form session scope (advisory by default), reads `.claude/memory/INDEX.md` (+ the route map on multi-route projects) |
+| change scope mid-session | say "switch to /route" or "unlock scope" — scope is never re-inferred silently; cross-scope work is allowed with a nudge unless you've raised the enforce flag |
 | ship a chunk | `scripts/ship.sh "msg"` (validates + builds changed routes + commits + pushes) |
 | Stop-hook nudge appears | run `/checkpoint` |
 | need a new capability | ask for it, or `/skills load <name>` from the store (thin — no doctrine read); `skill-curator` installs a brand-new one from the web |

@@ -21,7 +21,7 @@ State plainly before writing, e.g. "Writing this up as a spec in `.claude/memory
 `SPEC.md`, if present, is surfaced automatically at the start of every session by `session-start-hook.sh` (same zero-token-when-absent mechanism as the skill index). Read it before starting work — tickets aren't necessarily tackled in order or one-per-session, so treat the whole open list as live, not just a single "next" item.
 
 ## File: `.claude/memory/SPEC.md`
-One living file, the forward-looking twin of `INDEX.md`. `INDEX.md` records what exists (rear-view); `SPEC.md` records what's coming (road ahead). Always writable in every mode — `.claude/memory/**` is unconditionally allowed by the scope-guard hook, no allowlist edits needed.
+One living file, the forward-looking twin of `INDEX.md`. `INDEX.md` records what exists (rear-view); `SPEC.md` records what's coming (road ahead). Always writable in every scope — `.claude/memory/**` is unconditionally allowed by the scope-guard hook, no scope edits needed.
 
 Create it lazily — only when the first spec is written. Don't pre-create an empty file.
 

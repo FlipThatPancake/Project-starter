@@ -98,7 +98,7 @@ are protocol Claude reads and follows — they are not executable.
 | `.claude/memory/SPEC.md` | The road ahead: per-project "what it is" / "what matters" / tickets (optional, lazily created) |
 | `.claude/memory/CONTEXT.md` | The shared glossary: canonical terms + `_Avoid_` synonyms (optional, lazily created) |
 | `scripts/validate.mjs` | Lints both source anchors (`--src`) and memory (`--memory`); also `--skills` (separate, skill loadout lint, unrelated to memory) |
-| `scripts/scope-guard-hook.sh` | PreToolUse hook: blocks Edit/Write outside the locked route's allowlist |
+| `scripts/scope-guard-hook.sh` | PreToolUse hook: nudges (advisory) on Edit/Write outside the declared scope; blocks only when the enforce flag is set |
 | `scripts/ship.sh` | validate → build changed routes → commit → cross-route gate → push (with retry) |
 | `scripts/checkpoint-nudge.sh` | Stop hook: zero-token `/checkpoint` recommender |
 | `scripts/build.mjs` | Resolves `@asset`/`@inline` BUILD markers into `dist/<route>.html` (unrelated to navigation anchors, but shares the same comment-marker idea) |
@@ -316,30 +316,36 @@ against the current Claude Code hooks documentation, because a field-name
 typo here produces a hook that LOOKS installed and configured but enforces
 nothing — no error, no warning, just silent pass-through.
 
-The allowlist itself: only `src/routes/<locked-route>/**` and
-`.claude/**` are permitted. Everything else — INCLUDING shared files
-like `shared/tokens.css` that the locked route actually depends on — is
-denied (exit 2, JSON reason on stderr) unless overridden. The reasoning:
-editing a shared file silently changes every route that inlines it, which is
-a cross-route change wearing a same-file disguise; there is no such thing as
-a "safe" shared-file edit from inside a single-route lock.
+The scope itself: `src/routes/<locked-route>/**` and `.claude/**` are always in
+scope. Everything else — including shared files like `shared/tokens.css` that the
+locked route depends on — is out-of-scope. **Posture (advisory by default):** an
+out-of-scope Edit/Write is ALLOWED, with a nudge emitted via the PreToolUse
+`additionalContext` (to Claude) + `systemMessage` (to the user), exit 0. This is
+deliberate — editing a shared file DOES ripple to every route that inlines it, but
+that is often exactly the intended cross-scope work (design-system, data, docs), and
+forcing a re-lock on each one was the friction that made the old hard wall get
+overridden constantly. The nudge keeps the "am I drifting?" signal without the tax.
 
-**Override**: the hook itself has none — to edit cross-route, re-lock scope
-("switch to /x") or widen the mode allowlist. `@allow-cross-route` is the
-COMMIT gate's override (below), checked in the commit message only.
+**Opt-in enforcement:** `touch /tmp/claude-scope-enforce-$H` flips the hook to
+BLOCKING — out-of-scope Edit/Write then returns exit 2 (JSON reason on stderr) until
+the scope is widened or the flag cleared. Raise it deliberately for tightly-scoped
+work on a big multi-route project, where an accidental cross-route edit is the risk
+worth a deterministic, before-review guarantee. `@allow-cross-route` is the COMMIT
+gate's override (below), relevant when enforcing.
 
-**2. `ship.sh`'s pre-commit cross-route gate (F4).**
+**2. `ship.sh`'s pre-commit cross-scope gate.**
 The PreToolUse hook only sees tool calls — a Bash-written file (e.g.
 `sed -i` from inside a Bash tool call) bypasses it entirely; hooks that
 inspect Bash commands are best-effort/fails-open by nature. `ship.sh`
-provides the real backstop: after staging (`git add -A`), BEFORE committing,
+provides the parallel check: after staging (`git add -A`), BEFORE committing,
 it checks every STAGED file (`git diff --cached --name-only`, repo-relative
-paths) against the same allowlist and refuses to commit (exit 2) if anything
-outside it lacks the `@allow-cross-route` marker in the commit message.
+paths) against the same scope. It mirrors the hook's posture — advisory by
+default (warn on stderr and proceed), and refusing to commit (exit 2) only when
+the enforce flag is set and the commit message lacks `@allow-cross-route`.
 
-Together: the hook stops most violations proactively (before the model even
-sees a would-be edit accepted); the ship-time gate catches what slips past
-(Bash writes) as a last-resort check before anything leaves the machine.
+Together: the hook nudges most drift proactively (before the model even sees a
+would-be edit accepted); the ship-time gate re-checks at commit and catches what
+slips past (Bash writes) — both advisory unless you've opted into enforcement.
 
 ---
 

@@ -1,7 +1,7 @@
 # MEMORY INDEX — read first; then ONLY your route's map + the shared files its pointer rows name
 state: starter
 <!-- ^ `starter` = fresh/unbootstrapped (the mother Project-starter repo stays this);
-     `in-progress` = a real project — mode 2 (new-project) flips it on first bootstrap.
+     `in-progress` = a real project — the new-project bootstrap flips it on first run.
      The session-start hook branches on this. validate.mjs --memory fails if missing.
      Scope behavior is driven by route COUNT, not this line (see project-memory §0). -->
 

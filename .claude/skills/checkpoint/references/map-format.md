@@ -7,7 +7,7 @@
 | `routes/<route>.md` | 100 | header line, pointer line, Sections table, Hot elements, Priorities, Recent decisions (cap 10), route gotchas (max 10, inside Sections gotcha column or a Gotchas block) |
 | `shared/<id>.md` | 80 | tokens/patterns tables; NEVER concrete values duplicated from code — names + pointers only |
 | `ref/<topic>.md` | none | deep/rare material, loaded on demand only |
-| `SESSION-LOG.md` | 40 | one row per session: date, branch, mode, one-line scope (see `.claude/modes/MODES_PROTOCOL.md` §Branch & log); newest first, evict oldest |
+| `SESSION-LOG.md` | 40 | one row per session: date, branch, scope, one-line purpose (see `.claude/modes/SCOPE_PROTOCOL.md` §Branch & log); newest first, evict oldest |
 | `SPEC.md` | 120 | forward-looking plan: per-project "what it is" / "what matters" / tickets; written by the `spec` skill, NOT checkpoint |
 | `CONTEXT.md` | 80 | project-specific term glossary (term + tight definition + `_Avoid_` synonyms); written by the `domain-modeling` skill, NOT checkpoint |
 

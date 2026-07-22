@@ -19,16 +19,16 @@ Route COUNT is the ONLY driver of locking — no portal/standalone flag. A one-r
 project that grows a 2nd route starts locking automatically; nothing to flip.
 The `state:` line (`starter`/`in-progress`) is unrelated to scope — it only tells
 the session-start hook whether to steer toward new-project bootstrap (see
-`.claude/modes/MODES_PROTOCOL.md`). Missing `state:` = treat as `starter`.
+`.claude/modes/SCOPE_PROTOCOL.md`). Missing `state:` = treat as `starter`.
 
 ## 1. Session scope lock (when INDEX lists ≥2 routes)
 - First user prompt names a route/project unambiguously → lock silently; state one line: `Scope: /<route>`.
 - Ambiguous → ask ONE AskUserQuestion with options built live from INDEX's route table, plus "whole project / cross-route" and "new route". Nothing more — every other survey answer already lives in the memory files.
-- On lock, persist it: `echo "/<route>" > /tmp/claude-route-scope-$(pwd | sha256sum | cut -d' ' -f1 | cut -c1-8)` — and re-read that file whenever scope is uncertain (e.g. after a context compaction).
-- The lock is advisory but binding: confine reads/greps/edits to the locked route's paths + the shared files its pointer rows name. Re-scope ONLY when the user says so ("switch to /x", "unlock scope") — never re-infer from a later ambiguous prompt.
+- On lock, persist it: `echo "/<route>" > /tmp/claude-route-scope-$(pwd | sha256sum | cut -d' ' -f1 | cut -c1-8)` — and re-read that file whenever scope is uncertain (e.g. after a context compaction). The scope-guard reads this as the session's write-scope (`src/routes/<route>/`).
+- The lock is orientation, not a cage: keep reads/greps/edits to the locked route's paths + the shared files its pointer rows name. Re-scope when the user says so ("switch to /x", "unlock scope") — don't re-infer from a later ambiguous prompt.
 
 ### Enforcement (scope-guard)
-Edit/Write tools are blocked outside the scope via PreToolUse hook: only edits to `src/routes/<locked>/**` and `.claude/**` are allowed. Shared files (including `shared/tokens.css`) and other routes are denied — the hook has NO inline override; to edit cross-route, re-lock scope ("switch to /x") or widen the mode allowlist. Separately, ship.sh's pre-commit gate rejects cross-route commits (it also catches Bash-written files the hook can't see) unless `@allow-cross-route` is in the commit message.
+The PreToolUse scope-guard is ADVISORY by default: an Edit/Write outside `src/routes/<locked>/**` (and `.claude/**`, always allowed) is PERMITTED with a nudge — legitimate cross-route work (shared tokens, assets, docs) proceeds without a re-lock or override. To make the boundary hard for a session, `touch /tmp/claude-scope-enforce-$H`; out-of-scope Edit/Write then blocks until you widen the scope or clear the flag. ship.sh's pre-commit gate mirrors this — cross-scope commits are advisory by default and blocked only when enforcing, unless `@allow-cross-route` is in the commit message. Full model: `.claude/modes/SCOPE_PROTOCOL.md`.
 
 ## 2. Read order (never deviate)
 1. `.claude/memory/INDEX.md` — always, first.

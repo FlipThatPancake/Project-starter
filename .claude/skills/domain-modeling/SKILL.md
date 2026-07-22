@@ -10,7 +10,7 @@ disable-model-invocation: false
 Actively build and sharpen the glossary of terms specific to THIS project as you design — challenging fuzzy words, probing edge cases, and writing each term down the moment it's settled. This is the *active* discipline, not passive reading: reading `CONTEXT.md` for vocabulary is a one-line habit any skill can do; this skill is for when you're *changing* the model.
 
 ## File: `.claude/memory/CONTEXT.md`
-The glossary lives at `.claude/memory/CONTEXT.md` — beside `INDEX.md` (what exists) and `SPEC.md` (what's coming) as the third of the memory triad: **what the terms mean**. Always writable in every mode (`.claude/memory/**` is unconditionally allowed by the scope-guard). Surfaced in full at every session start by `session-start-hook.sh` (zero-cost when absent), so every session opens already sharing the vocabulary.
+The glossary lives at `.claude/memory/CONTEXT.md` — beside `INDEX.md` (what exists) and `SPEC.md` (what's coming) as the third of the memory triad: **what the terms mean**. Always writable in every scope (`.claude/memory/**` is unconditionally allowed by the scope-guard). Surfaced in full at every session start by `session-start-hook.sh` (zero-cost when absent), so every session opens already sharing the vocabulary.
 
 Create it **lazily** — only when the first real project-specific term is settled. A project with no special vocabulary needs no `CONTEXT.md`; don't force one.
 

@@ -1,16 +1,17 @@
-# Mode 2 — new project (bootstrap)
+# Example scope: new-project (bootstrap)
 
 Turn a fresh copy of the starter into a real project. **This is where structure
 & stack are decided** — there is no standalone/portal flag anymore; the shape you
 choose here is simply reflected by how many routes exist.
 
-- **allowlist:** everything (`*`)
+- **scope:** everything (`*`)
   ```
   H=$(pwd | sha256sum | cut -d' ' -f1 | cut -c1-8)
-  echo '*' > /tmp/claude-mode-$H
+  echo '*' > /tmp/claude-scope-$H
   ```
 - **read-set:** `README.md` (bootstrap steps) + `.claude/memory/INDEX.md` + `src/routes/_skeleton/`.
-- **skills:** opt-in, same as every mode — load whatever design/build skills the chosen stack needs (`/skills load <name>`); nothing pre-decided.
+- **skills:** opt-in — load whatever design/build skills the chosen stack needs
+  (`/skills load <name>`); nothing pre-decided.
 
 ## Steps
 1. **Ask the structure & stack** (don't assume). At minimum: multi-route web app
@@ -25,7 +26,7 @@ choose here is simply reflected by how many routes exist.
    register them in `INDEX.md`, fill `src/shared/tokens.css` only if routes will share a system.
 4. **Flip the state:** set `state: in-progress` in `.claude/memory/INDEX.md`
    (it was `starter`). This is what future sessions detect to skip the bootstrap steer.
-5. Commit: `scripts/ship.sh "chore: bootstrap project"`.
+5. Commit: `scripts/ship.sh "[scope:new-project] chore: bootstrap project"`.
 
 ## Guardrails
 - Never assume the stack — a wrong guess here shapes the whole project. Ask.

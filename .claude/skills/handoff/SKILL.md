@@ -8,7 +8,7 @@ disable-model-invocation: true
 
 Write a handoff document summarising the current conversation so a fresh agent can continue the work. Save it into this repo, not the OS temp directory — `.claude/memory/handoffs/<YYYY-MM-DD>-<branch>.md` — so it survives container teardown and is visible to the next session (this project runs in ephemeral containers; nothing outside the repo persists).
 
-Record this session's locked mode (`.claude/modes/<n>-*.md`) and, if the repo is multi-route, the route in scope. The next agent still runs its own mode-selection step per the session-start protocol — this is context for "is this a direct continuation," not a substitute for that confirmation.
+Record this session's declared scope (the prefixes, and the `.claude/modes/*.md` example it was cribbed from if any) and, if the repo is multi-route, the route in scope. The next agent still runs its own scope-declaration step per the session-start protocol — this is context for "is this a direct continuation," not a substitute for that confirmation.
 
 Include a "suggested skills" section in the document, naming skills the next agent should `/skills load` and why.
 

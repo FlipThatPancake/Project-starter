@@ -77,7 +77,7 @@ been live long enough to accumulate references elsewhere in the system:
 - Packs (gsap, tapestry): register/load MEMBERS individually.
 - Never hand-move a skill dir — go through `skillctl.sh` (thin mechanics) even
   from inside a curation flow.
-- **Mode scope:** install/update/extract/delete are available in ANY mode (the
+- **Scope:** install/update/extract/delete are available in ANY session scope (the
   store is the shared library). Only editing the *mechanics* — this file,
-  `scripts/skillctl.sh`, the hooks, `.claude/modes/**` — is Mode 1 (system-dev)
-  work.
+  `scripts/skillctl.sh`, the hooks, `.claude/modes/**` — belongs in the system-dev
+  scope.

@@ -1,19 +1,19 @@
-# Mode 7 — other
+# Example scope: other
 
-The task doesn't fit modes 1–6. Do NOT improvise a scope — get it from the user.
+The task doesn't match the other examples. Do NOT improvise a scope — get it from
+the user, then declare it free-form.
 
-- **allowlist:** undefined until the user defines it. Ask what paths are in play,
+- **scope:** undefined until the user defines it. Ask what paths are in play,
   then write them:
   ```
   H=$(pwd | sha256sum | cut -d' ' -f1 | cut -c1-8)
-  printf '%s\n' <paths the user names> > /tmp/claude-mode-$H
+  printf '%s\n' <paths the user names> > /tmp/claude-scope-$H
   ```
-  Only use `*` (allow-all) if the user explicitly says the task is repo-wide.
+  Only use `*` (whole repo) if the user explicitly says the task is repo-wide.
 - **read-set:** whatever the user points to — nothing pre-decided.
-- **skills:** opt-in, same as every mode — load/unload (`/skills load <name>`)
-  and install/update/extract/delete (`skill-curator` skill) are BOTH fine in
-  this mode. Only editing mechanics (`scripts/skillctl.sh`, hooks, mode files)
-  needs mode 1.
+- **skills:** opt-in — load/unload (`/skills load <name>`) and install/update/extract/
+  delete (`skill-curator` skill) are both fine. Only editing mechanics
+  (`scripts/skillctl.sh`, hooks, mode files) belongs in the `system-dev` scope.
 - **guardrails:**
   - Ask enough scoped questions to pin down goal, files, and skills before touching anything.
-  - If the task turns out to match a real mode mid-conversation, switch to it.
+  - If the task turns out to match one of the other example scopes mid-conversation, re-declare to it.

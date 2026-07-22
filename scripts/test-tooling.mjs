@@ -115,50 +115,59 @@ function bashCase(name, fn) {
 }
 
 // -- scope-guard-hook.sh: pipe a synthetic PreToolUse payload, assert exit code.
-// `noJq` sets SCOPE_GUARD_NO_JQ=1 to force the jq-free fallback parser (D2), so
-// that path is regression-covered without any PATH surgery. `rawPayload` sends a
-// literal string instead of a well-formed object (for the fail-closed case).
-function guard(cwd, filePath, { mode, route, tool = 'Edit', noJq = false, rawPayload } = {}) {
+// Posture: ADVISORY by default (out-of-scope → allow, exit 0), ENFORCING when the
+// `enforce` flag file exists (out-of-scope → block, exit 2). `noJq` sets
+// SCOPE_GUARD_NO_JQ=1 to force the jq-free fallback parser, so that path is
+// regression-covered without PATH surgery. `rawPayload` sends a literal string
+// instead of a well-formed object (for the fail-closed case).
+function guard(cwd, filePath, { scope, route, enforce = false, tool = 'Edit', noJq = false, rawPayload } = {}) {
   const h = hashOf(cwd);
-  const M = `/tmp/claude-mode-${h}`, S = `/tmp/claude-route-scope-${h}`;
-  rmSync(M, { force: true }); rmSync(S, { force: true });
-  if (mode) writeFileSync(M, mode.join('\n') + '\n');
-  if (route) writeFileSync(S, route + '\n');
+  const SC = `/tmp/claude-scope-${h}`, EN = `/tmp/claude-scope-enforce-${h}`, RT = `/tmp/claude-route-scope-${h}`;
+  for (const f of [SC, EN, RT]) rmSync(f, { force: true });
+  if (scope) writeFileSync(SC, scope.join('\n') + '\n');
+  if (route) writeFileSync(RT, route + '\n');
+  if (enforce) writeFileSync(EN, '');
   const input = rawPayload !== undefined ? rawPayload
     : JSON.stringify({ tool_name: tool, tool_input: { file_path: join(cwd, filePath) }, cwd });
   const r = spawnSync('bash', [join(ROOT, 'scripts', 'scope-guard-hook.sh')], {
     cwd, encoding: 'utf8', input,
     env: noJq ? { ...process.env, SCOPE_GUARD_NO_JQ: '1' } : process.env,
   });
-  rmSync(M, { force: true }); rmSync(S, { force: true });
+  for (const f of [SC, EN, RT]) rmSync(f, { force: true });
   return r.status;
 }
 
 const gdir = mkdtempSync(join(tmpdir(), 'guard-'));
 bashCase('scope-guard: no locks → allow', () =>
   guard(gdir, 'anything.txt') === 0 ? null : 'expected exit 0');
-bashCase('scope-guard: mode allowlist permits its prefix', () =>
-  guard(gdir, 'src/routes/app/index.html', { mode: ['src/routes/app/'] }) === 0 ? null : 'expected exit 0');
-bashCase('scope-guard: mode allowlist blocks outside', () =>
-  guard(gdir, 'src/routes/other/x.html', { mode: ['src/routes/app/'] }) === 2 ? null : 'expected exit 2');
-bashCase('scope-guard: .claude/** always writable in any mode', () =>
-  guard(gdir, '.claude/skills-store/skill-storage/x/SKILL.md', { mode: ['src/routes/app/'] }) === 0 ? null : 'expected exit 0');
+bashCase('scope-guard: declared scope permits its prefix', () =>
+  guard(gdir, 'src/routes/app/index.html', { scope: ['src/routes/app/'] }) === 0 ? null : 'expected exit 0');
+bashCase('scope-guard: advisory (default) ALLOWS outside declared scope', () =>
+  guard(gdir, 'src/routes/other/x.html', { scope: ['src/routes/app/'] }) === 0 ? null : 'expected exit 0 (advisory allows + nudges)');
+bashCase('scope-guard: enforcing BLOCKS outside declared scope', () =>
+  guard(gdir, 'src/routes/other/x.html', { scope: ['src/routes/app/'], enforce: true }) === 2 ? null : 'expected exit 2');
+bashCase('scope-guard: .claude/** always writable, even when enforcing', () =>
+  guard(gdir, '.claude/skills-store/skill-storage/x/SKILL.md', { scope: ['src/routes/app/'], enforce: true }) === 0 ? null : 'expected exit 0');
 bashCase('scope-guard: route lock in docs format "/app" allows in-route edit', () =>
   guard(gdir, 'src/routes/app/index.html', { route: '/app' }) === 0 ? null : 'expected exit 0 (leading-slash regression)');
-bashCase('scope-guard: route lock blocks other route', () =>
-  guard(gdir, 'src/routes/other/x.html', { route: '/app' }) === 2 ? null : 'expected exit 2');
+bashCase('scope-guard: route lock advises (allows) other route by default', () =>
+  guard(gdir, 'src/routes/other/x.html', { route: '/app' }) === 0 ? null : 'expected exit 0 (advisory)');
+bashCase('scope-guard: route lock + enforce blocks other route', () =>
+  guard(gdir, 'src/routes/other/x.html', { route: '/app', enforce: true }) === 2 ? null : 'expected exit 2');
 bashCase('scope-guard: non-Edit/Write tools pass through', () =>
-  guard(gdir, 'src/routes/other/x.html', { route: '/app', tool: 'Read' }) === 0 ? null : 'expected exit 0');
-// D2: jq-free fallback parser must still enforce correctly (allow in-route,
-// block out-of-route) and fail CLOSED when it can't parse a guarded payload.
+  guard(gdir, 'src/routes/other/x.html', { route: '/app', enforce: true, tool: 'Read' }) === 0 ? null : 'expected exit 0');
+// jq-free fallback: advisory still allows, enforcing still blocks, and an
+// unparseable guarded payload must fail CLOSED (exit 2) regardless of posture.
 bashCase('scope-guard (no jq): fallback allows in-route edit', () =>
-  guard(gdir, 'src/routes/app/index.html', { mode: ['src/routes/app/'], noJq: true }) === 0 ? null : 'expected exit 0');
-bashCase('scope-guard (no jq): fallback blocks out-of-route edit', () =>
-  guard(gdir, 'src/routes/other/x.html', { mode: ['src/routes/app/'], noJq: true }) === 2 ? null : 'expected exit 2');
+  guard(gdir, 'src/routes/app/index.html', { scope: ['src/routes/app/'], noJq: true }) === 0 ? null : 'expected exit 0');
+bashCase('scope-guard (no jq): advisory allows out-of-scope edit', () =>
+  guard(gdir, 'src/routes/other/x.html', { scope: ['src/routes/app/'], noJq: true }) === 0 ? null : 'expected exit 0');
+bashCase('scope-guard (no jq): enforcing blocks out-of-scope edit', () =>
+  guard(gdir, 'src/routes/other/x.html', { scope: ['src/routes/app/'], enforce: true, noJq: true }) === 2 ? null : 'expected exit 2');
 bashCase('scope-guard (no jq): unparseable guarded payload fails closed', () =>
   // tool_name present as a key but not a plain quoted string → fallback can't
   // extract it → must block (exit 2), never silently allow
-  guard(gdir, 'x', { mode: ['src/routes/app/'], noJq: true,
+  guard(gdir, 'x', { scope: ['src/routes/app/'], noJq: true,
     rawPayload: '{"tool_name": 123, "tool_input": {"file_path": "x"}, "cwd": "y"}' }) === 2 ? null : 'expected exit 2 (fail-closed)');
 rmSync(gdir, { recursive: true, force: true });
 
@@ -181,25 +190,43 @@ function ship(repo, msg, extra = []) {
 }
 
 {
+  // Advisory posture (default): a route/scope lock is set, but NO enforce flag.
   const { repo, put } = makeRepo();
-  const S = `/tmp/claude-route-scope-${hashOf(repo)}`;
-  writeFileSync(S, '/app\n');                       // docs format, leading slash
+  const h = hashOf(repo);
+  const RT = `/tmp/claude-route-scope-${h}`, EN = `/tmp/claude-scope-enforce-${h}`;
+  rmSync(EN, { force: true });
+  writeFileSync(RT, '/app\n');                       // docs format, leading slash
   put('src/routes/app/index.html', '<html>edit</html>\n');
-  bashCase('ship F4: in-route commit passes under route lock', () => {
+  bashCase('ship: in-route commit passes under scope lock', () => {
     const r = ship(repo, 'in-route', ['--no-build']);
     return r.status === 0 ? null : `expected exit 0, got ${r.status} (leading-slash regression); stderr: ${r.stderr.trim()}`;
   });
   put('src/routes/other/index.html', '<html>edit</html>\n');
-  bashCase('ship F4: cross-route commit blocked without token', () => {
+  bashCase('ship: cross-scope commit is advisory (proceeds) by default', () => {
+    const r = ship(repo, 'cross-route', ['--no-build']);
+    if (r.status !== 0) return `expected exit 0 (advisory), got ${r.status}; stderr: ${r.stderr.trim()}`;
+    return r.stderr.includes('advisory') ? null : 'stderr missing advisory note';
+  });
+  rmSync(RT, { force: true });
+  rmSync(repo, { recursive: true, force: true });
+}
+{
+  // Enforcing posture: enforce flag present → cross-scope blocked unless overridden.
+  const { repo, put } = makeRepo();
+  const h = hashOf(repo);
+  const RT = `/tmp/claude-route-scope-${h}`, EN = `/tmp/claude-scope-enforce-${h}`;
+  writeFileSync(RT, '/app\n'); writeFileSync(EN, '');
+  put('src/routes/other/index.html', '<html>edit</html>\n');
+  bashCase('ship: enforcing cross-scope commit blocked without token', () => {
     const r = ship(repo, 'cross-route', ['--no-build']);
     if (r.status !== 2) return `expected exit 2, got ${r.status}`;
     return r.stderr.includes('scope violation') ? null : 'stderr missing "scope violation"';
   });
-  bashCase('ship F4: @allow-cross-route in message overrides', () => {
+  bashCase('ship: enforcing @allow-cross-route in message overrides', () => {
     const r = ship(repo, 'cross-route @allow-cross-route', ['--no-build']);
     return r.status === 0 ? null : `expected exit 0, got ${r.status}; stderr: ${r.stderr.trim()}`;
   });
-  rmSync(S, { force: true });
+  rmSync(RT, { force: true }); rmSync(EN, { force: true });
   rmSync(repo, { recursive: true, force: true });
 }
 {

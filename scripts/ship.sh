@@ -65,30 +65,53 @@ if [ -n "$GITLINKS" ]; then
   exit 2
 fi
 
-# F4 cross-route scope gate — runs BEFORE the commit (was previously on the push
-# path only, so --no-push commits went ungated). If a route scope-lock exists,
-# every STAGED file must fall inside the locked route's dir or .claude/. Override
-# with @allow-cross-route in the commit message.
+# Cross-scope commit gate — runs BEFORE the commit (so --no-push commits are gated
+# too). Mirrors scope-guard-hook.sh's posture: if a session scope is declared,
+# staged files outside it are ADVISORY by default (warn and proceed — legitimate
+# cross-scope commits touching shared/route/data don't need a ceremony), and
+# BLOCKED only when the enforce flag is set, unless the message carries
+# @allow-cross-route. Scope source mirrors the hook: the declared-scope file
+# preferred, the legacy route lock as fallback; .claude/** is always in scope.
 CWD_HASH=$(pwd | sha256sum | cut -d' ' -f1 | cut -c1-8)
-SCOPE_FILE="/tmp/claude-route-scope-$CWD_HASH"
-if [ -f "$SCOPE_FILE" ]; then
-  LOCKED_ROUTE=$(cat "$SCOPE_FILE")
-  LOCKED_ROUTE="${LOCKED_ROUTE#/}"   # locks are written "/<route>" — strip the slash
-  ROUTE_DIR="src/routes/$LOCKED_ROUTE"
+SCOPE_FILE="/tmp/claude-scope-$CWD_HASH"
+ROUTE_LOCK="/tmp/claude-route-scope-$CWD_HASH"
+ENFORCE_FLAG="/tmp/claude-scope-enforce-$CWD_HASH"
+
+_in_scope() {   # returns 0 if $1 (repo-relative path) is within the declared scope
+  local p="$1"
+  [[ "$p" =~ ^\.claude/ ]] && return 0
+  if [ -f "$SCOPE_FILE" ]; then
+    local pref
+    while IFS= read -r pref; do
+      [ -z "$pref" ] && continue
+      [ "$pref" = "*" ] && return 0
+      [[ "$p" == "$pref"* ]] && return 0
+    done < "$SCOPE_FILE"
+    return 1
+  elif [ -f "$ROUTE_LOCK" ]; then
+    local r; r=$(cat "$ROUTE_LOCK"); r="${r#/}"
+    [[ "$p" == "src/routes/$r/"* ]] && return 0
+    return 1
+  fi
+  return 0   # no scope declared → everything in scope
+}
+
+if [ -f "$SCOPE_FILE" ] || [ -f "$ROUTE_LOCK" ]; then
   VIOLATIONS=""
   for file in $(git diff --cached --name-only 2>/dev/null || true); do
-    if [[ ! "$file" =~ ^$ROUTE_DIR/ ]] && [[ ! "$file" =~ ^\.claude/ ]]; then
-      VIOLATIONS="$VIOLATIONS$file"$'\n'
-    fi
+    _in_scope "$file" || VIOLATIONS="$VIOLATIONS  $file"$'\n'
   done
   if [ -n "$VIOLATIONS" ]; then
-    if ! [[ "$MSG" =~ @allow-cross-route ]]; then
-      echo "ship: scope violation — commit touches files outside '$LOCKED_ROUTE':" >&2
-      echo "$VIOLATIONS" >&2
-      echo "ship: include @allow-cross-route in your prompt + commit message to allow cross-route edits" >&2
+    if [ -f "$SCOPE_FILE" ]; then ALLOWED=$(paste -sd' ' "$SCOPE_FILE" 2>/dev/null)
+    else ALLOWED="src/routes/$(sed 's#^/##' "$ROUTE_LOCK" 2>/dev/null)/"; fi
+    if [ -f "$ENFORCE_FLAG" ] && ! [[ "$MSG" =~ @allow-cross-route ]]; then
+      echo "ship: scope violation (enforcing) — commit touches files outside declared scope [$ALLOWED]:" >&2
+      printf '%s' "$VIOLATIONS" >&2
+      echo "ship: add @allow-cross-route to the commit message, or remove /tmp/claude-scope-enforce-$CWD_HASH to drop to advisory" >&2
       exit 2
     fi
-    echo "ship: cross-route override (@allow-cross-route) detected, proceeding" >&2
+    echo "ship: note (advisory) — commit touches files outside declared scope [$ALLOWED], proceeding:" >&2
+    printf '%s' "$VIOLATIONS" >&2
   fi
 fi
 

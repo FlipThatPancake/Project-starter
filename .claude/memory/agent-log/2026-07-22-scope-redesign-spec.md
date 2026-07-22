@@ -1,7 +1,11 @@
 # Scope redesign spec — retire fixed modes, keep a free-form declared scope
 
 **Date:** 2026-07-22 · **Branch:** claude/mode-scope-limitations-nd8pav · **Mode:** 1-system-dev
-**Status:** DRAFT — awaiting user sign-off on the open decisions (§7) before implementation.
+**Status:** IMPLEMENTED (2026-07-22). Decisions §7 resolved; all changes shipped. The
+§5 advisory-mechanism unknown is RESOLVED: the nudge reaches Claude via the PreToolUse
+`additionalContext` field (+ `systemMessage` to the user), emitted with NO
+`permissionDecision` so the edit follows the normal permission flow rather than being
+auto-approved. Enforcing stays exit-2-with-stderr. Verified live + in test-tooling.mjs.
 
 ## 1. Goal (one line)
 Replace the fixed 7-mode menu + always-on write wall with a **free-form declared

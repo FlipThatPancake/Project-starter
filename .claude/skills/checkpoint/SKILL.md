@@ -24,7 +24,7 @@ This skill rewrites `.claude/memory/INDEX.md` and `routes/<route>.md` — the re
 | decision that constrains future work | prepend to Recent decisions |
 | completed/planned work changed | rewrite Priorities block |
 | over cap (INDEX 60 / route 100 / shared 80 / SESSION-LOG 40 lines) | evict oldest DECISIONS first; if a decision is still load-bearing, promote to gotcha first. NEVER evict gotchas. SESSION-LOG evicts its oldest row(s) |
-| session ending / mode locked this session | ensure one row exists in `SESSION-LOG.md` for this session (date, branch, mode, one-line scope) — append if missing, never rewrite past rows |
+| session ending / scope declared this session | ensure one row exists in `SESSION-LOG.md` for this session (date, branch, scope, one-line purpose) — append if missing, never rewrite past rows |
 
 ## Hard prohibitions (especially when running on a small/cheap model)
 - Never delete or reword a gotcha you didn't verify this session.
@@ -35,7 +35,7 @@ This skill rewrites `.claude/memory/INDEX.md` and `routes/<route>.md` — the re
 ## After writing
 1. Run `node scripts/validate.mjs --memory` — it mechanically checks caps, table shape, and that every anchor resolves in code. Fix failures before proceeding; do not commit failing memory.
 2. Stage memory files (plus any anchor comments re-inserted in code).
-3. Commit message: prefix the mode tag, then the checkpoint marker — e.g. `[mode:1-system-dev] chore(memory): checkpoint <routes touched>`. The `[mode:…]` prefix is CLAUDE.md's per-commit rule; the `chore(memory): checkpoint` substring is what `checkpoint-nudge.sh` greps to find the last checkpoint baseline (a `git log --grep`, so the mode prefix in front is harmless). Both must be present.
+3. Commit message: prefix the scope tag, then the checkpoint marker — e.g. `[scope:system-dev] chore(memory): checkpoint <routes touched>`. The `[scope:…]` prefix is CLAUDE.md's per-commit rule; the `chore(memory): checkpoint` substring is what `checkpoint-nudge.sh` greps to find the last checkpoint baseline (a `git log --grep`, so the scope prefix in front is harmless). Both must be present.
 
 ## When to RECOMMEND running /checkpoint (criteria for the model; the Stop-hook nudge covers volume automatically)
 | signal | recommend? |

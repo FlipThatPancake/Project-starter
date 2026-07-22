@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# SessionStart hook — orientation, NOT dependency install. Injects a mode menu +
-# repo state + branch-recency list so Claude picks a session mode before reading
+# SessionStart hook — orientation, NOT dependency install. Injects a scope prompt +
+# repo state + branch-recency list so Claude declares a session scope before reading
 # any code. Zero model tokens to compute; the injected text is the only cost.
 # Emits additionalContext via the SessionStart hookSpecificOutput contract.
 set -u
@@ -11,7 +11,7 @@ cd "$ROOT" || exit 0
 INDEX=".claude/memory/INDEX.md"
 
 # 1. Repo state: starter (fresh/unbootstrapped) vs in-progress (real project).
-#    Mode 2 flips this on first bootstrap. Missing/unreadable → assume starter.
+#    The new-project bootstrap flips this on first run. Missing/unreadable → assume starter.
 STATE="starter"
 if [ -f "$INDEX" ]; then
   s=$(grep -m1 '^state:' "$INDEX" | sed 's/^state:[[:space:]]*//' | tr -d '[:space:]')
@@ -19,9 +19,9 @@ if [ -f "$INDEX" ]; then
 fi
 
 if [ "$STATE" = "in-progress" ]; then
-  STATE_LINE="Repo state: in-progress → a real project. Offer modes 3 (new route), 4 (continue route), 5 (backend/routing), 6 (design system); modes 1/2/7 as relevant."
+  STATE_LINE="Repo state: in-progress → a real project. Typical scopes: one route (src/routes/<r>/), the shared design system (src/shared/), backend/routing, or a data/ingest layer (data/, refs/, …). Declare whichever the task needs."
 else
-  STATE_LINE="Repo state: starter → fresh/unbootstrapped (the mother Project-starter repo is always 'starter'). Steer toward mode 2 (new project) unless the prompt clearly says otherwise."
+  STATE_LINE="Repo state: starter → fresh/unbootstrapped (the mother Project-starter repo is always 'starter'). A fresh bootstrap usually declares a wide scope ('*') unless the prompt is narrower."
 fi
 
 # 2. Branch discovery — remote branches ranked by last-commit recency, so the
@@ -90,15 +90,20 @@ else
 fi
 
 CONTEXT=$(cat <<EOF
-SESSION MODE SELECTION (from session-start-hook) — do this before reading any code.
+SESSION SCOPE (from session-start-hook) — set this before reading any code.
 
 $STATE_LINE
 
-Pick a session mode (steps summarized here — the full spec is .claude/modes/MODES_PROTOCOL.md, read it ONLY if you need detail beyond this summary):
-  1 system-dev · 2 new-project · 3 new-route · 4 continue-route · 5 backend-routing · 6 design-system · 7 other
-Rule: restate the session's purpose in one line. If the first prompt is explicit and unambiguous, state your understanding + inferred mode and proceed; otherwise WAIT for the user's confirmation before locking a mode (AskUserQuestion) — never assume. Then lock the mode + read ONLY the chosen .claude/modes/<n>-*.md (it carries the exact lock command + allowlist) + .claude/memory/INDEX.md (lazy start — do NOT read skill-curator or its references unless you actually act on skills).
+Restate the session's purpose in one line, then DECLARE A SCOPE — the free-form set of path prefixes this session intends to write (e.g. \`src/routes/pricing/\`, or \`data/ refs/ src/shared/schema/\` for an ingest session, or \`*\` for a fresh bootstrap). If the first prompt is explicit and unambiguous, state your understanding + the scope and proceed; otherwise WAIT for the user's confirmation before locking scope (AskUserQuestion) — never assume.
+
+Lock the scope so the guard can orient. It is ADVISORY by default — an out-of-scope Edit/Write is ALLOWED with a nudge, never blocked — so legitimate cross-scope work (shared files, assets, docs, data) needs no override:
+  H=\$(pwd | sha256sum | cut -d' ' -f1 | cut -c1-8)
+  printf '%s\n' <prefixes> > /tmp/claude-scope-\$H     # '*' = whole repo
+  # optional HARD wall (blocks out-of-scope Edit/Write until removed):
+  #   touch /tmp/claude-scope-enforce-\$H   — raise it deliberately for tightly-scoped work on a big multi-route project
+Then read ONLY .claude/memory/INDEX.md (+ your route's map) — lazy start; do NOT read skill-curator or its references unless you act on skills. The files in .claude/modes/ are worked EXAMPLE scopes (system-dev, new-project, new-route, continue-route, backend-routing, design-system, data-ingest, other) — templates to crib from, not a menu you must pick from. Full model: .claude/modes/SCOPE_PROTOCOL.md (read only if you need detail beyond this summary).
 Skills are OPT-IN (no mandatory gate). The current loadout is below — load a dormant skill only when the task needs it or the user asks, via \`/skills load <name>\` (thin mechanics; reading skill-curator's SKILL.md is only for installing/updating/extracting/deleting a skill).
-Address, don't act: acknowledge the substance of the user's request as soon as understood, but do NOT execute changes until the mode is locked.
+Address, don't act: acknowledge the substance of the user's request as soon as understood, but do NOT execute changes until the scope is declared.
 
 Skill index (active = in context now · dormant = zero tokens until loaded; size = SKILL.md lines):
 $SKILL_INDEX

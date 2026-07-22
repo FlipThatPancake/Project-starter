@@ -41,7 +41,7 @@ see §Fallback — it requires the user's explicit yes each time, never assumed.
 
 ## Steps — branch
 1. Commit message: user's if given; else summarize the session (imperative,
-   ≤72 chars), prefixed with the mode tag per CLAUDE.md, e.g. `[mode:1-system-dev] …`.
+   ≤72 chars), prefixed with the scope tag per CLAUDE.md, e.g. `[scope:system-dev] …`.
 2. If `.claude/memory/SESSION-LOG.md` lacks this session's row, append it first.
 3. `scripts/ship.sh "<msg>"`.
 4. Report commit hash + branch pushed to.
