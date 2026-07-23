@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<!--
+  STARTER SKELETON — Midea Research Report Design System
+  For use on Midea projects. Midea Blue (#0098D1) is the sole accent.
+  A minimal, working page that links tokens.css + components.css and shows the
+  header, the quote-card collage hero, a stat row, a horizontal bar chart, and a
+  vertical scale chart — enough to see the system live and build on.
+
+  • Open directly in a browser (needs internet for Google Fonts).
+  • Toggle dark mode: add data-theme="dark" to <html> below.
+  • Copy the patterns you need from 02-components.md.
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Midea Report — Starter</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Hanken+Grotesk:wght@300..700&display=swap">
+  <link rel="stylesheet" href="tokens.css">
+  <link rel="stylesheet" href="components.css">
+</head>
+<body>
+
+<!-- Page loader — see 04-page-structure.md "Page loader recipe".
+     The <path> below is copied verbatim from assets/midea-logo.svg (kept
+     inline, not <img>, so it inherits currentColor and themes automatically;
+     assets/midea-logo.svg is the single canonical source — copy from there). -->
+<div id="page-loader">
+  <div class="pl-ring">
+    <svg class="pl-mark" viewBox="0 0 103 91" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path d="M94.4 32.1H86.5C85.6 32.1 85.8 32.9 85.8 32.9C85.9 33.9 86.2 35.6 86.2 39.1C86.2 46.9 85.3 58 76.8 68.6L76.2 69.3C76.2 69.3 71.1 33.6 71 32.9C71 32.9 71 32.1 70.3 32.1H62.3C61.6 32.1 61.6 32.9 61.6 32.9C61.4 37 59.1 71.4 34.1 76.9C39.4 77.5 45.9 75.8 51.5 72.3C58.4 68 63.1 61.6 64.7 54.3C64.7 54.3 67.8 73.4 68.2 77.9V78.2L68 78.3C61 82.1 53 84 45 84C25.2 84 7.7 72.3 0 54.5C4.5 75.5 23.2 90.8 45.2 90.8C70.8 90.8 85.9 69.4 88.6 54.2C88.6 54.2 92 76.4 92.1 77.1H102.6C102.5 76.1 95.5 33.6 95.4 32.9C95.1 32.9 95.1 32.1 94.4 32.1ZM6 50.8C6 27.4 25.7 8.4 50 8.4C65 8.4 79 15.9 87.1 28.1C81.2 11.4 64.7 0 46.1 0C22.2 0 2.7 18.6 2.7 41.6C2.7 47.9 4.3 54 7.1 59.6C6.4 56.7 6 53.8 6 50.8Z" fill="currentColor"/>
+    </svg>
+    <svg class="pl-svg" viewBox="0 0 64 64" width="64" height="64">
+      <circle class="pl-track" cx="32" cy="32" r="30"/>
+      <circle class="pl-fill"  cx="32" cy="32" r="30"/>
+    </svg>
+  </div>
+</div>
+
+<div class="page-wrap">
+
+  <!-- ── Header ── -->
+  <div class="report-header">
+    <div class="header-top">
+      <h1>
+        <span class="h1-line1">Report Title Here</span>
+        <span class="h1-line2">Subtitle / study descriptor — Research Report</span>
+      </h1>
+      <!-- Midea logo mark — copied verbatim from assets/midea-logo.svg.
+           currentColor picks up --text, so it themes automatically. -->
+      <svg class="header-logo" viewBox="0 0 103 91" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Midea">
+        <path d="M94.4 32.1H86.5C85.6 32.1 85.8 32.9 85.8 32.9C85.9 33.9 86.2 35.6 86.2 39.1C86.2 46.9 85.3 58 76.8 68.6L76.2 69.3C76.2 69.3 71.1 33.6 71 32.9C71 32.9 71 32.1 70.3 32.1H62.3C61.6 32.1 61.6 32.9 61.6 32.9C61.4 37 59.1 71.4 34.1 76.9C39.4 77.5 45.9 75.8 51.5 72.3C58.4 68 63.1 61.6 64.7 54.3C64.7 54.3 67.8 73.4 68.2 77.9V78.2L68 78.3C61 82.1 53 84 45 84C25.2 84 7.7 72.3 0 54.5C4.5 75.5 23.2 90.8 45.2 90.8C70.8 90.8 85.9 69.4 88.6 54.2C88.6 54.2 92 76.4 92.1 77.1H102.6C102.5 76.1 95.5 33.6 95.4 32.9C95.1 32.9 95.1 32.1 94.4 32.1ZM6 50.8C6 27.4 25.7 8.4 50 8.4C65 8.4 79 15.9 87.1 28.1C81.2 11.4 64.7 0 46.1 0C22.2 0 2.7 18.6 2.7 41.6C2.7 47.9 4.3 54 7.1 59.6C6.4 56.7 6 53.8 6 50.8Z" fill="currentColor"/>
+      </svg>
+    </div>
+    <div class="subtitle">Study type · Month Year</div>
+    <p class="subtext">One or two sentences of context: what the study was, how
+      many people took part, across which markets, and what they were asked to do.</p>
+  </div>
+
+  <!-- ── Hero: quote-card collage ── -->
+  <div class="voice-collage">
+    <div class="voice-card card-1" style="--i:0">
+      <div class="voice-head">
+        <div class="voice-avatar">DE</div>
+        <div>
+          <div class="voice-name">Female, 60 · Germany</div>
+          <div class="voice-context">Chose Option A</div>
+        </div>
+      </div>
+      <p class="voice-body">A representative verbatim quote goes here — short, specific, and human.</p>
+      <span class="voice-tag">#theme</span>
+    </div>
+    <div class="voice-card card-2" style="--i:1">
+      <div class="voice-head">
+        <div class="voice-avatar">PT</div>
+        <div>
+          <div class="voice-name">Female, 39 · Portugal</div>
+          <div class="voice-context">Chose Option A</div>
+        </div>
+      </div>
+      <p class="voice-body">Another quote — a contrasting or reinforcing perspective from a different market.</p>
+      <span class="voice-tag">#theme</span>
+    </div>
+    <div class="voice-card card-3" style="--i:2">
+      <div class="voice-head">
+        <div class="voice-avatar">IT</div>
+        <div>
+          <div class="voice-name">Male, 52 · Italy</div>
+          <div class="voice-context">Chose Option A</div>
+        </div>
+      </div>
+      <p class="voice-body">A third quote adds texture. Keep them tight so the cards stay balanced.</p>
+      <span class="voice-tag">#theme</span>
+    </div>
+    <div class="voice-card card-4 accent" style="--i:3">
+      <div class="voice-head">
+        <div class="voice-avatar">ES</div>
+        <div>
+          <div class="voice-name">Male, 53 · Spain</div>
+          <div class="voice-context">Chose Option B</div>
+        </div>
+      </div>
+      <p class="voice-body">The one accent card carries a standout or dissenting voice.</p>
+      <span class="voice-tag">#theme</span>
+    </div>
+  </div>
+
+  <!-- ── Section 1: sample composition (card #1 — raised) ── -->
+  <div class="section-label">Sample composition</div>
+  <div class="card">
+    <div class="card-head">
+      <div>
+        <div class="q-label">Who took part</div>
+        <h3>Study sample</h3>
+        <div class="q-sub">195 participants across 6 markets. Figures aggregate all markets unless noted.</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="ps-stats">
+        <div class="ps-stat" style="--i:0"><div class="ps-val">195</div><div class="ps-key">Participants</div><div class="ps-sub">total</div></div>
+        <div class="ps-stat" style="--i:1"><div class="ps-val">6</div><div class="ps-key">Markets</div><div class="ps-sub">Europe</div></div>
+        <div class="ps-stat" style="--i:2"><div class="ps-val">52%</div><div class="ps-key">Female</div><div class="ps-sub">48% male</div></div>
+        <div class="ps-stat" style="--i:3"><div class="ps-val">47</div><div class="ps-key">Median age</div><div class="ps-sub">18–75 range</div></div>
+        <div class="ps-stat" style="--i:4"><div class="ps-val">12m</div><div class="ps-key">Fieldwork</div><div class="ps-sub">Jun 2026</div></div>
+      </div>
+
+      <div class="ps-dists">
+        <div class="ps-dist">
+          <div class="ps-dist-label">Age</div>
+          <div class="ps-seg-bar">
+            <div class="ps-seg ps-seg-c1" style="width:32%"></div>
+            <div class="ps-seg ps-seg-c2" style="width:28%"></div>
+            <div class="ps-seg ps-seg-c3" style="width:24%"></div>
+            <div class="ps-seg ps-seg-c4" style="width:16%"></div>
+          </div>
+          <div class="ps-legend">
+            <span class="ps-legend-item"><span class="ps-legend-dot" style="background:var(--seg-1)"></span>18–29 <span class="ps-lv">32%</span></span>
+            <span class="ps-legend-item"><span class="ps-legend-dot" style="background:var(--seg-2)"></span>30–44 <span class="ps-lv">28%</span></span>
+            <span class="ps-legend-item"><span class="ps-legend-dot" style="background:var(--seg-3)"></span>45–59 <span class="ps-lv">24%</span></span>
+            <span class="ps-legend-item"><span class="ps-legend-dot" style="background:var(--seg-4)"></span>60+ <span class="ps-lv">16%</span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Section 2: preference ranking (card #2 — raised) ── -->
+  <div class="section-label">Detailed findings</div>
+  <div class="card">
+    <div class="card-head">
+      <div>
+        <div class="q-label">Q1 · Preference</div>
+        <h3>Which option did people prefer?</h3>
+        <div class="q-sub">Single choice. n = 195.</div>
+      </div>
+      <div class="toggle-row">
+        <button class="toggle-btn active">Count</button>
+        <button class="toggle-btn">Percent</button>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="bar-list">
+        <div class="bar-item"><div class="bar-label">Option A</div><div class="bar-row"><div class="bar-track"><div class="bar-fill" style="width:64%" data-pct="64%"></div></div><div class="bar-count">124</div></div></div>
+        <div class="bar-item"><div class="bar-label">Option B</div><div class="bar-row"><div class="bar-track"><div class="bar-fill" style="width:22%" data-pct="22%"></div></div><div class="bar-count">43</div></div></div>
+        <div class="bar-item"><div class="bar-label">Option C</div><div class="bar-row"><div class="bar-track"><div class="bar-fill pct-outside" style="width:9%" data-pct="9%"></div></div><div class="bar-count">17</div></div></div>
+        <div class="bar-item"><div class="bar-label">Option D</div><div class="bar-row"><div class="bar-track"><div class="bar-fill pct-outside" style="width:5%" data-pct="5%"></div></div><div class="bar-count">11</div></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Section 3: scale chart (card #3 — raised; card #4+ would go plain) ── -->
+  <div class="section-label">Ease of use</div>
+  <div class="card">
+    <div class="card-head">
+      <div>
+        <div class="q-label">Q2 · Rating</div>
+        <h3>How easy was it to use?</h3>
+        <div class="q-sub">1 = very hard, 5 = very easy. n = 195.</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="scale-bars">
+        <div class="scale-col"><div class="scale-pct">4%</div><div class="scale-bar-outer"><div class="scale-bar-inner"><div class="scale-bar-fill" style="height:8%"></div></div></div></div>
+        <div class="scale-col"><div class="scale-pct">8%</div><div class="scale-bar-outer"><div class="scale-bar-inner"><div class="scale-bar-fill" style="height:16%"></div></div></div></div>
+        <div class="scale-col"><div class="scale-pct">18%</div><div class="scale-bar-outer"><div class="scale-bar-inner"><div class="scale-bar-fill" style="height:36%"></div></div></div></div>
+        <div class="scale-col"><div class="scale-pct">42%</div><div class="scale-bar-outer"><div class="scale-bar-inner"><div class="scale-bar-fill" style="height:84%"></div></div></div></div>
+        <div class="scale-col"><div class="scale-pct">28%</div><div class="scale-bar-outer"><div class="scale-bar-inner"><div class="scale-bar-fill" style="height:56%"></div></div></div></div>
+      </div>
+      <div class="scale-labels">
+        <div class="scale-num">1</div><div class="scale-num">2</div><div class="scale-num">3</div><div class="scale-num">4</div><div class="scale-num">5</div>
+      </div>
+      <div class="scale-mean">Mean rating <strong>3.8</strong></div>
+    </div>
+  </div>
+
+</div>
+
+<script src="assets/loader.js" defer></script>
+</body>
+</html>
