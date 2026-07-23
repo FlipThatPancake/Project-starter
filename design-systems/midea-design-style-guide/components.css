@@ -222,6 +222,60 @@
 .modal-overlay.open { animation: fade-in 0.20s var(--ease-out-quart) both; }
 .modal-overlay.open .modal-inner { animation: modal-in 0.30s var(--ease-out-expo) 0.04s both; }
 
+/* ── Page loader ── */
+/* Full-screen overlay: Midea mark pulses (indeterminate) while assets load,
+   then a thin progress ring sweeps to 100% (determinate) and the whole thing
+   fades out. JS contract: toggle `.determinate` and set `--pct` (0–100) once
+   real load progress is known; add `.done` to fade out; remove the element
+   (or display:none) after the fade-out transition ends. See 04-page-structure.md. */
+#page-loader {
+  position: fixed; inset: 0; z-index: 999;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--bg);
+  transition: opacity 0.4s var(--ease-out-quart);
+}
+#page-loader.done { opacity: 0; pointer-events: none; }
+
+#page-loader .pl-ring {
+  position: relative;
+  width: 64px; height: 64px;
+}
+#page-loader .pl-mark {
+  position: absolute; inset: 0;
+  margin: auto; width: 30px; height: auto;
+  color: var(--accent);
+  animation: pl-pulse 1.1s var(--ease-out-quart) infinite;
+}
+#page-loader.determinate .pl-mark { animation: none; opacity: 1; }
+
+#page-loader .pl-track,
+#page-loader .pl-fill {
+  fill: none;
+  stroke-width: 3;
+}
+#page-loader .pl-track { stroke: var(--bar-bg); }
+#page-loader .pl-fill {
+  stroke: var(--accent);
+  stroke-linecap: round;
+  transform-origin: 50% 50%;
+  transform: rotate(-90deg);
+  /* indeterminate: short arc spins continuously */
+  stroke-dasharray: 40 150;
+  animation: pl-spin 1s linear infinite;
+}
+/* determinate: JS sets --pct (0–100); dasharray tracks it, spin stops */
+#page-loader.determinate .pl-fill {
+  animation: none;
+  stroke-dasharray: calc(var(--pct, 0) * 1.885) 188.5; /* 188.5 = 2πr, r=30 */
+  transition: stroke-dasharray 0.3s var(--ease-out-quart);
+}
+
+@keyframes pl-spin { to { transform: rotate(270deg); } }
+@keyframes pl-pulse {
+  0%, 100% { opacity: .55; transform: scale(.94); }
+  50%      { opacity: 1;   transform: scale(1); }
+}
+
 /* ── Responsive ── */
 @media (max-width: 760px) {
   .ps-stats { grid-template-columns: repeat(2, 1fr); }
@@ -233,4 +287,5 @@
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .001ms !important; animation-delay: 0s !important; transition-duration: .001ms !important; }
   .bar-fill, .mini-bar-fill, .oe-trend-fill, .ps-seg-bar, .scale-bar-fill, .scale-mini-fill { transform: none !important; }
+  #page-loader .pl-mark, #page-loader .pl-fill { animation: none !important; }
 }
