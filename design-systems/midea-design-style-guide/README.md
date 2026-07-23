@@ -69,8 +69,16 @@ bouncy. The result reads like a designed magazine feature, not a dashboard.
 | `02-components.md` | Copy-paste recipes (markup + CSS) for every component: cards, section headers, horizontal/mini/vertical bars, toggles, tabs, badges, stat tiles, segment bars, quote-card collage, modals. |
 | `03-motion.md` | The reveal/stagger animation system — keyframes, delay ladders, and the one rule that breaks it most often. |
 | `04-page-structure.md` | Page anatomy: the loader, header, section rhythm, container widths, responsive breakpoints, and the "cards fade to plain after the 3rd" convention. |
-| `components.css` | All component CSS from `02` concatenated into one importable file (after `tokens.css`). |
-| `starter.html` | A minimal, working skeleton (header + one card + one bar chart) that links `tokens.css` + `components.css`. Open it to see the system live, then build on it. |
+| `components.css` | All component CSS from `02` concatenated into one importable file (after `tokens.css`), including the page loader. |
+| `starter.html` | A minimal, working skeleton (header + loader + one card + one bar chart) that links `tokens.css` + `components.css` + `assets/loader.js`. Open it to see the system live, then build on it. |
+| `assets/midea-logo.svg` | The Midea "M" mark as a standalone file — the canonical source for every inline copy elsewhere in this guide. |
+| `assets/loader.js` | Dependency-free controller script for `#page-loader` (see `04-page-structure.md`). Link it with `<script src="assets/loader.js" defer></script>`. |
+
+This folder is meant to be **fully self-contained and exportable**: copy the
+whole thing (including `assets/`) and every recipe in `02`–`04` works with no
+files left behind, other than the one documented external dependency — the
+Google Fonts stylesheet link (self-host the two fonts instead if you need a
+fully offline build).
 
 ---
 
@@ -90,7 +98,9 @@ bouncy. The result reads like a designed magazine feature, not a dashboard.
   <link rel="stylesheet" href="components.css">
 </head>
 <body>
+  <div id="page-loader"><!-- optional page loader; omit if not needed --></div>
   <div class="page-wrap"><!-- max-width 1100px, centered --></div>
+  <script src="assets/loader.js" defer></script><!-- omit if no #page-loader -->
 </body>
 </html>
 ```
@@ -107,9 +117,11 @@ the only chromatic colour in the system and the core of the Midea report
 identity. Do not introduce a second brand hue; extend the monochromatic
 `--seg-*` ramp instead when you need more categories.
 
-**Logo mark.** The Midea "M" mark is an inline SVG that inherits `currentColor`,
-so it themes automatically (set the parent's `color`, or let it inherit
-`--text`). It sits top-right in the report header at ~53px wide. Reuse verbatim:
+**Logo mark.** The canonical file is `assets/midea-logo.svg`. Every other copy
+in this guide (header, page loader) is that same markup pasted **inline**, not
+loaded via `<img>` — inline is required for it to inherit `currentColor`, so it
+themes automatically (set the parent's `color`, or let it inherit `--text`).
+It sits top-right in the report header at ~53px wide. Reuse verbatim:
 
 ```html
 <svg class="header-logo" viewBox="0 0 103 91" fill="none"

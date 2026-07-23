@@ -31,6 +31,7 @@ rules, and the two structural conventions that define the reading experience.
     <!-- hero element(s) -->
     <!-- section-label + card, repeated -->
   </div>
+  <script src="assets/loader.js" defer></script><!-- omit if no #page-loader -->
 </body>
 </html>
 ```
@@ -90,6 +91,8 @@ phase 1 and holds solid through phase 2.
 ```html
 <div id="page-loader">
   <div class="pl-ring">
+    <!-- Midea mark — copied verbatim from assets/midea-logo.svg, kept inline
+         (not <img>) so it inherits currentColor and themes automatically. -->
     <svg class="pl-mark" viewBox="0 0 103 91" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
       <path d="M94.4 32.1H86.5C85.6 32.1 85.8 32.9 85.8 32.9C85.9 33.9 86.2 35.6 86.2 39.1C86.2 46.9 85.3 58 76.8 68.6L76.2 69.3C76.2 69.3 71.1 33.6 71 32.9C71 32.9 71 32.1 70.3 32.1H62.3C61.6 32.1 61.6 32.9 61.6 32.9C61.4 37 59.1 71.4 34.1 76.9C39.4 77.5 45.9 75.8 51.5 72.3C58.4 68 63.1 61.6 64.7 54.3C64.7 54.3 67.8 73.4 68.2 77.9V78.2L68 78.3C61 82.1 53 84 45 84C25.2 84 7.7 72.3 0 54.5C4.5 75.5 23.2 90.8 45.2 90.8C70.8 90.8 85.9 69.4 88.6 54.2C88.6 54.2 92 76.4 92.1 77.1H102.6C102.5 76.1 95.5 33.6 95.4 32.9C95.1 32.9 95.1 32.1 94.4 32.1ZM6 50.8C6 27.4 25.7 8.4 50 8.4C65 8.4 79 15.9 87.1 28.1C81.2 11.4 64.7 0 46.1 0C22.2 0 2.7 18.6 2.7 41.6C2.7 47.9 4.3 54 7.1 59.6C6.4 56.7 6 53.8 6 50.8Z" fill="currentColor"/>
     </svg>
@@ -99,34 +102,22 @@ phase 1 and holds solid through phase 2.
     </svg>
   </div>
 </div>
+<script src="assets/loader.js" defer></script>
 ```
 
 CSS lives in `components.css` under `/* ── Page loader ── */` — link it as
-usual, no extra file needed. The mark is the same `currentColor` SVG used in
-the header (see above), so it themes automatically light/dark.
+usual, no extra file needed.
 
-```js
-// Wire real progress if you have it (e.g. counting decoded <img> elements);
-// otherwise just flip to determinate + 100% once `window.load` fires.
-const loader = document.getElementById('page-loader');
-
-function setProgress(pct) {
-  loader.classList.add('determinate');
-  loader.style.setProperty('--pct', pct);
-}
-
-window.addEventListener('load', () => {
-  setProgress(100);
-  setTimeout(() => loader.classList.add('done'), 250);
-});
-// Remove/hide after the fade transition (~400ms) so it isn't in the tab order:
-loader.addEventListener('transitionend', () => {
-  if (loader.classList.contains('done')) loader.remove();
-});
-```
+The controller script is `assets/loader.js` — a standalone, dependency-free
+file. Link it with `<script src="assets/loader.js" defer></script>` right
+before `</body>`; no inline JS needed. Default behavior (no extra wiring):
+waits for `window.load`, jumps the ring to 100%, then fades out and removes
+itself. If you have real load progress, call `window.MideaLoader.setProgress(pct)`
+before the default `load` handler fires (0–100); call `window.MideaLoader.done()`
+to fade out on your own trigger instead of waiting for `load`.
 
 Skip the whole thing for a light page — the placeholder `<div id="page-loader">`
-in the document shell can simply be omitted.
+in the document shell, plus the `loader.js` include, can simply be omitted.
 
 ---
 

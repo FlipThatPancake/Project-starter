@@ -24,4 +24,4 @@ Adding a system here does **not** activate it. Treat this folder like
 
 | System | Source |
 |---|---|
-| `midea-design-style-guide/` | Midea design style guide (foundations, components, motion, page structure, tokens.css, components.css, starter.html) |
+| `midea-design-style-guide/` | Midea design style guide — fully self-contained: foundations/components/motion/page-structure docs, tokens.css, components.css, starter.html, and `assets/` (midea-logo.svg, loader.js). Copy the whole folder — nothing is left behind except the documented Google Fonts link. |
