@@ -1,6 +1,0 @@
-/* @css:tokens — shared design system. Routes opt in via
-   <!-- @inline:../../shared/tokens.css --> in their <head>.
-   Routes with their own visual style simply omit the marker. */
-:root {
-  /* define project tokens here */
-}
